@@ -9,17 +9,17 @@ URL = "https://homolog.sisno.com.br/nfe-service/nfe/validacao-nota"     # TODO: 
 # ======================================================================================================================
 class NotaFiscal:
     def __init__(self, **kwargs):
-        self.serie                   = kwargs.get("serie", None)                 # string
-        self.operacao                = kwargs.get("operacao", None)              # string (0: Entrada, 1: Saída)
-        self.natureza_operacao       = kwargs.get("natureza_operacao", None)     # string
-        self.modelo                  = kwargs.get("modelo", None)                # string (55: NF-e, 65: NFC-e)
-        self.finalidade              = kwargs.get("finalidade", None)            # string (1: Normal, 2: Complementar, 3: Ajuste, 4: Devolução ou Retorno)
-        self.ambiente                = kwargs.get("ambiente", None)              # string (1: Produção, 2: Homologação)
-        self.cliente                 = kwargs.get("cliente", None)               # Objeto CLIENTE
-        self.produtos                = kwargs.get("produtos", None)              # list[PRODUTO]
-        self.pedido                  = kwargs.get("pedido", None)                # Objeto PEDIDO
-        self.data_entrada_saida      = kwargs.get("data_entrada_saida", None)    # string (dd/MM/yyyy HH:mm:ss)
-        self.data_emissao            = kwargs.get("data_emissao", None)          # string (dd/MM/yyyy HH:mm:ss)
+        self.serie                   = kwargs.get("serie", None)                # string
+        self.operacao                = kwargs.get("operacao", None)             # string (0: Entrada, 1: Saída)
+        self.natureza_operacao       = kwargs.get("natureza_operacao", None)    # string
+        self.modelo                  = kwargs.get("modelo", None)               # string (55: NF-e, 65: NFC-e)
+        self.finalidade              = kwargs.get("finalidade", None)           # string (1: Normal, 2: Complementar, 3: Ajuste, 4: Devolução ou Retorno)
+        self.ambiente                = kwargs.get("ambiente", None)             # string (1: Produção, 2: Homologação)
+        self.cliente                 = kwargs.get("cliente", None)              # Objeto CLIENTE
+        self.produtos                = kwargs.get("produtos", None)             # list[PRODUTO]
+        self.pedido                  = kwargs.get("pedido", None)               # Objeto PEDIDO
+        self.data_entrada_saida      = kwargs.get("data_entrada_saida", None)   # string (dd/MM/yyyy HH:mm:ss)
+        self.data_emissao            = kwargs.get("data_emissao", None)         # string (dd/MM/yyyy HH:mm:ss)
 
     def asdict(self):
         return {
@@ -40,12 +40,12 @@ class Cliente:
     def __init__(self, **kwargs):
         # Deve ser informado apenas um dos campos [pessoa_fisica, pessoa_juridica]
 
-        self.pessoa_fisica           = kwargs.get("pessoa_fisica", None)         # Objeto PESSOAFISICA
-        self.pessoa_juridica         = kwargs.get("pessoa_juridica", None)       # Objeto PESSOAJURIDICA
+        self.pessoa_fisica           = kwargs.get("pessoa_fisica", None)        # Objeto PESSOAFISICA
+        self.pessoa_juridica         = kwargs.get("pessoa_juridica", None)      # Objeto PESSOAJURIDICA
 
-        self.consumidor_final        = kwargs.get("consumidor_final", None)      # string (0: Não, 1: Sim)
-        self.contribuinte            = kwargs.get("contribuinte", None)           # string (1: Contribuinte ICMS, 2: Contribuinte isento, 9: Não contribuinte)
-        self.endereco                = kwargs.get("endereco", None)              # Objeto ENDERECO
+        self.consumidor_final        = kwargs.get("consumidor_final", None)     # string (0: Não, 1: Sim)
+        self.contribuinte            = kwargs.get("contribuinte", None)         # string (1: Contribuinte ICMS, 2: Contribuinte isento, 9: Não contribuinte)
+        self.endereco                = kwargs.get("endereco", None)             # Objeto ENDERECO
 
     def asdict(self):
         # TODO: Deve ser informado apenas um dos campos [pessoa_fisica, pessoa_juridica]
@@ -69,9 +69,9 @@ class PessoaFisica:
     def __init__(self, **kwargs):
         # Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
 
-        self.cpf                     = kwargs.get("cpf", None)                   # string
-        self.id_estrangeiro          = kwargs.get("id_estrangeiro", None)        # string
-        self.nome_completo           = kwargs.get("nome_completo", None)         # string
+        self.cpf                     = kwargs.get("cpf", None)                  # string
+        self.id_estrangeiro          = kwargs.get("id_estrangeiro", None)       # string
+        self.nome_completo           = kwargs.get("nome_completo", None)        # string
 
     def asdict(self):
         # TODO: Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
@@ -89,22 +89,22 @@ class PessoaFisica:
 
 class PessoaJuridica:
     def __init__(self, **kwargs):
-        self.cnpj                    = kwargs.get("cnpj", None)                  # string
-        self.razao_social            = kwargs.get("razao_social", None)          # string
+        self.cnpj                    = kwargs.get("cnpj", None)                 # string
+        self.razao_social            = kwargs.get("razao_social", None)         # string
 
     def asdict(self):
-        return self.__dict__        # TODO: Pode? kkkkk
+        return self.__dict__
 
 class Endereco:
     def __init__(self, **kwargs):
-        self.codigo_pais             = kwargs.get("codigo_pais", None)           # string - Código IBGE
-        self.descricao_pais          = kwargs.get("descricao_pais", None)        # string
-        self.bairro                  = kwargs.get("bairro", None)                # string
-        self.logradouro              = kwargs.get("logradouro", None)            # string
-        self.numero                  = kwargs.get("numero", None)                # string
+        self.codigo_pais             = kwargs.get("codigo_pais", None)          # string - Código IBGE
+        self.descricao_pais          = kwargs.get("descricao_pais", None)       # string
+        self.bairro                  = kwargs.get("bairro", None)               # string
+        self.logradouro              = kwargs.get("logradouro", None)           # string
+        self.numero                  = kwargs.get("numero", None)               # string
 
     def asdict(self):
-        return self.__dict__        # TODO: Pode? kkkkk
+        return self.__dict__
 
 class Produto:
     def __init__(self, tipo, **kwargs):
@@ -139,11 +139,11 @@ class Impostos:
         # Quando produto, não informar o campo issqn. Quando serviço, não informar os campos icms e ipi.
         self.tipo                    = tipo
 
-        self.icms                    = kwargs.get("icms", None)                  # Objeto ICMS
-        self.ipi                     = kwargs.get("ipi", None)                   # Objeto IPI
-        self.pis                     = kwargs.get("pis", None)                   # Objeto PIS
-        self.cofins                  = kwargs.get("cofins", None)                # Objeto COFINS
-        self.issqn                   = kwargs.get("issqn", None)                 # Objeto ISSQN
+        self.icms                    = kwargs.get("icms", None)                 # Objeto ICMS
+        self.ipi                     = kwargs.get("ipi", None)                  # Objeto IPI
+        self.pis                     = kwargs.get("pis", None)                  # Objeto PIS
+        self.cofins                  = kwargs.get("cofins", None)               # Objeto COFINS
+        self.issqn                   = kwargs.get("issqn", None)                # Objeto ISSQN
 
     def asdict(self):
         # TODO: 0: Produto, 1: Serviço
@@ -164,31 +164,31 @@ class Impostos:
 
 class Icms:
     def __init__(self, **kwargs):
-        self.situacao_tributaria     = kwargs.get("situacao_tributaria", None)   # string [ 00, 10, 20, 30, 40, 41, 50, 51, 60, 70, 90, 101, 102, 103, 201, 202, 203, 300, 400, 500, 900 ]
+        self.situacao_tributaria     = kwargs.get("situacao_tributaria", None)  # string [ 00, 10, 20, 30, 40, 41, 50, 51, 60, 70, 90, 101, 102, 103, 201, 202, 203, 300, 400, 500, 900 ]
 
     def asdict(self):
-        return self.__dict__    # TODO: Pode ?
+        return self.__dict__
 
 class Ipi:
     def __init__(self, **kwargs):
-        self.situacao_tributaria     = kwargs.get("situacao_tributaria", None)   # string [ 00, 01, 02, 03, 04, 05, 49, 50, 51, 52, 53, 54, 55, 99 ]
+        self.situacao_tributaria     = kwargs.get("situacao_tributaria", None)  # string [ 00, 01, 02, 03, 04, 05, 49, 50, 51, 52, 53, 54, 55, 99 ]
 
     def asdict(self):
-        return self.__dict__    # TODO: Pode ?
+        return self.__dict__
 
 class Pis:
     def __init__(self, **kwargs):
-        self.situacao_tributaria     = kwargs.get("situacao_tributaria", None)   # string [ 01, 02, 03, 04, 05, 06, 07, 08, 09, 49, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 70, 71, 72, 73, 74, 75, 98, 99 ]
+        self.situacao_tributaria     = kwargs.get("situacao_tributaria", None)  # string [ 01, 02, 03, 04, 05, 06, 07, 08, 09, 49, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 70, 71, 72, 73, 74, 75, 98, 99 ]
 
     def asdict(self):
-        return self.__dict__    # TODO: Pode ?
+        return self.__dict__
 
 class Cofins:
     def __init__(self, **kwargs):
-        self.situacao_tributaria     = kwargs.get("situacao_tributaria", None)   # string [ 01, 02, 03, 04, 05, 06, 07, 08, 09, 49, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 70, 71, 72, 73, 74, 75, 98, 99 ]
+        self.situacao_tributaria     = kwargs.get("situacao_tributaria", None)  # string [ 01, 02, 03, 04, 05, 06, 07, 08, 09, 49, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 70, 71, 72, 73, 74, 75, 98, 99 ]
 
     def asdict(self):
-        return self.__dict__    # TODO: Pode ?
+        return self.__dict__
 
 class Issqn:
     def __init__(self, **kwargs):
@@ -209,21 +209,23 @@ class Issqn:
         self.aliquota                        = kwargs.get("aliquota", None)                      # string ($0.0000)
 
     def asdict(self):
-        return self.__dict__    # TODO: Pode ?
+        return self.__dict__
 
 # ----------------------------------------------------------------
 
 class Pedido:
     def __init__(self, **kwargs):
-        self.presenca                        = kwargs.get("presenca", None)                      # string [ 0, 1, 2, 3, 4, 5, 9 ]
-        self.pagamento                       = kwargs.get("pagamento", None)                     # Objeto PAGAMENTO
+        self.presenca                        = kwargs.get("presenca", None)                     # string [ 0, 1, 2, 3, 4, 5, 9 ]
+        self.pagamento                       = kwargs.get("pagamento", None)                    # Objeto PAGAMENTO
 
-        # self.informacoes_complementares      = kwargs.get("informacoes_complementares", None)    # string
-        # self.informacoes_fisco               = kwargs.get("informacoes_fisco", None)             # string
-        # self.observacoes_fisco               = kwargs.get("observacoes_fisco", None)             # list[OBSERVACAO]
-        # self.observacoes_contribuinte        = kwargs.get("observacoes_contribuinte", None)      # list[OBSERVACAO]
+        self.informacoes_complementares      = kwargs.get("informacoes_complementares", None)   # string
+        self.informacoes_fisco               = kwargs.get("informacoes_fisco", None)            # string
+        self.observacoes_fisco               = kwargs.get("observacoes_fisco", None)            # list[OBSERVACAO]
+        self.observacoes_contribuinte        = kwargs.get("observacoes_contribuinte", None)     # list[OBSERVACAO]
 
     def asdict(self):
+        # TODO: Adicionar o restante dos atributos ao dicionário
+
         return {
             "presenca"                      : self.presenca,
             "pagamento"                     : self.pagamento.asdict(),
@@ -231,7 +233,7 @@ class Pedido:
 
 class Pagamento:
     def __init__(self, *args):
-        self.formas_pagamento        = [f for f in args]
+        self.formas_pagamento        = [f for f in args]                                        # list[FORMAPAGAMENTO]
 
     def asdict(self):
         return {
@@ -240,20 +242,20 @@ class Pagamento:
 
 class FormaPagamento:
     def __init__(self, **kwargs):
-        self.forma_pagamento         = kwargs.get("forma_pagamento", None)       # string (0: À Vista, 1: À Prazo)
-        self.meio_pagamento          = kwargs.get("meio_pagamento", None)        # string [01, 02, 03, 04, 05, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 90, 99 ]
-        self.valor_pagamento         = kwargs.get("valor_pagamento", None)       # string ($0.00)
+        self.forma_pagamento         = kwargs.get("forma_pagamento", None)                      # string (0: À Vista, 1: À Prazo)
+        self.meio_pagamento          = kwargs.get("meio_pagamento", None)                       # string [01, 02, 03, 04, 05, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 90, 99 ]
+        self.valor_pagamento         = kwargs.get("valor_pagamento", None)                      # string ($0.00)
 
     def asdict(self):
-        return self.__dict__    # TODO: Pode ?
+        return self.__dict__
 
 class Observacao:
     def __init__(self, **kwargs):
-        self.campo                   = kwargs.get("campo", None)                 # string
-        self.texto                   = kwargs.get("texto", None)                 # string
+        self.campo                   = kwargs.get("campo", None)                                # string
+        self.texto                   = kwargs.get("texto", None)                                # string
 
     def asdict(self):
-        return self.__dict__    # TODO: Pode ?
+        return self.__dict__
 
 # ======================================================================================================================
 def print_curl(headers, nota_fiscal):
