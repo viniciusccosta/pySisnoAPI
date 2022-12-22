@@ -193,7 +193,7 @@ class Cofins:
 class Issqn:
     def __init__(self, **kwargs):
         """
-            indicador_exigibilidade_iss
+            Indicador_exigibilidade_iss
                 1: Exigível
                 2: Não incidência
                 3: Isenção
@@ -205,7 +205,7 @@ class Issqn:
 
         self.indicador_exigibilidade_iss     = kwargs.get("indicador_exigibilidade_iss", None)   # string [ 1, 2, 3, 4, 5, 6, 7 ]
         self.indicador_incentivo_fiscal      = kwargs.get("indicador_incentivo_fiscal", None)    # string (1: Não, 2: Sim)
-        self.item_lista_servicos             = kwargs.get("item_lista_servicos", None)           # string (Item da lista de serviços no Padrão ABRASF (Formato NN.NN))
+        self.item_lista_servicos             = kwargs.get("item_lista_servicos", None)           # string - Item da lista de serviços no Padrão ABRASF (Formato NN.NN)
         self.aliquota                        = kwargs.get("aliquota", None)                      # string ($0.0000)
 
     def asdict(self):
@@ -274,8 +274,8 @@ def main():
     # TODO: Os impostos, os produtos (e até mesmo os clientes) já deverão estar cadastrados em algum banco de dados
 
     # Grupos de Impostos:
-    pis             = Pis(situacao_tributaria="99")
-    cofins          = Cofins(situacao_tributaria="99")
+    pis             = Pis(situacao_tributaria="99")                                                                                                                     #
+    cofins          = Cofins(situacao_tributaria="99")                                                                                                                  #
     issqn           = Issqn(indicador_exigibilidade_iss="1", indicador_incentivo_fiscal="1", item_lista_servicos="08.01", aliquota="0.0000")                            # Exigível, Não, 08.01, 0.0000%
     impostos        = Impostos(tipo="1", pis=pis, cofins=cofins, issqn=issqn)                                                                                           # Serviço
 
@@ -283,14 +283,14 @@ def main():
     produto         = Produto(tipo="1", cfop="5933", item="2", nome="MENSALIDADE DE ENSINO REGULAR, PRÉ-ESCOLAR, E FUNDAMENTAL", ncm="00000000", quantidade="1.0000", unidade="UNID", subtotal="1.0000000000", total="1.00", impostos=impostos)  # TODO: O total deveria ser calculado e não informado
 
     # Destinatários:
-    endereco        = Endereco(codigo_pais="55", descricao_pais="Brasil", bairro="Nome do Bairro", logradouro="Rua Ciclano da Silva Júnior", numero="0")
+    endereco        = Endereco(codigo_pais="55", descricao_pais="Brasil", bairro="Nome do Bairro", logradouro="Rua Ciclano da Silva Júnior", numero="0")                #
     pessoa_fisica   = PessoaFisica(cpf="65386056808", nome_completo="Nome do Cliente")                                                                                  # CPF gerado randomicamente pelo site https://www.geradordecpf.org/
     cliente         = Cliente(pessoa_fisica=pessoa_fisica, consumidor_final="1", contribuinte="9", endereco=endereco)                                                   # Consumidor Final e Não Contribuinte
 
     # Pedido:
     forma_pagamento = FormaPagamento(forma_pagamento="0", meio_pagamento="01", valor_pagamento="1.00")                                                                  # À vista, dinheiro, R$ 1,00
-    pagamento       = Pagamento( forma_pagamento)                                                                                                                       # TODO: Supostamente podemos passar mais de uma forma de pagamento, mas será que ele irá validar o "valor_pagamento" com o total dos produtos/serviços ?
-    pedido          = Pedido(presenca="0", pagamento=pagamento)  # Não se aplica
+    pagamento       = Pagamento(forma_pagamento)                                                                                                                        # TODO: Supostamente podemos passar mais de uma forma de pagamento, mas será que ele irá validar o "valor_pagamento" com o total dos produtos/serviços ?
+    pedido          = Pedido(presenca="0", pagamento=pagamento)                                                                                                         # Não se aplica
 
     # Nota Fiscal:
     nota_fiscal     = NotaFiscal(serie="1", operacao="1", natureza_operacao="Prestação de Serviço", modelo="55", finalidade="1", ambiente="2", cliente=cliente, produtos=[produto], pedido=pedido, data_entrada_saida=agora, data_emissao=agora)  # TODO: Como saber qual a série?
@@ -302,7 +302,7 @@ def main():
         headers["accept"]       = "application/json"
         headers["Content-Type"] = "application/json"
 
-        print(print_curl(headers, nota_fiscal))
+        print_curl(headers, nota_fiscal)
 
         response = requests.post(URL, headers=headers, json=nota_fiscal.asdict())
         print("Status Code", response.status_code)
