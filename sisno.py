@@ -5,6 +5,46 @@ import requests
 
 # ======================================================================================================================
 URL = "https://homolog.sisno.com.br/nfe-service/nfe/validacao-nota"     # TODO: "https://homolog.sisno.com.br/nfe-service/nfe"
+HEADER_NFE = [
+    'CNPJ EMITENTE',
+    'MODELO',
+    'CPF/CNPJ DESTINATÁRIO',
+    'NOME/RAZAO SOCIAL DESTINATÁRIO',
+    'INDICADOR IE',
+    'CONSUMIDOR FINAL',
+    'FAZ RETENÇÃO DE IMPOSTOS',
+    'CEP',
+    'BAIRRO',
+    'LOGRADOURO',
+    'NUMERO',
+    'EMAIL DESTINATÁRIO',
+    'OPERAÇÃO',
+    'FINALIDADE',
+    'PRODUTOS',
+    'MEIO PAGAMENTO',
+    'INFORMAÇÕES COMPLEMENTARES',
+    'SIGLA UF',
+    'IBGE MUNICÍPIO',
+    'COMPLEMENTO ENDEREÇO'
+]
+HEADER_NFSE = [
+    'CNPJ',
+    'cpfrespfinaceiro',
+    'nomerespfinanceiro',
+    'Indicador IE',
+    'Consumidor Final',
+    'Faz Retenção',
+    'ceprespfinanceiro',
+    'Endereço UF',
+    'IBGE',
+    'bairrorespfinanceiro',
+    'endrespfinanceiro',
+    'Endereço Número',
+    'Endereço Complemento',
+    'emailrespfinanceiro',
+    'Serviço',
+    'Informações Complementares',
+]
 
 # ======================================================================================================================
 class NotaFiscal:
