@@ -252,7 +252,6 @@ class Issqn:
         return self.__dict__
 
 # ----------------------------------------------------------------
-
 class Pedido:
     def __init__(self, **kwargs):
         self.presenca                        = kwargs.get("presenca", None)                     # string [ 0, 1, 2, 3, 4, 5, 9 ]
@@ -298,7 +297,7 @@ class Observacao:
         return self.__dict__
 
 # ======================================================================================================================
-def print_curl(headers, nota_fiscal):
+def print_curl(headers, nota_fiscal, *args, **kwargs):
     print(f"curl -X 'POST' {URL}", end=" ")
 
     for k, v in headers.items():
@@ -308,7 +307,7 @@ def print_curl(headers, nota_fiscal):
 
     print(f"-d '{data}'")
 
-def main():
+def main(*args, **kwargs):
     agora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
     # TODO: Os impostos, os produtos (e até mesmo os clientes) já deverão estar cadastrados em algum banco de dados
