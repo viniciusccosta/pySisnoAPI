@@ -4,6 +4,7 @@ from . import *
 import requests
 
 # ======================================================================================================================
+@requires_keys()    # TODO: Sendo sincero, até o dia 11/05/2023 não está sendo exigido as API keys para consumir esse endpoint
 def get_municipios(uf: str, *args, **kwargs) -> list[dict]:
     # TODO: Retonar uma lista de objetos "Municipio"s
 
@@ -19,6 +20,7 @@ def get_municipios(uf: str, *args, **kwargs) -> list[dict]:
         case _:
             return
 
+@requires_keys()    # TODO: Sendo sincero, até o dia 11/05/2023 não está sendo exigido as API keys para consumir esse endpoint
 def get_cfops(*args, **kwargs) -> list[dict]:
     # TODO: Retonar uma lista de objetos "Cfop"s
 
@@ -34,6 +36,7 @@ def get_cfops(*args, **kwargs) -> list[dict]:
         case _:
             return
 
+@requires_keys()    # TODO: Sendo sincero, até o dia 11/05/2023 não está sendo exigido as API keys para consumir esse endpoint
 def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> list[dict]:
     # TODO: Retonar uma lista de objetos "Ibpt"s
 

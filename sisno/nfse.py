@@ -82,18 +82,23 @@ class PaginaNotaServico:
         self.itens              = kwargs.get("art", [])
 
 # =====================================================================
+@requires_keys()
 def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
     raise NotImplementedError
 
+@requires_keys()
 def buscar_notas(*args, **kwargs):
     raise NotImplementedError
 
+@requires_keys()
 def retransmitir(*args, **kwargs):
     raise NotImplementedError
 
+@requires_keys()
 def recuperar_dados(*args, **kwargs):
     raise NotImplementedError
 
+@requires_keys()
 def cancelar(*args, **kwargs):
     raise NotImplementedError
 

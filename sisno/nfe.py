@@ -137,37 +137,48 @@ class PaginaNotas:
         raise NotImplementedError
 
 # =====================================================================
+@requires_keys()
 def emitir(*args, **kwargs):
     raise NotImplementedError
 
+@requires_keys()
 def corrigir(*args, **kwargs):
     raise NotImplementedError
 
+@requires_keys()
 def cancelar(*args, **kwargs):
     raise NotImplementedError
 
+@requires_keys()
 def validar(*args, **kwargs):
     raise NotImplementedError
 
+@requires_keys()
 def listar(*args, **kwargs):
     raise NotImplementedError
 
+@requires_keys()
 def buscar_notas(*args, **kwargs):
     raise NotImplementedError
 
+@requires_keys()
 def get_nota(*args, **kwargs):
     raise NotImplementedError
 
+@requires_keys()
 def inutilizar_numeracao(*args, **kwargs):
     raise NotImplementedError
 
+@requires_keys()
 def get_pre_visualizacao(*args, **kwargs):
     raise NotImplementedError
 
+@requires_keys()
 def get_danfe(*args, **kwargs):
     raise NotImplementedError
 
 # =====================================================================
+@requires_keys()
 def __emitir_nota_teste(*args, **kwargs):
     agora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
@@ -194,17 +205,6 @@ def __emitir_nota_teste(*args, **kwargs):
 
     # Nota Fiscal:
     nota_fiscal     = NotaFiscal(serie="1", operacao="1", natureza_operacao="Prestação de Serviço", modelo="55", finalidade="1", ambiente="2", cliente=cliente, produtos=[produto], pedido=pedido, data_entrada_saida=agora, data_emissao=agora)  # TODO: Como saber qual a série?
-
-    with open('api.keys', 'r', encoding="UTF8") as filekeys:        # TODO: System variables
-        headers                 = HEADERS
-
-        headers["tipo-emissao"] = "1"
-        headers["accept"]       = "application/json"
-        headers["Content-Type"] = "application/json"
-
-        response = requests.post(URL, headers=headers, json=nota_fiscal.asdict())
-        print("Status Code", response.status_code)
-        print("JSON Response ", response.json())
 
 # =====================================================================
 if __name__ == "__main__":
