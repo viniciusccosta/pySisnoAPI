@@ -1,8 +1,8 @@
 # =====================================================================
-from sisno import *
+from . import *
 
 # =====================================================================
-HEADER_NFSE = [
+CSV_HEADERS = [
     'CNPJ',
     'CPF',
     'Nome',
@@ -82,7 +82,7 @@ class PaginaNotaServico:
         self.itens              = kwargs.get("art", [])
 
 # =====================================================================
-def emitir(*args, **kwargs):
+def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
     raise NotImplementedError
 
 def buscar_notas(*args, **kwargs):
@@ -124,11 +124,8 @@ def __emitir_nota_teste(*args, **kwargs):
 
     # --------------------------------------------
     # Objeto Emissão NFSe:
-    objeto_emissao = ObjetoEmissaoNFSe(cliente=cliente, servico=servico)
-    print(objeto_emissao)
-
-    # --------------------------------------------
-
+    obj_emissao_nfse = ObjetoEmissaoNFSe(cliente=cliente, servico=servico)
+    emitir(obj_emissao_nfse=obj_emissao_nfse)
 
 # =====================================================================
 if __name__ == "__main__":

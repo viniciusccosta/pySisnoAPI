@@ -1,8 +1,11 @@
 # =====================================================================
-from sisno import *
+from . import *
+
+from datetime import datetime
+import requests
 
 # =====================================================================
-HEADER_NFE = [
+CSV_HEADERS = [
     'CNPJ EMITENTE',
     'MODELO',
     'CPF/CNPJ DESTINATÁRIO',
@@ -193,13 +196,11 @@ def __emitir_nota_teste(*args, **kwargs):
     nota_fiscal     = NotaFiscal(serie="1", operacao="1", natureza_operacao="Prestação de Serviço", modelo="55", finalidade="1", ambiente="2", cliente=cliente, produtos=[produto], pedido=pedido, data_entrada_saida=agora, data_emissao=agora)  # TODO: Como saber qual a série?
 
     with open('api.keys', 'r', encoding="UTF8") as filekeys:        # TODO: System variables
-        headers                 = json.loads(filekeys.read())
+        headers                 = HEADERS
 
         headers["tipo-emissao"] = "1"
         headers["accept"]       = "application/json"
         headers["Content-Type"] = "application/json"
-
-        print_curl(headers, nota_fiscal)
 
         response = requests.post(URL, headers=headers, json=nota_fiscal.asdict())
         print("Status Code", response.status_code)
