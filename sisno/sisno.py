@@ -4,47 +4,14 @@ import json
 import requests
 
 # ======================================================================================================================
-URL = "https://homolog.sisno.com.br/nfe-service/nfe/validacao-nota"     # TODO: "https://homolog.sisno.com.br/nfe-service/nfe"
-HEADER_NFE = [
-    'CNPJ EMITENTE',
-    'MODELO',
-    'CPF/CNPJ DESTINATÁRIO',
-    'NOME/RAZAO SOCIAL DESTINATÁRIO',
-    'INDICADOR IE',
-    'CONSUMIDOR FINAL',
-    'FAZ RETENÇÃO DE IMPOSTOS',
-    'CEP',
-    'BAIRRO',
-    'LOGRADOURO',
-    'NUMERO',
-    'EMAIL DESTINATÁRIO',
-    'OPERAÇÃO',
-    'FINALIDADE',
-    'PRODUTOS',
-    'MEIO PAGAMENTO',
-    'INFORMAÇÕES COMPLEMENTARES',
-    'SIGLA UF',
-    'IBGE MUNICÍPIO',
-    'COMPLEMENTO ENDEREÇO'
-]
-HEADER_NFSE = [
-    'CNPJ',
-    'CPF',
-    'Nome',
-    'Indicador IE',
-    'Consumidor Final',
-    'Faz Retenção',
-    'CEP',
-    'UF',
-    'IBGE',
-    'Bairro',
-    'Endereço',
-    'Número',
-    'Complemento',
-    'E-mail',
-    'Serviço',
-    'Informações Complementares',
-]
+URL     = "https://homolog.sisno.com.br/nfe-service"                    # TODO: "https://homolog.sisno.com.br/nfe-service/nfe"
+HEADERS = {"accept": "application/json",}
+
+# TODO: Não to curtindo isso está aqui solto...
+with open('api.keys', 'r', encoding="UTF8") as filekeys:                # TODO: System variables
+    api_headers = json.loads(filekeys.read())
+
+HEADERS |= api_headers
 
 # ======================================================================================================================
 class NotaFiscal:
@@ -296,6 +263,125 @@ class Observacao:
     def asdict(self):
         return self.__dict__
 
+# ----------------------------------------------------------------
+class Uf:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+class Municipio:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+class Cfop:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+    
+class Ibpt:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+class VeiculoNovo:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+    
+class ExportacaoIndividual:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+    
+class ImportacaoInvididual:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+    
+class DeclaracaoImportacaoAdicao:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+    
+class Rastreamento:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+class Transporte:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+class RetencaoIcmsTransporte:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+class Fatura:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+    
+class Exportacao:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+    
+class Local:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+    
+class Compra:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+    
+class InformacaoIntermediador:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+    
+class Empresa:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+    
+class PaginaNotas:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+# ======================================================================================================================
+def get_municipios(uf: str, *args, **kwargs) -> list[dict]:
+    headers  = HEADERS
+    url      = f'{URL}/unidades-federativas/{uf}/municipios'
+    response = requests.get(url, headers=headers)
+
+    match (response.status_code):
+        case 200:
+            return response.json().get('dados')
+        case 412:
+            return []
+        case _:
+            return
+
+def get_cfops(*args, **kwargs) -> list[dict]:
+    headers  = HEADERS
+    url      = f'{URL}/cfops'
+    response = requests.get(url, headers=headers)
+
+    match (response.status_code):
+        case 200:
+            return response.json().get('dados')
+        case 412:
+            return []
+        case _:
+            return
+
+def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> list[dict]:
+    if len(cod_desc) < 4:
+        raise ValueError("Código ou Descrição precisa ter no mínimo 4 caracteres")
+    
+    headers  = HEADERS
+    headers["codigo-ou-descricao"] = cod_desc
+    headers["uf"] = uf
+
+    url      = f'{URL}/ibpts'
+    response = requests.get(url, headers=headers)
+
+    match (response.status_code):
+        case 200:
+            return response.json().get('dados')
+        case 412:
+            return []
+        case _:
+            return
+
 # ======================================================================================================================
 def print_curl(headers, nota_fiscal, *args, **kwargs):
     print(f"curl -X 'POST' {URL}", end=" ")
@@ -334,7 +420,7 @@ def main(*args, **kwargs):
     # Nota Fiscal:
     nota_fiscal     = NotaFiscal(serie="1", operacao="1", natureza_operacao="Prestação de Serviço", modelo="55", finalidade="1", ambiente="2", cliente=cliente, produtos=[produto], pedido=pedido, data_entrada_saida=agora, data_emissao=agora)  # TODO: Como saber qual a série?
 
-    with open('api.keys', 'r', encoding="UTF8") as filekeys:
+    with open('api.keys', 'r', encoding="UTF8") as filekeys:        # TODO: System variables
         headers                 = json.loads(filekeys.read())
 
         headers["tipo-emissao"] = "1"
@@ -349,6 +435,21 @@ def main(*args, **kwargs):
 
 # ======================================================================================================================
 if __name__ == "__main__":
-    main()
+    pass
+
+    # municipios = get_municipios('df')
+    # if municipios:
+    #     for municipio in municipios:
+    #         print(municipio)
+
+    # cfops = get_cfops()
+    # if cfops:
+    #     for cfop in cfops:
+    #         print(cfop)
+
+    # ibpts = get_ibpts("01012100", 'DF')
+    # if ibpts:
+    #     for ibpt in ibpts:
+    #         print(ibpt)
 
 # ======================================================================================================================
