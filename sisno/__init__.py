@@ -1,11 +1,21 @@
 # ======================================================================================================================
 # Imports:
 import json
+import os
+from dotenv import load_dotenv
 
 # ======================================================================================================================
 # Globals:
+load_dotenv()
+
 URL     = "https://homolog.sisno.com.br/nfe-service"                    # TODO: "https://homolog.sisno.com.br/nfe-service/nfe"
-HEADERS = {"accept": "application/json",}
+HEADERS = {
+    "token-emissor"         : os.getenv("token-emissor"),
+    "token-secret-emissor"  : os.getenv("token-secret-emissor"),
+    "token-empresa"         : os.getenv("token-empresa"),
+    "token-secret-empresa"  : os.getenv("token-secret-empresa"),
+    "accept"                : "application/json",
+}
 REQUIRED_KEYS = [ "token-emissor", "token-secret-emissor", "token-empresa", "token-secret-empresa", ]
 
 # ======================================================================================================================
@@ -17,7 +27,7 @@ def requires_keys():
                 if key in HEADERS and HEADERS[key] is not None:
                     return func(*args, **kwargs)
                 else:
-                    raise ValueError(f"A chave {key} não configurada.")
+                    raise ValueError(f"Chave '{key}' não configurada.")
         return wrapper
     return decorator
 
@@ -362,18 +372,5 @@ class Uf:
         self.codigo_ibge = kwargs.get("", 0)
         self.sigla       = kwargs.get("", '')
         self.descricao   = kwargs.get("", '')
-
-# ======================================================================================================================
-# Functions:
-def init():
-    global HEADERS
-
-    with open('api.keys', 'r', encoding="UTF8") as filekeys:                # TODO: System variables
-        api_headers = json.loads(filekeys.read())
-
-    HEADERS |= api_headers
-
-# ======================================================================================================================
-init()
 
 # ======================================================================================================================
