@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 # Globals:
 load_dotenv()
 
-URL     = "https://homolog.sisno.com.br/nfe-service"                    # TODO: "https://homolog.sisno.com.br/nfe-service/nfe"
+URL     = "https://homolog.sisno.com.br/nfe-service"
 HEADERS = {
     "token-emissor"         : os.getenv("token-emissor"),
     "token-secret-emissor"  : os.getenv("token-secret-emissor"),
@@ -48,6 +48,7 @@ class Cliente:
 
         self.pessoa_fisica      = kwargs.get("pessoa_fisica", None)         # Objeto PessoaFisica
         self.pessoa_juridica    = kwargs.get("pessoa_juridica", None)       # Objeto PessoaJuridica
+
         self.ie                 = kwargs.get("ie", '')
         self.consumidor_final   = consumidor_final                          # string (0: Não, 1: Sim)
         self.contribuinte       = contribuinte                              # string (1: Contribuinte ICMS, 2: Contribuinte isento, 9: Não contribuinte)
@@ -57,29 +58,42 @@ class Cliente:
         self.faz_retencao       = kwargs.get("faz_retencao", None)          # boolean
 
     def asdict(self):
-        # TODO: Deve ser informado apenas um dos campos [pessoa_fisica, pessoa_juridica]
+        # Deve ser informado apenas um dos campos [pessoa_fisica, pessoa_juridica]
 
         if self.pessoa_juridica:
-            return {
-                "pessoa_juridica"   : self.pessoa_juridica.asdict(),
+            dados = {
+                "ie"                : self.ie,
+                "pessoa_juridica"   : self.pessoa_juridica,
                 "consumidor_final"  : self.consumidor_final,
                 "contribuinte"      : self.contribuinte,
-                "endereco"          : self.endereco.asdict(),
+                "endereco"          : self.endereco,
+                "telefone"          : self.telefone,
+                "email"             : self.email,
+                "faz_retencao"      : self.faz_retencao,
             }
         else:
-            return {
-                "pessoa_fisica"     : self.pessoa_fisica.asdict(),
+            dados = {
+                "ie"                : self.ie,
+                "pessoa_fisica"     : self.pessoa_fisica,
                 "consumidor_final"  : self.consumidor_final,
                 "contribuinte"      : self.contribuinte,
-                "endereco"          : self.endereco.asdict(),
+                "endereco"          : self.endereco,
+                "telefone"          : self.telefone,
+                "email"             : self.email,
+                "faz_retencao"      : self.faz_retencao,
             }
+        
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
 
 class Cofins:
     def __init__(self, **kwargs):
         self.situacao_tributaria     = kwargs.get("situacao_tributaria", None)  # string [ 01, 02, 03, 04, 05, 06, 07, 08, 09, 49, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 70, 71, 72, 73, 74, 75, 98, 99 ]
 
     def asdict(self):
-        return self.__dict__
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
 
 class DeclaracaoImportacaoAdicao:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
@@ -164,23 +178,74 @@ class Empresa:
         self.email                                          = kwargs.get("email", '')
     
     def asdict(self):
-        return self.__dict__
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
 
 class Endereco:
     def __init__(self, codigo_pais, descricao_pais, bairro, logradouro, numero, **kwargs):
+        """
+        Construtor da Classe.
+
+        Args:
+            codigo_pais (str): Código do Pais (55 para Brasil).
+            descricao_pais (str): Nome do País.
+            bairro (str): Bairro do Endereço.
+            logradouro (str): Endereço em si (sugestão: utilize exatamente aquilo que informado ao consultar o CEP nos correios).
+            numero (str): Número do Endereço (apenas números).
+        
+        Keyword Args:
+            uf (str):
+                Default is ''
+            codigo_municipio (str):
+                Default is ''
+            descricao_municipio (str):
+                Default is ''
+            cep (str):
+                Default is ''
+            complemento (str):
+                Default is ''
+        """
+
         self.codigo_pais            = codigo_pais
         self.descricao_pais         = descricao_pais
         self.uf                     = kwargs.get("uf", '')
         self.codigo_municipio       = kwargs.get("codigo_municipio", '')
         self.descricao_municipio    = kwargs.get("descricao_municipio", '')
-        self.cep                    = kwargs.get("descricao_municipio", '')
+        self.cep                    = kwargs.get("cep", '')                     # TODO: Apenas números
         self.bairro                 = bairro
         self.logradouro             = logradouro
-        self.numero                 = numero
-        self.complemento            = kwargs.get("numero", '')
+        self.numero                 = numero                                    # TODO: Apenas números
+        self.complemento            = kwargs.get("complemento", '')
 
     def asdict(self):
-        return self.__dict__
+        # Quando o país não for Brasil, ignorar os campos [uf, codigo_municipio, descricao_municipio, cep]
+
+        if self.codigo_pais == "55":
+            dados = {
+                "codigo_pais"        : self.codigo_pais,
+                "descricao_pais"     : self.descricao_pais,
+                "uf"                 : self.uf,
+                "codigo_municipio"   : self.codigo_municipio,
+                "descricao_municipio": self.descricao_municipio,
+                "cep"                : self.cep,
+                "bairro"             : self.bairro,
+                "logradouro"         : self.logradouro,
+                "numero"             : self.numero,
+                "complemento"        : self.complemento
+            }
+        else:
+            dados = {
+                "codigo_pais"        : self.codigo_pais,
+                "descricao_pais"     : self.descricao_pais,
+                "bairro"             : self.bairro,
+                "logradouro"         : self.logradouro,
+                "numero"             : self.numero,
+                "complemento"        : self.complemento
+            }
+        
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
 
 class Ibpt:
     def __init__(self, **kwargs):
@@ -191,42 +256,49 @@ class Icms:
         self.situacao_tributaria     = kwargs.get("situacao_tributaria", None)  # string [ 00, 10, 20, 30, 40, 41, 50, 51, 60, 70, 90, 101, 102, 103, 201, 202, 203, 300, 400, 500, 900 ]
 
     def asdict(self):
-        return self.__dict__
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
 
 class Impostos:
-    def __init__(self, tipo, **kwargs):
+    def __init__(self, tipo, pis, cofins, **kwargs):
         # Quando produto, não informar o campo issqn. Quando serviço, não informar os campos icms e ipi.
-        self.tipo                    = tipo
+        self.tipo                    = tipo                         # 0: Produto, 1: Serviço
 
-        self.icms                    = kwargs.get("icms", None)                 # Objeto ICMS
-        self.ipi                     = kwargs.get("ipi", None)                  # Objeto IPI
-        self.pis                     = kwargs.get("pis", None)                  # Objeto PIS
-        self.cofins                  = kwargs.get("cofins", None)               # Objeto COFINS
-        self.issqn                   = kwargs.get("issqn", None)                # Objeto ISSQN
+        self.icms                    = kwargs.get("icms", None)     # Objeto ICMS
+        self.ipi                     = kwargs.get("ipi", None)      # Objeto IPI
+        self.pis                     = pis
+        self.cofins                  = cofins
+        self.issqn                   = kwargs.get("issqn", None)    # Objeto ISSQN
 
     def asdict(self):
-        # TODO: 0: Produto, 1: Serviço
+        # 0: Produto, 1: Serviço
 
         if self.tipo == "0":
-            return {
-                "icms"  : self.icms.asdict(),
-                "ipi"   : self.ipi.asdict(),
-                "pis"   : self.pis.asdict(),
-                "cofins": self.cofins.asdict(),
+            dados = {
+                "icms"  : self.icms,
+                "ipi"   : self.ipi,
+                "pis"   : self.pis,
+                "cofins": self.cofins,
             }
         elif self.tipo == "1":
-            return {
-                "pis"   : self.pis.asdict(),
-                "cofins": self.cofins.asdict(),
-                "issqn" : self.issqn.asdict(),
+            dados = {
+                "pis"   : self.pis,
+                "cofins": self.cofins,
+                "issqn" : self.issqn,
             }
+        
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
 
 class Ipi:
     def __init__(self, **kwargs):
         self.situacao_tributaria     = kwargs.get("situacao_tributaria", None)  # string [ 00, 01, 02, 03, 04, 05, 49, 50, 51, 52, 53, 54, 55, 99 ]
 
     def asdict(self):
-        return self.__dict__
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
 
 class Issqn:
     def __init__(self, **kwargs):
@@ -247,13 +319,20 @@ class Issqn:
         self.aliquota                        = kwargs.get("aliquota", None)                      # string ($0.0000)
 
     def asdict(self):
-        return self.__dict__
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
 
 class Municipio:
     def __init__(self, **kwargs):
         # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-        self.codigo_ibge = kwargs.get("", 0)
-        self.descricao   = kwargs.get("", '')
+        self.codigo_ibge = kwargs.get("codigo_ibge", '') # TODO: 0 ?
+        self.descricao   = kwargs.get("descricao", '')
+
+    def asdict(self):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
 
 class NotaFiscal:
     def __init__(self, **kwargs):
@@ -293,7 +372,9 @@ class Observacao:
         self.texto                   = kwargs.get("texto", None)                                # string
 
     def asdict(self):
-        return self.__dict__
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
 
 class PessoaFisica:
     def __init__(self, nome_completo, **kwargs):
@@ -311,15 +392,18 @@ class PessoaFisica:
         # TODO: Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
 
         if self.id_estrangeiro:
-            return {
+            dados = {
                 "id_estrangeiro"    : self.id_estrangeiro,
                 "nome_completo"     : self.nome_completo,
             }
         else:
-            return {
+            dados = {
                 "cpf"               : self.cpf,
                 "nome_completo"     : self.nome_completo,
             }
+        
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
 
 class PessoaJuridica:
     def __init__(self, **kwargs):
@@ -327,7 +411,9 @@ class PessoaJuridica:
         self.razao_social            = kwargs.get("razao_social", None)         # string
 
     def asdict(self):
-        return self.__dict__
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
 
 class Pis:
     def __init__(self, situacao_tributaria, **kwargs):
@@ -378,7 +464,9 @@ class Pis:
         self.aliquota_retencao   = kwargs.get("aliquota_retencao", None)
 
     def asdict(self):
-        return self.__dict__
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
 
 class RetencaoIcmsTransporte:
     # TODO: Até o dia 10/05/2023 essa classe só está sendo usada na classe "Transporte", que não está sendo usada
@@ -395,9 +483,14 @@ class Uf:
     
     def __init__(self, **kwargs):
         # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-        self.codigo_ibge = kwargs.get("", 0)
-        self.sigla       = kwargs.get("", '')
-        self.descricao   = kwargs.get("", '')
+        self.codigo_ibge = kwargs.get("codigo_ibge", '')   # TODO: 0 ?
+        self.sigla       = kwargs.get("sigla", '')
+        self.descricao   = kwargs.get("descricao", '')
+
+    def asdict(self):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
 
 # ======================================================================================================================
 if __name__ == "__main__":
