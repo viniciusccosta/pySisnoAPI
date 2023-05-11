@@ -86,32 +86,57 @@ class DeclaracaoImportacaoAdicao:
         raise NotImplementedError
 
 class Empresa:
+    """
+        Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
+        Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
+        Em resumo: não há necessidade de se preocupar com os campos, caso não saiba algum deles, pois, eles serão preenchidos automaticamente com aquilo que vier do endpoint.
+    """
+    
     def __init__(self, **kwargs):
-        """ Construtor da class Empresa
-
-        Args:
+        """
+        Construtor da Classe.
 
         Keyword Args:
-            id (int): ID da empresa registrada na plataforma SISNO. Default is 0
-            token (str): String de 775 caracters fornecido pela plataforma SISNO. Default is ''
-            token_secret (str): String de 166 caracters fornecido pela plataforma SISNO, geralmente começa com "1000:". Default is ''
-            cnpj (str): CNPJ da Empresa. Default is ''
-            nome_fantasia (str): Nome Fantasia da Empresa. Default is ''
-            razao_social (str): Razão Social da Empresa. Default is ''
-            endereco (str): Endereço da Empresa. Default is, None
-            telefone (str): Telefone da Empresa. Default is ''
-            inscricao_estadual (str): Inscrição Estadual da Empresa. Default is ''
-            inscricao_municipal (str): Inscrição Municipal da Empresa. Default is ''
-            inscricao_estadual_substituicao_tributaria (str): . Default is ''
-            regime_tributario (str): . Default is ''
-            classificacao_nacional_atividades_economicas (str): . Default is ''
-            ambiente (str): . Default is ''
-            id_csc (str): . Default is ''
-            csc (str): . Default is ''
-            codigo_regime_especial_tributacao (str): . Default is ''
-            porcentagem_icms_aproveitado (float): . Default is 0
-            site (str): . Default is ''
-            email (str): . Default is ''
+            id (int): ID da empresa registrada na plataforma SISNO.
+                Default is 0
+            token (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API.
+                Default is ''
+            token_secret (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".
+                Default is ''
+            cnpj (str): CNPJ da Empresa.
+                Default is ''
+            nome_fantasia (str): Nome Fantasia da Empresa.
+                Default is ''
+            razao_social (str): Razão Social da Empresa.
+                Default is ''
+            endereco (str): Endereço da Empresa.
+                Default is, None
+            telefone (str): Telefone da Empresa.
+                Default is ''
+            inscricao_estadual (str): Inscrição Estadual da Empresa.
+                Default is ''
+            inscricao_municipal (str): Inscrição Municipal da Empresa.
+                Default is ''
+            inscricao_estadual_substituicao_tributaria (str): .
+                Default is ''
+            regime_tributario (str): Regime Tributário da Empresa (Lucro Real, Lucro Presumido, Simples Nacional, ...).
+                Default is ''
+            classificacao_nacional_atividades_economicas (str): CNAE.
+                Default is ''
+            ambiente (str): Produção ou Homologação.
+                Default is ''
+            id_csc (str): ID do Código de Segurança do Contribuinte.
+                Default is ''
+            csc (str): Código de Segurança do Contribuinte.
+                Default is ''
+            codigo_regime_especial_tributacao (str): Código do Regime Especial de Tributação (Microempresa municipal, Estimativa, Sociedade Profissional, Cooperativa, Microempresario individual MEI, Microempresário e empresa de pequeno porte).
+                Default is ''
+            porcentagem_icms_aproveitado (float): % ICMS Aproveitado.
+                Default is 0.00
+            site (str): Site da Empresa.
+                Default is ''
+            email (str): E-mail da Empresa.
+                Default is ''
         """
 
         # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
@@ -372,5 +397,9 @@ class Uf:
         self.codigo_ibge = kwargs.get("", 0)
         self.sigla       = kwargs.get("", '')
         self.descricao   = kwargs.get("", '')
+
+# ======================================================================================================================
+if __name__ == "__main__":
+    print( help(Empresa) )
 
 # ======================================================================================================================
