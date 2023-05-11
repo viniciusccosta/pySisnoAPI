@@ -89,15 +89,22 @@ class NotaFiscal:
         }
 
 class Cliente:
-    def __init__(self, **kwargs):
+    def __init__(self, consumidor_final, contribuinte, endereco, **kwargs):
         # Deve ser informado apenas um dos campos [pessoa_fisica, pessoa_juridica]
+        if "pessoa_fisica" not in kwargs and "pessoa_juridica" not in kwargs:
+            raise Exception("Necessário conter pelo menos um dos campos 'pessoa_fisica' ou 'pessoa_jurica'")
+        elif "pessoa_fisica" in kwargs and "pessoa_juridica" in kwargs:
+            raise Exception("Informar apenas um dos campos 'pessoa_fisica' ou 'pessoa_jurica'")
 
-        self.pessoa_fisica           = kwargs.get("pessoa_fisica", None)        # Objeto PESSOAFISICA
-        self.pessoa_juridica         = kwargs.get("pessoa_juridica", None)      # Objeto PESSOAJURIDICA
-
-        self.consumidor_final        = kwargs.get("consumidor_final", None)     # string (0: Não, 1: Sim)
-        self.contribuinte            = kwargs.get("contribuinte", None)         # string (1: Contribuinte ICMS, 2: Contribuinte isento, 9: Não contribuinte)
-        self.endereco                = kwargs.get("endereco", None)             # Objeto ENDERECO
+        self.pessoa_fisica      = kwargs.get("pessoa_fisica", None)         # Objeto PessoaFisica
+        self.pessoa_juridica    = kwargs.get("pessoa_juridica", None)       # Objeto PessoaJuridica
+        self.ie                 = kwargs.get("ie", '')
+        self.consumidor_final   = consumidor_final                          # string (0: Não, 1: Sim)
+        self.contribuinte       = contribuinte                              # string (1: Contribuinte ICMS, 2: Contribuinte isento, 9: Não contribuinte)
+        self.endereco           = endereco                                  # Objeto Endereco
+        self.telefone           = kwargs.get("telefone", '')
+        self.email              = kwargs.get("email", '')
+        self.faz_retencao       = kwargs.get("faz_retencao", None)          # boolean
 
     def asdict(self):
         # TODO: Deve ser informado apenas um dos campos [pessoa_fisica, pessoa_juridica]
@@ -118,12 +125,16 @@ class Cliente:
             }
 
 class PessoaFisica:
-    def __init__(self, **kwargs):
+    def __init__(self, nome_completo, **kwargs):
         # Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
+        if "cpf" not in kwargs and "id_estrangeiro" not in kwargs:
+            raise Exception("Necessário conter pelo menos um dos campos 'cpf' ou 'id_estrangeiro'")
+        elif "cpf" in kwargs and "id_estrangeiro" in kwargs:
+            raise Exception("Informar apenas um dos campos 'cpf' ou 'id_estrangeiro'")
 
-        self.cpf                     = kwargs.get("cpf", None)                  # string
-        self.id_estrangeiro          = kwargs.get("id_estrangeiro", None)       # string
-        self.nome_completo           = kwargs.get("nome_completo", None)        # string
+        self.cpf            = kwargs.get("cpf", '')                 # string
+        self.id_estrangeiro = kwargs.get("id_estrangeiro", '')      # string
+        self.nome_completo  = nome_completo                         # string
 
     def asdict(self):
         # TODO: Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
@@ -272,12 +283,18 @@ class Issqn:
 # ----------------------------------------------------------------
 class Uf:
     # TODO: Até o dia 10/05/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
+    
     def __init__(self, **kwargs):
-        raise NotImplementedError
+        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
+        self.codigo_ibge = kwargs.get("", 0)
+        self.sigla       = kwargs.get("", '')
+        self.descricao   = kwargs.get("", '')
 
 class Municipio:
     def __init__(self, **kwargs):
-        raise NotImplementedError
+        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
+        self.codigo_ibge = kwargs.get("", 0)
+        self.descricao   = kwargs.get("", '')
 
 class Cfop:
     def __init__(self, **kwargs):
