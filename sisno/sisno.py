@@ -14,8 +14,53 @@ with open('api.keys', 'r', encoding="UTF8") as filekeys:                # TODO: 
 HEADERS |= api_headers
 
 # ======================================================================================================================
+class Empresa:
+    def __init__(self, **kwargs):
+        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
+
+        self.id                                             = kwargs.get("id", 0)
+        self.token                                          = kwargs.get("token", '')
+        self.token_secret                                   = kwargs.get("token_secret", '')
+        self.cnpj                                           = kwargs.get("cnpj", '')
+        self.nome_fantasia                                  = kwargs.get("nome_fantasia", '')
+        self.razao_social                                   = kwargs.get("razao_social", '')
+        self.endereco                                       = kwargs.get("endereco	", None)
+        self.telefone                                       = kwargs.get("telefone", '')
+        self.inscricao_estadual                             = kwargs.get("inscricao_estadual", '')
+        self.inscricao_municipal                            = kwargs.get("inscricao_municipal", '')
+        self.inscricao_estadual_substituicao_tributaria     = kwargs.get("inscricao_estadual_substituicao_tributaria", '')
+        self.regime_tributario                              = kwargs.get("regime_tributario", '')
+        self.classificacao_nacional_atividades_economicas   = kwargs.get("classificacao_nacional_atividades_economicas", '')
+        self.ambiente                                       = kwargs.get("ambiente", '')
+        self.id_csc                                         = kwargs.get("id_csc", '')
+        self.csc                                            = kwargs.get("csc", '')
+        self.codigo_regime_especial_tributacao              = kwargs.get("codigo_regime_especial_tributacao", '')
+        self.porcentagem_icms_aproveitado                   = kwargs.get("porcentagem_icms_aproveitado", 0)
+        self.site                                           = kwargs.get("site", '')
+        self.email                                          = kwargs.get("email", '')
+    
+    def asdict(self):
+        return self.__dict__
+
+class Endereco:
+    def __init__(self, codigo_pais, descricao_pais, bairro, logradouro, numero, **kwargs):
+        self.codigo_pais            = codigo_pais
+        self.descricao_pais         = descricao_pais
+        self.uf                     = kwargs.get("uf", '')
+        self.codigo_municipio       = kwargs.get("codigo_municipio", '')
+        self.descricao_municipio    = kwargs.get("descricao_municipio", '')
+        self.cep                    = kwargs.get("descricao_municipio", '')
+        self.bairro                 = bairro
+        self.logradouro             = logradouro
+        self.numero                 = numero
+        self.complemento            = kwargs.get("numero", '')
+
+    def asdict(self):
+        return self.__dict__
+
 class NotaFiscal:
     def __init__(self, **kwargs):
+        self.empresa                 = kwargs.get("empresa", None)              # string
         self.serie                   = kwargs.get("serie", None)                # string
         self.operacao                = kwargs.get("operacao", None)             # string (0: Entrada, 1: Saída)
         self.natureza_operacao       = kwargs.get("natureza_operacao", None)    # string
@@ -102,44 +147,6 @@ class PessoaJuridica:
     def asdict(self):
         return self.__dict__
 
-class Endereco:
-    def __init__(self, **kwargs):
-        self.codigo_pais             = kwargs.get("codigo_pais", None)          # string - Código IBGE
-        self.descricao_pais          = kwargs.get("descricao_pais", None)       # string
-        self.bairro                  = kwargs.get("bairro", None)               # string
-        self.logradouro              = kwargs.get("logradouro", None)           # string
-        self.numero                  = kwargs.get("numero", None)               # string
-
-    def asdict(self):
-        return self.__dict__
-
-class Produto:
-    def __init__(self, tipo, **kwargs):
-        self.tipo                   = tipo                                      # TODO: 0: Produto, 1: Serviço
-
-        self.cfop                   = kwargs.get("cfop", None)                  # string
-        self.item                   = kwargs.get("item", None)                  # string (Número incremental na lista de produtos)
-        self.nome                   = kwargs.get("nome", None)                  # string
-        self.ncm                    = kwargs.get("ncm", None)                   # string
-        self.quantidade             = kwargs.get("quantidade", None)            # string
-        self.unidade                = kwargs.get("unidade", None)               # string (AMPOLA, BALDE, BANDEJ, BARRA, BISNAG, BLOCO, BOBINA, BOMB, CAPS, CART, CENTO, CJ, CM, CM2, CX, CX2, CX3, CX5, CX10, CX15, CX20, CX25, CX50, CX100, DISP, DUZIA, EMBAL, FARDO, FOLHA, FRASCO, GALAO, JOGO, KG, KIT, LATA, LITRO, M, M2, M3, MILHEI, ML, MWH, PACOTE, PALETE, PARES, PC, POTE, K, RESMA, ROLO, SACO, SACOLA, TAMBOR, TANQUE, TON, TUBO, UNID, VASIL, VIDRO)
-        self.subtotal               = kwargs.get("subtotal", None)              # string ($0.0000000000) - VALOR UNITÁRIO
-        self.total                  = kwargs.get("total", None)                 # string ($0.00) (Quantidade * Valor Unitário)
-        self.impostos               = kwargs.get("impostos", None)              # Objeto IMPOSTOS
-
-    def asdict(self):
-        return {
-            "cfop"          : self.cfop,
-            "item"          : self.item,
-            "nome"          : self.nome,
-            "ncm"           : self.ncm,
-            "quantidade"    : self.quantidade,
-            "unidade"       : self.unidade,
-            "subtotal"      : self.subtotal,
-            "total"         : self.total,
-            "impostos"      : self.impostos.asdict(),
-        }
-
 # ----------------------------------------------------------------
 class Impostos:
     def __init__(self, tipo, **kwargs):
@@ -184,8 +191,52 @@ class Ipi:
         return self.__dict__
 
 class Pis:
-    def __init__(self, **kwargs):
-        self.situacao_tributaria     = kwargs.get("situacao_tributaria", None)  # string [ 01, 02, 03, 04, 05, 06, 07, 08, 09, 49, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 70, 71, 72, 73, 74, 75, 98, 99 ]
+    def __init__(self, situacao_tributaria, **kwargs):
+        """
+        :param situacao_tributaria: string [ 00, 01, 02, 03, 04, 05, 49, 50, 51, 52, 53, 54, 55, 99 ]
+            01: Operação Tributável com Alíquota Básica
+            02: Operação Tributável com Alíquota por Unidade de Medida de Produto
+            03: Operação Tributável com Alíquota por Unidade de Medida de Produto
+            04: Operação Tributável Monofásica - Revenda a Alíquota Zero
+            05: Operação Tributável por Substituição Tributária
+            06: Operação Tributável a Alíquota Zero
+            07: Operação Isenta da Contribuição
+            08: Operação sem Incidência da Contribuição
+            09: Operação com Suspensão da Contribuição
+            49: Outras Operações de Saída
+            50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno
+            51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno
+            52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação
+            53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno
+            54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação
+            55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação
+            56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação
+            60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno
+            61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno
+            62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação
+            63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno
+            64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação
+            65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação
+            66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação
+            67: Crédito Presumido - Outras Operações
+            70: Operação de Aquisição sem Direito a Crédito
+            71: Operação de Aquisição com Isenção
+            72: Operação de Aquisição com Suspensão
+            73: Operação de Aquisição a Alíquota Zero
+            74: Operação de Aquisição sem Incidência da Contribuição
+            75: Operação de Aquisição por Substituição Tributária
+            98: Outras Operações de Entrada
+            99: Outras Operações
+        :param aliquota: string($0.0000)
+            Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade
+        :param aliquota_st	string($0.0000)
+        :aliquota_retencao	string($0.0000)
+        """
+        
+        self.situacao_tributaria = situacao_tributaria
+        self.aliquota            = kwargs.get("aliquota", None)
+        self.aliquota_st         = kwargs.get("aliquota_st", None)
+        self.aliquota_retencao   = kwargs.get("aliquota_retencao", None)
 
     def asdict(self):
         return self.__dict__
@@ -219,52 +270,8 @@ class Issqn:
         return self.__dict__
 
 # ----------------------------------------------------------------
-class Pedido:
-    def __init__(self, **kwargs):
-        self.presenca                        = kwargs.get("presenca", None)                     # string [ 0, 1, 2, 3, 4, 5, 9 ]
-        self.pagamento                       = kwargs.get("pagamento", None)                    # Objeto PAGAMENTO
-
-        self.informacoes_complementares      = kwargs.get("informacoes_complementares", None)   # string
-        self.informacoes_fisco               = kwargs.get("informacoes_fisco", None)            # string
-        self.observacoes_fisco               = kwargs.get("observacoes_fisco", None)            # list[OBSERVACAO]
-        self.observacoes_contribuinte        = kwargs.get("observacoes_contribuinte", None)     # list[OBSERVACAO]
-
-    def asdict(self):
-        # TODO: Adicionar o restante dos atributos ao dicionário
-
-        return {
-            "presenca"                      : self.presenca,
-            "pagamento"                     : self.pagamento.asdict(),
-        }
-
-class Pagamento:
-    def __init__(self, *args):
-        self.formas_pagamento        = [f for f in args]                                        # list[FORMAPAGAMENTO]
-
-    def asdict(self):
-        return {
-            "formas_pagamento": [f.asdict() for f in self.formas_pagamento]
-        }
-
-class FormaPagamento:
-    def __init__(self, **kwargs):
-        self.forma_pagamento         = kwargs.get("forma_pagamento", None)                      # string (0: À Vista, 1: À Prazo)
-        self.meio_pagamento          = kwargs.get("meio_pagamento", None)                       # string [01, 02, 03, 04, 05, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 90, 99 ]
-        self.valor_pagamento         = kwargs.get("valor_pagamento", None)                      # string ($0.00)
-
-    def asdict(self):
-        return self.__dict__
-
-class Observacao:
-    def __init__(self, **kwargs):
-        self.campo                   = kwargs.get("campo", None)                                # string
-        self.texto                   = kwargs.get("texto", None)                                # string
-
-    def asdict(self):
-        return self.__dict__
-
-# ----------------------------------------------------------------
 class Uf:
+    # TODO: Até o dia 10/05/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
     def __init__(self, **kwargs):
         raise NotImplementedError
 
@@ -279,65 +286,37 @@ class Cfop:
 class Ibpt:
     def __init__(self, **kwargs):
         raise NotImplementedError
+    
+# ----------------------------------------------------------------
+class Observacao:
+    # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
+    
+    def __init__(self, **kwargs):
+        self.campo                   = kwargs.get("campo", None)                                # string
+        self.texto                   = kwargs.get("texto", None)                                # string
 
-class VeiculoNovo:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-    
-class ExportacaoIndividual:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-    
-class ImportacaoInvididual:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-    
+    def asdict(self):
+        return self.__dict__
+
 class DeclaracaoImportacaoAdicao:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-    
-class Rastreamento:
+    # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
     def __init__(self, **kwargs):
         raise NotImplementedError
 
 class Transporte:
+    # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
     def __init__(self, **kwargs):
         raise NotImplementedError
 
 class RetencaoIcmsTransporte:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-
-class Fatura:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-    
-class Exportacao:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-    
-class Local:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-    
-class Compra:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-    
-class InformacaoIntermediador:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-    
-class Empresa:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-    
-class PaginaNotas:
+    # TODO: Até o dia 10/05/2023 essa classe só está sendo usada na classe "Transporte", que não está sendo usada
     def __init__(self, **kwargs):
         raise NotImplementedError
 
 # ======================================================================================================================
 def get_municipios(uf: str, *args, **kwargs) -> list[dict]:
+    # TODO: Retonar uma lista de objetos "Municipio"s
+
     headers  = HEADERS
     url      = f'{URL}/unidades-federativas/{uf}/municipios'
     response = requests.get(url, headers=headers)
@@ -351,6 +330,8 @@ def get_municipios(uf: str, *args, **kwargs) -> list[dict]:
             return
 
 def get_cfops(*args, **kwargs) -> list[dict]:
+    # TODO: Retonar uma lista de objetos "Cfop"s
+
     headers  = HEADERS
     url      = f'{URL}/cfops'
     response = requests.get(url, headers=headers)
@@ -364,6 +345,8 @@ def get_cfops(*args, **kwargs) -> list[dict]:
             return
 
 def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> list[dict]:
+    # TODO: Retonar uma lista de objetos "Ibpt"s
+
     if len(cod_desc) < 4:
         raise ValueError("Código ou Descrição precisa ter no mínimo 4 caracteres")
     
