@@ -15,6 +15,7 @@ HEADERS = {
     "token-empresa"         : os.getenv("token-empresa"),
     "token-secret-empresa"  : os.getenv("token-secret-empresa"),
     "accept"                : "application/json",
+    "Content-Type"          : "application/json",
 }
 REQUIRED_KEYS = [ "token-emissor", "token-secret-emissor", "token-empresa", "token-secret-empresa", ]
 
