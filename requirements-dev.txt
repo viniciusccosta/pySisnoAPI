@@ -1,0 +1,4 @@
+Mako==1.2.4
+Markdown==3.4.3
+MarkupSafe==2.1.2
+pdoc3==0.10.0
