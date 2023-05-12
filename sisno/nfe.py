@@ -1,3 +1,11 @@
+""" 
+    Módulo específico para geração de Notas Fiscais de Produto através da API da plataforma SISNO.
+    Esse módulo faz parte de um package e é totalmente dependente de outros módulos.
+
+    Para utilizar esse módulo basta importá-lo da seguinte forma:
+    "from sisno import nfe"
+"""
+
 # =====================================================================
 from . import *
 
@@ -137,48 +145,48 @@ class PaginaNotas:
         raise NotImplementedError
 
 # =====================================================================
-@requires_keys()
+@requires_keys
 def emitir(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys()
+@requires_keys
 def corrigir(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys()
+@requires_keys
 def cancelar(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys()
+@requires_keys
 def validar(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys()
+@requires_keys
 def listar(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys()
+@requires_keys
 def buscar_notas(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys()
+@requires_keys
 def get_nota(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys()
+@requires_keys
 def inutilizar_numeracao(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys()
+@requires_keys
 def get_pre_visualizacao(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys()
+@requires_keys
 def get_danfe(*args, **kwargs):
     raise NotImplementedError
 
 # =====================================================================
-@requires_keys()
+@requires_keys
 def __emitir_nota_teste(*args, **kwargs):
     agora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 

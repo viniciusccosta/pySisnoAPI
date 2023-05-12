@@ -1,7 +1,25 @@
+"""
+    Package criado para integração com a API da plataforma SISNO.
+
+    Para utilizar esse package basta importá-lo da seguinte forma:
+    "import sisno"
+
+    Dentro desse package existem outros módulos e que muito provavelmente serão necessários para você!
+
+    Exemplos:
+        - Módulo "nfe" para emissão/consulta de Notas Fiscais de Produto
+            "from sisno import nfe"
+        - Módulo "nfse" para emissão/consulta de Notas Fiscais de Serviço
+            "from sisno import nfse"
+"""
+
+__package_name__ = "SISNO.py"
+
 # ======================================================================================================================
 # Imports:
 import json
 import os
+import functools
 from dotenv import load_dotenv
 
 # ======================================================================================================================
@@ -10,10 +28,10 @@ load_dotenv()
 
 URL     = "https://homolog.sisno.com.br/nfe-service"
 HEADERS = {
-    "token-emissor"         : os.getenv("token-emissor"),
-    "token-secret-emissor"  : os.getenv("token-secret-emissor"),
-    "token-empresa"         : os.getenv("token-empresa"),
-    "token-secret-empresa"  : os.getenv("token-secret-empresa"),
+    "token-emissor"         : os.getenv("token-emissor", ""),
+    "token-secret-emissor"  : os.getenv("token-secret-emissor", ""),
+    "token-empresa"         : os.getenv("token-empresa", ""),
+    "token-secret-empresa"  : os.getenv("token-secret-empresa", ""),
     "accept"                : "application/json",
     "Content-Type"          : "application/json",
 }
@@ -21,16 +39,17 @@ REQUIRED_KEYS = [ "token-emissor", "token-secret-emissor", "token-empresa", "tok
 
 # ======================================================================================================================
 # Decorators:
-def requires_keys():
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            for key in REQUIRED_KEYS:
-                if key in HEADERS and HEADERS[key] is not None:
-                    return func(*args, **kwargs)
-                else:
-                    raise ValueError(f"Chave '{key}' não configurada.")
-        return wrapper
-    return decorator
+def requires_keys(func):
+    """Esse decorador é utilizado para garantir que as chaves de API estão presentes no HEADERS antes da função ser executada."""
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        for key in REQUIRED_KEYS:
+            if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
+                return func(*args, **kwargs)
+            else:
+                raise ValueError(f"Chave '{key}' não configurada.")
+    return wrapper
 
 # ======================================================================================================================
 # Classes:
@@ -491,6 +510,40 @@ class Uf:
         dados = self.__dict__
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
         return dados if len(dados) > 0 else None
+
+# ======================================================================================================================
+def alterar_emissor(token_emissor:str, token_secret_emissor:str, token_empresa:str, token_secret_empresa:str):
+    """
+    Método responsável por alterar as chaves de API.
+    A alteração das chaves de API é necessária para consultar/emitir notas fiscais de diferente empresas.
+    É através das chaves que a plataforma de SISNO irá identificar quem é o emissor e irá listar (ou emitir) as notas para essa empresa em específico.
+
+    Args:
+        token_emissor (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API
+        token_secret_emissor (str): tring de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".
+        token_empresa (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API
+        token_secret_empresa (str): tring de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".
+
+    Raises:
+        Exception: Caso alguma das chaves seja inválida
+    """
+    global HEADERS
+
+    # TODO: Validar outros parâmetros, como tipos de caracters e etc.
+
+    if not isinstance(token_emissor, str) or len(token_emissor) != 775:
+        raise Exception('Token Emissor inválido')
+    if not isinstance(token_secret_emissor, str) or len(token_secret_emissor) != 166:
+        raise Exception('Token Secret Emissor inválido')
+    if not isinstance(token_empresa, str) or len(token_empresa) != 775:
+        raise Exception('Token Empresa inválido')
+    if not isinstance(token_secret_empresa, str) or len(token_secret_empresa) != 166:
+        raise Exception('Token Secret Empresa inválido')
+    
+    HEADERS["token-emissor"]        = token_emissor
+    HEADERS["token-secret-emissor"] = token_secret_emissor
+    HEADERS["token-empresa"]        = token_empresa
+    HEADERS["token-secret-empresa"] = token_secret_empresa
 
 # ======================================================================================================================
 if __name__ == "__main__":

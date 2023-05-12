@@ -1,3 +1,10 @@
+""" 
+    Módulo específico para geração de Notas Fiscais de Serviço através da API da plataforma SISNO.
+    Esse módulo faz parte de um package e é totalmente dependente de outros módulos.
+
+    Para utilizar esse módulo basta importá-lo da seguinte forma:
+    "from sisno import nfse"
+"""
 # =====================================================================
 from . import *
 
@@ -28,6 +35,7 @@ CSV_HEADERS = [
 class Servico:
     def __init__(self, valor_servicos, discriminacao, impostos, *args, **kwargs):
         """
+        Construtor da classe Serviço.
 
         Args:
             valor_servicos (str): Valor do Serviço no formato $0.00
@@ -137,9 +145,24 @@ class PaginaNotaServico:
         return self.__dict__
 
 # =====================================================================
-@requires_keys()
+@requires_keys
 def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
-    json_obj = json.dumps(obj_emissao_nfse, default=lambda o: o.asdict())   # TODO: Usar uma função própria como o "asdict" para só passar os campos obrigatórios e os diferentes de None
+    """Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
+
+    Atenção:
+        Esse método é diretamente vinculado as chaves de API.
+        Isso quer dizer que é através das chaves que a plataforma da SISNO irá decidir quem será o emissor dessa nota.
+        Para alterar o emissor, basta chamar a função "sisno.alterar_emissor()" e passar as novas chaves.
+
+    Args:
+        obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe "ObjetoEmissaoNFSe" que contém todos os dados necessários
+
+    Returns:
+        dict: Dicionário com os dados da requisição
+        str: Com o response.text em caso de falha da requisição
+    """
+
+    json_obj = json.dumps(obj_emissao_nfse, default=lambda o: o.asdict())
     
     headers = HEADERS
     url     = f'{URL}/nfse'
@@ -151,17 +174,18 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
         case _:
             return response.text
 
-@requires_keys()
+@requires_keys
 def buscar_notas(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys()
+@requires_keys
 def retransmitir(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys()
+@requires_keys
 def recuperar_dados(id_nfse:int, *args, **kwargs):
     # TODO: Cada NFSe possui um ID mesmo que de empresas diferentes ?
+    # TODO: Essa função deveria estar atrelada as chaves de API, uma vez que será através delas que emitiremos as notas por uma empresa ou por outra ?
 
     if not isinstance(id_nfse, int):
         raise ValueError("Necessário informar um ID de NFSe válido.")
@@ -178,14 +202,14 @@ def recuperar_dados(id_nfse:int, *args, **kwargs):
         case _:
             return
 
-@requires_keys()
+@requires_keys
 def cancelar(*args, **kwargs):
     raise NotImplementedError
 
 # =====================================================================
 def __emitir_nota_teste(*args, **kwargs):
     # TODO: Enviar para módulo de testes
-    
+
     # TODO: Os impostos, os produtos (e até mesmo os clientes) já deverão estar cadastrados em algum banco de dados
     
     # --------------------------------------------
