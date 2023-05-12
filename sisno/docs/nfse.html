@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>sisno.nfse API documentation</title>
+<meta name="description" content="Módulo específico para geração de Notas Fiscais de Serviço através da API da plataforma SISNO.
+Esse módulo faz parte de um package e é totalmente …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>sisno.nfse</code></h1>
+</header>
+<section id="section-intro">
+<p>Módulo específico para geração de Notas Fiscais de Serviço através da API da plataforma SISNO.
+Esse módulo faz parte de um package e é totalmente dependente de outros módulos.</p>
+<p>Para utilizar esse módulo basta importá-lo da seguinte forma:
+"from sisno import nfse"</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34; 
+    Módulo específico para geração de Notas Fiscais de Serviço através da API da plataforma SISNO.
+    Esse módulo faz parte de um package e é totalmente dependente de outros módulos.
+
+    Para utilizar esse módulo basta importá-lo da seguinte forma:
+    &#34;from sisno import nfse&#34;
+&#34;&#34;&#34;
+# =====================================================================
+from . import *
+
+import requests
+from datetime import datetime
+
+# =====================================================================
+CSV_HEADERS = [
+    &#39;CNPJ&#39;,
+    &#39;CPF&#39;,
+    &#39;Nome&#39;,
+    &#39;Indicador IE&#39;,
+    &#39;Consumidor Final&#39;,
+    &#39;Faz Retenção&#39;,
+    &#39;CEP&#39;,
+    &#39;UF&#39;,
+    &#39;IBGE&#39;,
+    &#39;Bairro&#39;,
+    &#39;Endereço&#39;,
+    &#39;Número&#39;,
+    &#39;Complemento&#39;,
+    &#39;E-mail&#39;,
+    &#39;Serviço&#39;,
+    &#39;Informações Complementares&#39;,
+]
+
+# =====================================================================
+class Servico:
+    def __init__(self, valor_servicos, discriminacao, impostos, *args, **kwargs):
+        &#34;&#34;&#34;
+        Construtor da classe Serviço.
+
+        Args:
+            valor_servicos (str): Valor do Serviço no formato $0.00
+            discriminacao (str): Descrição do Serviço
+            impostos (Imposto): Instância da classe &#34;Imposto&#34;
+
+        Keyword Args:
+            intermediario (Cliente): Intermediário do Serviço
+                Default: None
+            iss_retido (int): 1-Sim, 2-Não
+                Default: 2
+            responsavel_retencao_iss (int): 1-Tomador, 2-Intermediário
+                Default: 1
+            deducoes (str): Soma total das deduções/descontos gerais
+                Default: &#39;&#39;
+            desconto_incondicionado (str): Soma total dos descontos incondicionados
+                Default: &#39;&#39;
+            desconto_condicionado (str): Soma total dos descontos condicionados
+                Default: &#39;&#39;
+            outras_retencoes (str): Soma total de outras retenções
+                Default: &#39;&#39;
+            informacoes_complementares (str): Informações complementares
+                Default: &#39;&#39; 
+            data_competencia (str): Data da competência do serviço
+                Default: datetime.now()
+            uf_local_prestacao (Uf): UF do local da prestação do serviço
+                Default: &#39;&#39;
+            municipio_local_prestacao (Municipio): Município do local da prestação do serviço
+                Default: &#39;&#39;
+        &#34;&#34;&#34;
+        self.valor_servicos             = valor_servicos
+        self.discriminacao              = discriminacao
+        self.impostos                   = impostos                                      # Objeto &#34;Imposto&#34;
+        self.intermediario              = kwargs.get(&#34;intermediario&#34;, None)             # Objeto &#34;Cliente&#34;
+        self.iss_retido                 = kwargs.get(&#34;iss_retido&#34;, 2)                   # 1: Sim, 2: Não                # TODO: Campo obrigatório ?
+        self.responsavel_retencao_iss   = kwargs.get(&#34;responsavel_retencao_iss&#34;, 1)     # 1: Tomador, 2: Intermediário  # TODO: Campo obrigatório ?
+        self.deducoes                   = kwargs.get(&#34;deducoes&#34;, &#39;&#39;)                    # TODO: $0.00
+        self.desconto_incondicionado    = kwargs.get(&#34;desconto_incondicionado&#34;, &#39;&#39;)     # TODO: $0.00
+        self.desconto_condicionado      = kwargs.get(&#34;desconto_condicionado&#34;, &#39;&#39;)       # TODO: $0.00
+        self.outras_retencoes           = kwargs.get(&#34;outras_retencoes&#34;, &#39;&#39;)            # TODO: $0.00
+        self.informacoes_complementares = kwargs.get(&#34;informacoes_complementares&#34;, &#39;&#39;)  # 
+        self.data_competencia           = kwargs.get(&#34;data_competencia&#34;, &#39;&#39;)            # TODO: $dd/MM/yyyy HH:mm:ss.SSS = datetime.now().strftime(&#34;%d/%m/%Y %H:%m:%s.%f&#34;) ? # TODO: Campo obrigatório ?
+        self.uf_local_prestacao         = kwargs.get(&#34;uf_local_prestacao&#34;, &#39;&#39;)          # Objeto &#34;Uf&#34;
+        self.municipio_local_prestacao  = kwargs.get(&#34;municipio_local_prestacao&#34;, &#39;&#39;)   # Objeto &#34;Municipio&#34;
+    
+    def asdict(self,):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+        return dados if len(dados) &gt; 0 else None
+    
+class ConstrucaoCivil:
+    def __init__(self, *args, **kwargs):
+        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
+        self.codigo_obra = kwargs.get(&#34;codigo_obra&#34;, &#39;&#39;)
+        self.art         = kwargs.get(&#34;art&#34;, &#39;&#39;)
+
+    def asdict(self,):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+        return dados if len(dados) &gt; 0 else None
+
+class ObjetoEmissaoNFSe:
+    def __init__(self, cliente:Cliente, servico:Servico, *args, **kwargs):
+        self.cliente            = cliente
+        self.servico            = servico
+        self.construcao_civil   = kwargs.get(&#34;construcao_civil&#34;, None)                  # Objeto &#34;ConstrucaoCivil&#34;
+
+    def asdict(self,):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+        return dados if len(dados) &gt; 0 else None
+
+class NotaFiscalServico:
+    def __init__(self, *args, **kwargs):
+        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
+        self.id                     = kwargs.get(&#34;id&#34;, 0)
+        self.empresa                = kwargs.get(&#34;empresa&#34;, None)
+        self.uuid                   = kwargs.get(&#34;uuid&#34;, &#39;&#39;)
+        self.modelo                 = kwargs.get(&#34;modelo&#34;, &#39;&#39;)
+        self.status                 = kwargs.get(&#34;status&#34;, &#39;&#39;)
+        self.motivo                 = kwargs.get(&#34;motivo&#34;, &#39;&#39;)
+        self.numero_nota            = kwargs.get(&#34;numero_nota&#34;, &#39;&#39;)
+        self.codigo_verificacao     = kwargs.get(&#34;codigo_verificacao&#34;, &#39;&#39;)
+        self.protocolo              = kwargs.get(&#34;protocolo&#34;, &#39;&#39;)
+        self.nome_destinatario      = kwargs.get(&#34;nome_destinatario&#34;, &#39;&#39;)
+        self.uf_destinatario        = kwargs.get(&#34;uf_destinatario&#34;, &#39;&#39;)
+        self.cpf_cnpj_destinatario  = kwargs.get(&#34;cpf_cnpj_destinatario&#34;, &#39;&#39;)
+        self.valor_total            = kwargs.get(&#34;valor_total&#34;, &#39;&#39;)
+        self.data_emissao           = kwargs.get(&#34;data_emissao&#34;, &#39;&#39;)
+        self.data_competencia       = kwargs.get(&#34;data_competencia&#34;, &#39;&#39;)
+        self.uf_prestacao           = kwargs.get(&#34;uf_prestacao&#34;, None)
+        self.municipio_prestacao    = kwargs.get(&#34;municipio_prestacao&#34;, None)
+        self.ambiente               = kwargs.get(&#34;ambiente&#34;, &#39;&#39;)
+    
+    def asdict(self,):
+        return self.__dict__
+    
+class PaginaNotaServico:
+    def __init__(self, *args, **kwargs):
+        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
+        self.total              = kwargs.get(&#34;total&#34;, 0)
+        self.itens_por_pagina   = kwargs.get(&#34;itens_por_pagina&#34;, 0)
+        self.pagina_atual       = kwargs.get(&#34;pagina_atual&#34;, 0)
+        self.itens              = kwargs.get(&#34;art&#34;, [])
+    
+    def asdict(self,):
+        return self.__dict__
+
+# =====================================================================
+@requires_keys
+def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
+    &#34;&#34;&#34;Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
+
+    Atenção:
+        Esse método é diretamente vinculado as chaves de API.
+        Isso quer dizer que é através das chaves que a plataforma da SISNO irá decidir quem será o emissor dessa nota.
+        Para alterar o emissor, basta chamar a função &#34;sisno.alterar_emissor()&#34; e passar as novas chaves.
+
+    Args:
+        obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe &#34;ObjetoEmissaoNFSe&#34; que contém todos os dados necessários
+
+    Returns:
+        dict: Dicionário com os dados da requisição
+        str: Com o response.text em caso de falha da requisição
+    &#34;&#34;&#34;
+
+    json_obj = json.dumps(obj_emissao_nfse, default=lambda o: o.asdict())
+    
+    headers = HEADERS
+    url     = f&#39;{URL}/nfse&#39;
+    response = requests.post(url, data=json_obj, headers=headers)
+
+    match (response.status_code):
+        case 200:
+            return response.json().get(&#39;dados&#39;)
+        case _:
+            return response.text
+
+@requires_keys
+def buscar_notas(*args, **kwargs):
+    raise NotImplementedError
+
+@requires_keys
+def retransmitir(*args, **kwargs):
+    raise NotImplementedError
+
+@requires_keys
+def recuperar_dados(id_nfse:int, *args, **kwargs):
+    # TODO: Cada NFSe possui um ID mesmo que de empresas diferentes ?
+    # TODO: Essa função deveria estar atrelada as chaves de API, uma vez que será através delas que emitiremos as notas por uma empresa ou por outra ?
+
+    if not isinstance(id_nfse, int):
+        raise ValueError(&#34;Necessário informar um ID de NFSe válido.&#34;)
+    
+    headers  = HEADERS
+    url      = f&#39;{URL}/nfse/{id_nfse}&#39;
+    response = requests.get(url, headers=headers)
+
+    match (response.status_code):
+        case 200:
+            return response.json().get(&#39;dados&#39;)
+        case 412:
+            return []
+        case _:
+            return
+
+@requires_keys
+def cancelar(*args, **kwargs):
+    raise NotImplementedError
+
+# =====================================================================
+def __emitir_nota_teste(*args, **kwargs):
+    # TODO: Enviar para módulo de testes
+
+    # TODO: Os impostos, os produtos (e até mesmo os clientes) já deverão estar cadastrados em algum banco de dados
+    
+    # --------------------------------------------
+    # Cliente:
+    endereco        = Endereco(codigo_pais=&#39;55&#39;, descricao_pais=&#39;Brasil&#39;, bairro=&#39;Brasilia&#39;, logradouro=&#39;Praça dos 3 poderes&#39;, numero=&#39;123&#39;, )
+    pessoa_fisica   = PessoaFisica(cpf=&#34;00000000000&#34;, nome_completo=&#34;João da Silva Júnior&#34;)
+    cliente         = Cliente(pessoa_fisica=pessoa_fisica, consumidor_final=&#39;0&#39;, contribuinte=&#39;9&#39;, endereco=endereco)
+
+    # --------------------------------------------
+    # Serviço:
+    pis             = Pis(situacao_tributaria=&#34;99&#34;)                                                                                                                     #
+    cofins          = Cofins(situacao_tributaria=&#34;99&#34;)                                                                                                                  #
+    issqn           = Issqn(indicador_exigibilidade_iss=&#34;1&#34;, indicador_incentivo_fiscal=&#34;1&#34;, item_lista_servicos=&#34;08.01&#34;, aliquota=&#34;0.0000&#34;)                            # Exigível, Não, 08.01, 0.0000%
+    impostos        = Impostos(tipo=&#34;1&#34;, pis=pis, cofins=cofins, issqn=issqn)                                                                                           # Serviço
+
+    uf              = Uf(codigo_ibge=53, sigla=&#39;DF&#39;, descricao=&#39;Distrito Federal&#39;)
+    municipio       = Municipio(codigo_ibge=5300108, descricao=&#39;Brasilia&#39;)
+
+    servico         = Servico(valor_servicos=&#34;1.00&#34;, discriminacao=&#34;Teste&#34;, impostos=impostos, uf_local_prestacao=uf, municipio_local_prestacao=municipio)
+
+    # --------------------------------------------
+    # Construção Civil:
+
+    # --------------------------------------------
+    # Objeto Emissão NFSe:
+    obj_emissao_nfse = ObjetoEmissaoNFSe(cliente=cliente, servico=servico)
+    
+    return emitir(obj_emissao_nfse=obj_emissao_nfse)
+
+# =====================================================================</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="sisno.nfse.buscar_notas"><code class="name flex">
+<span>def <span class="ident">buscar_notas</span></span>(<span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@requires_keys
+def buscar_notas(*args, **kwargs):
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="sisno.nfse.cancelar"><code class="name flex">
+<span>def <span class="ident">cancelar</span></span>(<span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@requires_keys
+def cancelar(*args, **kwargs):
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="sisno.nfse.emitir"><code class="name flex">
+<span>def <span class="ident">emitir</span></span>(<span>obj_emissao_nfse: <a title="sisno.nfse.ObjetoEmissaoNFSe" href="#sisno.nfse.ObjetoEmissaoNFSe">ObjetoEmissaoNFSe</a>, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.</p>
+<h2 id="atencao">Atenção</h2>
+<p>Esse método é diretamente vinculado as chaves de API.
+Isso quer dizer que é através das chaves que a plataforma da SISNO irá decidir quem será o emissor dessa nota.
+Para alterar o emissor, basta chamar a função "sisno.alterar_emissor()" e passar as novas chaves.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>obj_emissao_nfse</code></strong> :&ensp;<code><a title="sisno.nfse.ObjetoEmissaoNFSe" href="#sisno.nfse.ObjetoEmissaoNFSe">ObjetoEmissaoNFSe</a></code></dt>
+<dd>Objeto da classe "ObjetoEmissaoNFSe" que contém todos os dados necessários</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict</code></dt>
+<dd>Dicionário com os dados da requisição</dd>
+<dt><code>str</code></dt>
+<dd>Com o response.text em caso de falha da requisição</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@requires_keys
+def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
+    &#34;&#34;&#34;Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
+
+    Atenção:
+        Esse método é diretamente vinculado as chaves de API.
+        Isso quer dizer que é através das chaves que a plataforma da SISNO irá decidir quem será o emissor dessa nota.
+        Para alterar o emissor, basta chamar a função &#34;sisno.alterar_emissor()&#34; e passar as novas chaves.
+
+    Args:
+        obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe &#34;ObjetoEmissaoNFSe&#34; que contém todos os dados necessários
+
+    Returns:
+        dict: Dicionário com os dados da requisição
+        str: Com o response.text em caso de falha da requisição
+    &#34;&#34;&#34;
+
+    json_obj = json.dumps(obj_emissao_nfse, default=lambda o: o.asdict())
+    
+    headers = HEADERS
+    url     = f&#39;{URL}/nfse&#39;
+    response = requests.post(url, data=json_obj, headers=headers)
+
+    match (response.status_code):
+        case 200:
+            return response.json().get(&#39;dados&#39;)
+        case _:
+            return response.text</code></pre>
+</details>
+</dd>
+<dt id="sisno.nfse.recuperar_dados"><code class="name flex">
+<span>def <span class="ident">recuperar_dados</span></span>(<span>id_nfse: int, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@requires_keys
+def recuperar_dados(id_nfse:int, *args, **kwargs):
+    # TODO: Cada NFSe possui um ID mesmo que de empresas diferentes ?
+    # TODO: Essa função deveria estar atrelada as chaves de API, uma vez que será através delas que emitiremos as notas por uma empresa ou por outra ?
+
+    if not isinstance(id_nfse, int):
+        raise ValueError(&#34;Necessário informar um ID de NFSe válido.&#34;)
+    
+    headers  = HEADERS
+    url      = f&#39;{URL}/nfse/{id_nfse}&#39;
+    response = requests.get(url, headers=headers)
+
+    match (response.status_code):
+        case 200:
+            return response.json().get(&#39;dados&#39;)
+        case 412:
+            return []
+        case _:
+            return</code></pre>
+</details>
+</dd>
+<dt id="sisno.nfse.retransmitir"><code class="name flex">
+<span>def <span class="ident">retransmitir</span></span>(<span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@requires_keys
+def retransmitir(*args, **kwargs):
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="sisno.nfse.ConstrucaoCivil"><code class="flex name class">
+<span>class <span class="ident">ConstrucaoCivil</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ConstrucaoCivil:
+    def __init__(self, *args, **kwargs):
+        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
+        self.codigo_obra = kwargs.get(&#34;codigo_obra&#34;, &#39;&#39;)
+        self.art         = kwargs.get(&#34;art&#34;, &#39;&#39;)
+
+    def asdict(self,):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+        return dados if len(dados) &gt; 0 else None</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="sisno.nfse.ConstrucaoCivil.asdict"><code class="name flex">
+<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def asdict(self,):
+    dados = self.__dict__
+    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+    return dados if len(dados) &gt; 0 else None</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="sisno.nfse.NotaFiscalServico"><code class="flex name class">
+<span>class <span class="ident">NotaFiscalServico</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NotaFiscalServico:
+    def __init__(self, *args, **kwargs):
+        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
+        self.id                     = kwargs.get(&#34;id&#34;, 0)
+        self.empresa                = kwargs.get(&#34;empresa&#34;, None)
+        self.uuid                   = kwargs.get(&#34;uuid&#34;, &#39;&#39;)
+        self.modelo                 = kwargs.get(&#34;modelo&#34;, &#39;&#39;)
+        self.status                 = kwargs.get(&#34;status&#34;, &#39;&#39;)
+        self.motivo                 = kwargs.get(&#34;motivo&#34;, &#39;&#39;)
+        self.numero_nota            = kwargs.get(&#34;numero_nota&#34;, &#39;&#39;)
+        self.codigo_verificacao     = kwargs.get(&#34;codigo_verificacao&#34;, &#39;&#39;)
+        self.protocolo              = kwargs.get(&#34;protocolo&#34;, &#39;&#39;)
+        self.nome_destinatario      = kwargs.get(&#34;nome_destinatario&#34;, &#39;&#39;)
+        self.uf_destinatario        = kwargs.get(&#34;uf_destinatario&#34;, &#39;&#39;)
+        self.cpf_cnpj_destinatario  = kwargs.get(&#34;cpf_cnpj_destinatario&#34;, &#39;&#39;)
+        self.valor_total            = kwargs.get(&#34;valor_total&#34;, &#39;&#39;)
+        self.data_emissao           = kwargs.get(&#34;data_emissao&#34;, &#39;&#39;)
+        self.data_competencia       = kwargs.get(&#34;data_competencia&#34;, &#39;&#39;)
+        self.uf_prestacao           = kwargs.get(&#34;uf_prestacao&#34;, None)
+        self.municipio_prestacao    = kwargs.get(&#34;municipio_prestacao&#34;, None)
+        self.ambiente               = kwargs.get(&#34;ambiente&#34;, &#39;&#39;)
+    
+    def asdict(self,):
+        return self.__dict__</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="sisno.nfse.NotaFiscalServico.asdict"><code class="name flex">
+<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def asdict(self,):
+    return self.__dict__</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="sisno.nfse.ObjetoEmissaoNFSe"><code class="flex name class">
+<span>class <span class="ident">ObjetoEmissaoNFSe</span></span>
+<span>(</span><span>cliente: <a title="sisno.Cliente" href="index.html#sisno.Cliente">Cliente</a>, servico: <a title="sisno.nfse.Servico" href="#sisno.nfse.Servico">Servico</a>, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ObjetoEmissaoNFSe:
+    def __init__(self, cliente:Cliente, servico:Servico, *args, **kwargs):
+        self.cliente            = cliente
+        self.servico            = servico
+        self.construcao_civil   = kwargs.get(&#34;construcao_civil&#34;, None)                  # Objeto &#34;ConstrucaoCivil&#34;
+
+    def asdict(self,):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+        return dados if len(dados) &gt; 0 else None</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="sisno.nfse.ObjetoEmissaoNFSe.asdict"><code class="name flex">
+<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def asdict(self,):
+    dados = self.__dict__
+    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+    return dados if len(dados) &gt; 0 else None</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="sisno.nfse.PaginaNotaServico"><code class="flex name class">
+<span>class <span class="ident">PaginaNotaServico</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PaginaNotaServico:
+    def __init__(self, *args, **kwargs):
+        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
+        self.total              = kwargs.get(&#34;total&#34;, 0)
+        self.itens_por_pagina   = kwargs.get(&#34;itens_por_pagina&#34;, 0)
+        self.pagina_atual       = kwargs.get(&#34;pagina_atual&#34;, 0)
+        self.itens              = kwargs.get(&#34;art&#34;, [])
+    
+    def asdict(self,):
+        return self.__dict__</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="sisno.nfse.PaginaNotaServico.asdict"><code class="name flex">
+<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def asdict(self,):
+    return self.__dict__</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="sisno.nfse.Servico"><code class="flex name class">
+<span>class <span class="ident">Servico</span></span>
+<span>(</span><span>valor_servicos, discriminacao, impostos, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Construtor da classe Serviço.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>valor_servicos</code></strong> :&ensp;<code>str</code></dt>
+<dd>Valor do Serviço no formato $0.00</dd>
+<dt><strong><code>discriminacao</code></strong> :&ensp;<code>str</code></dt>
+<dd>Descrição do Serviço</dd>
+<dt><strong><code>impostos</code></strong> :&ensp;<code>Imposto</code></dt>
+<dd>Instância da classe "Imposto"</dd>
+</dl>
+<p>Keyword Args:
+intermediario (Cliente): Intermediário do Serviço
+Default: None
+iss_retido (int): 1-Sim, 2-Não
+Default: 2
+responsavel_retencao_iss (int): 1-Tomador, 2-Intermediário
+Default: 1
+deducoes (str): Soma total das deduções/descontos gerais
+Default: ''
+desconto_incondicionado (str): Soma total dos descontos incondicionados
+Default: ''
+desconto_condicionado (str): Soma total dos descontos condicionados
+Default: ''
+outras_retencoes (str): Soma total de outras retenções
+Default: ''
+informacoes_complementares (str): Informações complementares
+Default: ''
+data_competencia (str): Data da competência do serviço
+Default: datetime.now()
+uf_local_prestacao (Uf): UF do local da prestação do serviço
+Default: ''
+municipio_local_prestacao (Municipio): Município do local da prestação do serviço
+Default: ''</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Servico:
+    def __init__(self, valor_servicos, discriminacao, impostos, *args, **kwargs):
+        &#34;&#34;&#34;
+        Construtor da classe Serviço.
+
+        Args:
+            valor_servicos (str): Valor do Serviço no formato $0.00
+            discriminacao (str): Descrição do Serviço
+            impostos (Imposto): Instância da classe &#34;Imposto&#34;
+
+        Keyword Args:
+            intermediario (Cliente): Intermediário do Serviço
+                Default: None
+            iss_retido (int): 1-Sim, 2-Não
+                Default: 2
+            responsavel_retencao_iss (int): 1-Tomador, 2-Intermediário
+                Default: 1
+            deducoes (str): Soma total das deduções/descontos gerais
+                Default: &#39;&#39;
+            desconto_incondicionado (str): Soma total dos descontos incondicionados
+                Default: &#39;&#39;
+            desconto_condicionado (str): Soma total dos descontos condicionados
+                Default: &#39;&#39;
+            outras_retencoes (str): Soma total de outras retenções
+                Default: &#39;&#39;
+            informacoes_complementares (str): Informações complementares
+                Default: &#39;&#39; 
+            data_competencia (str): Data da competência do serviço
+                Default: datetime.now()
+            uf_local_prestacao (Uf): UF do local da prestação do serviço
+                Default: &#39;&#39;
+            municipio_local_prestacao (Municipio): Município do local da prestação do serviço
+                Default: &#39;&#39;
+        &#34;&#34;&#34;
+        self.valor_servicos             = valor_servicos
+        self.discriminacao              = discriminacao
+        self.impostos                   = impostos                                      # Objeto &#34;Imposto&#34;
+        self.intermediario              = kwargs.get(&#34;intermediario&#34;, None)             # Objeto &#34;Cliente&#34;
+        self.iss_retido                 = kwargs.get(&#34;iss_retido&#34;, 2)                   # 1: Sim, 2: Não                # TODO: Campo obrigatório ?
+        self.responsavel_retencao_iss   = kwargs.get(&#34;responsavel_retencao_iss&#34;, 1)     # 1: Tomador, 2: Intermediário  # TODO: Campo obrigatório ?
+        self.deducoes                   = kwargs.get(&#34;deducoes&#34;, &#39;&#39;)                    # TODO: $0.00
+        self.desconto_incondicionado    = kwargs.get(&#34;desconto_incondicionado&#34;, &#39;&#39;)     # TODO: $0.00
+        self.desconto_condicionado      = kwargs.get(&#34;desconto_condicionado&#34;, &#39;&#39;)       # TODO: $0.00
+        self.outras_retencoes           = kwargs.get(&#34;outras_retencoes&#34;, &#39;&#39;)            # TODO: $0.00
+        self.informacoes_complementares = kwargs.get(&#34;informacoes_complementares&#34;, &#39;&#39;)  # 
+        self.data_competencia           = kwargs.get(&#34;data_competencia&#34;, &#39;&#39;)            # TODO: $dd/MM/yyyy HH:mm:ss.SSS = datetime.now().strftime(&#34;%d/%m/%Y %H:%m:%s.%f&#34;) ? # TODO: Campo obrigatório ?
+        self.uf_local_prestacao         = kwargs.get(&#34;uf_local_prestacao&#34;, &#39;&#39;)          # Objeto &#34;Uf&#34;
+        self.municipio_local_prestacao  = kwargs.get(&#34;municipio_local_prestacao&#34;, &#39;&#39;)   # Objeto &#34;Municipio&#34;
+    
+    def asdict(self,):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+        return dados if len(dados) &gt; 0 else None</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="sisno.nfse.Servico.asdict"><code class="name flex">
+<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def asdict(self,):
+    dados = self.__dict__
+    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+    return dados if len(dados) &gt; 0 else None</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="sisno" href="index.html">sisno</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="sisno.nfse.buscar_notas" href="#sisno.nfse.buscar_notas">buscar_notas</a></code></li>
+<li><code><a title="sisno.nfse.cancelar" href="#sisno.nfse.cancelar">cancelar</a></code></li>
+<li><code><a title="sisno.nfse.emitir" href="#sisno.nfse.emitir">emitir</a></code></li>
+<li><code><a title="sisno.nfse.recuperar_dados" href="#sisno.nfse.recuperar_dados">recuperar_dados</a></code></li>
+<li><code><a title="sisno.nfse.retransmitir" href="#sisno.nfse.retransmitir">retransmitir</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="sisno.nfse.ConstrucaoCivil" href="#sisno.nfse.ConstrucaoCivil">ConstrucaoCivil</a></code></h4>
+<ul class="">
+<li><code><a title="sisno.nfse.ConstrucaoCivil.asdict" href="#sisno.nfse.ConstrucaoCivil.asdict">asdict</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="sisno.nfse.NotaFiscalServico" href="#sisno.nfse.NotaFiscalServico">NotaFiscalServico</a></code></h4>
+<ul class="">
+<li><code><a title="sisno.nfse.NotaFiscalServico.asdict" href="#sisno.nfse.NotaFiscalServico.asdict">asdict</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="sisno.nfse.ObjetoEmissaoNFSe" href="#sisno.nfse.ObjetoEmissaoNFSe">ObjetoEmissaoNFSe</a></code></h4>
+<ul class="">
+<li><code><a title="sisno.nfse.ObjetoEmissaoNFSe.asdict" href="#sisno.nfse.ObjetoEmissaoNFSe.asdict">asdict</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="sisno.nfse.PaginaNotaServico" href="#sisno.nfse.PaginaNotaServico">PaginaNotaServico</a></code></h4>
+<ul class="">
+<li><code><a title="sisno.nfse.PaginaNotaServico.asdict" href="#sisno.nfse.PaginaNotaServico.asdict">asdict</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="sisno.nfse.Servico" href="#sisno.nfse.Servico">Servico</a></code></h4>
+<ul class="">
+<li><code><a title="sisno.nfse.Servico.asdict" href="#sisno.nfse.Servico.asdict">asdict</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
