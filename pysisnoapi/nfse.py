@@ -3,7 +3,7 @@
     Esse módulo faz parte de um package e é totalmente dependente de outros módulos.
 
     Para utilizar esse módulo basta importá-lo da seguinte forma:
-    "from sisno import nfse"
+    "from pysisnoapi import nfse"
 """
 # =====================================================================
 from . import *

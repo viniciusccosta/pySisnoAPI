@@ -3,7 +3,7 @@
     Esse módulo faz parte de um package e é totalmente dependente de outros módulos.
 
     Para utilizar esse módulo basta importá-lo da seguinte forma:
-    "from sisno import misc"
+    "from pysisnoapi import misc"
 """
 
 # ======================================================================================================================

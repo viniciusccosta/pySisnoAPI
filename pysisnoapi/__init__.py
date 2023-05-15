@@ -2,18 +2,16 @@
     Package criado para integração com a API da plataforma SISNO.
 
     Para utilizar esse package basta importá-lo da seguinte forma:
-    "import sisno"
+    "import pysisnoapi"
 
     Dentro desse package existem outros módulos e que muito provavelmente serão necessários para você!
 
     Exemplos:
         - Módulo "nfe" para emissão/consulta de Notas Fiscais de Produto
-            "from sisno import nfe"
+            "from pysisnoapi import nfe"
         - Módulo "nfse" para emissão/consulta de Notas Fiscais de Serviço
-            "from sisno import nfse"
+            "from pysisnoapi import nfse"
 """
-
-__package_name__ = "SISNO.py"
 
 # ======================================================================================================================
 # Imports:
