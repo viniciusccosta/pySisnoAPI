@@ -522,6 +522,11 @@ class Transporte:
     def __init__(self, **kwargs):
         raise NotImplementedError
 
+    def asdict(self):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
+
 class Uf:
     # TODO: Até o dia 10/05/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
     
