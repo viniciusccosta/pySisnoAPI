@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>sisno.nfse API documentation</title>
+<title>pysisnoapi.nfse API documentation</title>
 <meta name="description" content="Módulo específico para geração de Notas Fiscais de Serviço através da API da plataforma SISNO.
 Esse módulo faz parte de um package e é totalmente …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -20,13 +20,13 @@ Esse módulo faz parte de um package e é totalmente …" />
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>sisno.nfse</code></h1>
+<h1 class="title">Module <code>pysisnoapi.nfse</code></h1>
 </header>
 <section id="section-intro">
 <p>Módulo específico para geração de Notas Fiscais de Serviço através da API da plataforma SISNO.
 Esse módulo faz parte de um package e é totalmente dependente de outros módulos.</p>
 <p>Para utilizar esse módulo basta importá-lo da seguinte forma:
-"from sisno import nfse"</p>
+"from pysisnoapi import nfse"</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -36,7 +36,7 @@ Esse módulo faz parte de um package e é totalmente dependente de outros módul
     Esse módulo faz parte de um package e é totalmente dependente de outros módulos.
 
     Para utilizar esse módulo basta importá-lo da seguinte forma:
-    &#34;from sisno import nfse&#34;
+    &#34;from pysisnoapi import nfse&#34;
 &#34;&#34;&#34;
 # =====================================================================
 from . import *
@@ -282,7 +282,7 @@ def __emitir_nota_teste(*args, **kwargs):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="sisno.nfse.buscar_notas"><code class="name flex">
+<dt id="pysisnoapi.nfse.buscar_notas"><code class="name flex">
 <span>def <span class="ident">buscar_notas</span></span>(<span>*args, **kwargs)</span>
 </code></dt>
 <dd>
@@ -296,7 +296,7 @@ def buscar_notas(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
-<dt id="sisno.nfse.cancelar"><code class="name flex">
+<dt id="pysisnoapi.nfse.cancelar"><code class="name flex">
 <span>def <span class="ident">cancelar</span></span>(<span>*args, **kwargs)</span>
 </code></dt>
 <dd>
@@ -310,8 +310,8 @@ def cancelar(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
-<dt id="sisno.nfse.emitir"><code class="name flex">
-<span>def <span class="ident">emitir</span></span>(<span>obj_emissao_nfse: <a title="sisno.nfse.ObjetoEmissaoNFSe" href="#sisno.nfse.ObjetoEmissaoNFSe">ObjetoEmissaoNFSe</a>, *args, **kwargs)</span>
+<dt id="pysisnoapi.nfse.emitir"><code class="name flex">
+<span>def <span class="ident">emitir</span></span>(<span>obj_emissao_nfse: <a title="pysisnoapi.nfse.ObjetoEmissaoNFSe" href="#pysisnoapi.nfse.ObjetoEmissaoNFSe">ObjetoEmissaoNFSe</a>, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.</p>
@@ -321,7 +321,7 @@ Isso quer dizer que é através das chaves que a plataforma da SISNO irá decidi
 Para alterar o emissor, basta chamar a função "sisno.alterar_emissor()" e passar as novas chaves.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>obj_emissao_nfse</code></strong> :&ensp;<code><a title="sisno.nfse.ObjetoEmissaoNFSe" href="#sisno.nfse.ObjetoEmissaoNFSe">ObjetoEmissaoNFSe</a></code></dt>
+<dt><strong><code>obj_emissao_nfse</code></strong> :&ensp;<code><a title="pysisnoapi.nfse.ObjetoEmissaoNFSe" href="#pysisnoapi.nfse.ObjetoEmissaoNFSe">ObjetoEmissaoNFSe</a></code></dt>
 <dd>Objeto da classe "ObjetoEmissaoNFSe" que contém todos os dados necessários</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -365,7 +365,7 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
             return response.text</code></pre>
 </details>
 </dd>
-<dt id="sisno.nfse.recuperar_dados"><code class="name flex">
+<dt id="pysisnoapi.nfse.recuperar_dados"><code class="name flex">
 <span>def <span class="ident">recuperar_dados</span></span>(<span>id_nfse: int, *args, **kwargs)</span>
 </code></dt>
 <dd>
@@ -395,7 +395,7 @@ def recuperar_dados(id_nfse:int, *args, **kwargs):
             return</code></pre>
 </details>
 </dd>
-<dt id="sisno.nfse.retransmitir"><code class="name flex">
+<dt id="pysisnoapi.nfse.retransmitir"><code class="name flex">
 <span>def <span class="ident">retransmitir</span></span>(<span>*args, **kwargs)</span>
 </code></dt>
 <dd>
@@ -414,7 +414,7 @@ def retransmitir(*args, **kwargs):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="sisno.nfse.ConstrucaoCivil"><code class="flex name class">
+<dt id="pysisnoapi.nfse.ConstrucaoCivil"><code class="flex name class">
 <span>class <span class="ident">ConstrucaoCivil</span></span>
 <span>(</span><span>*args, **kwargs)</span>
 </code></dt>
@@ -437,7 +437,7 @@ def retransmitir(*args, **kwargs):
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.nfse.ConstrucaoCivil.asdict"><code class="name flex">
+<dt id="pysisnoapi.nfse.ConstrucaoCivil.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -454,7 +454,7 @@ def retransmitir(*args, **kwargs):
 </dd>
 </dl>
 </dd>
-<dt id="sisno.nfse.NotaFiscalServico"><code class="flex name class">
+<dt id="pysisnoapi.nfse.NotaFiscalServico"><code class="flex name class">
 <span>class <span class="ident">NotaFiscalServico</span></span>
 <span>(</span><span>*args, **kwargs)</span>
 </code></dt>
@@ -491,7 +491,7 @@ def retransmitir(*args, **kwargs):
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.nfse.NotaFiscalServico.asdict"><code class="name flex">
+<dt id="pysisnoapi.nfse.NotaFiscalServico.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -506,9 +506,9 @@ def retransmitir(*args, **kwargs):
 </dd>
 </dl>
 </dd>
-<dt id="sisno.nfse.ObjetoEmissaoNFSe"><code class="flex name class">
+<dt id="pysisnoapi.nfse.ObjetoEmissaoNFSe"><code class="flex name class">
 <span>class <span class="ident">ObjetoEmissaoNFSe</span></span>
-<span>(</span><span>cliente: <a title="sisno.Cliente" href="index.html#sisno.Cliente">Cliente</a>, servico: <a title="sisno.nfse.Servico" href="#sisno.nfse.Servico">Servico</a>, *args, **kwargs)</span>
+<span>(</span><span>cliente: <a title="pysisnoapi.Cliente" href="index.html#pysisnoapi.Cliente">Cliente</a>, servico: <a title="pysisnoapi.nfse.Servico" href="#pysisnoapi.nfse.Servico">Servico</a>, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -529,7 +529,7 @@ def retransmitir(*args, **kwargs):
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.nfse.ObjetoEmissaoNFSe.asdict"><code class="name flex">
+<dt id="pysisnoapi.nfse.ObjetoEmissaoNFSe.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -546,7 +546,7 @@ def retransmitir(*args, **kwargs):
 </dd>
 </dl>
 </dd>
-<dt id="sisno.nfse.PaginaNotaServico"><code class="flex name class">
+<dt id="pysisnoapi.nfse.PaginaNotaServico"><code class="flex name class">
 <span>class <span class="ident">PaginaNotaServico</span></span>
 <span>(</span><span>*args, **kwargs)</span>
 </code></dt>
@@ -569,7 +569,7 @@ def retransmitir(*args, **kwargs):
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.nfse.PaginaNotaServico.asdict"><code class="name flex">
+<dt id="pysisnoapi.nfse.PaginaNotaServico.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -584,7 +584,7 @@ def retransmitir(*args, **kwargs):
 </dd>
 </dl>
 </dd>
-<dt id="sisno.nfse.Servico"><code class="flex name class">
+<dt id="pysisnoapi.nfse.Servico"><code class="flex name class">
 <span>class <span class="ident">Servico</span></span>
 <span>(</span><span>valor_servicos, discriminacao, impostos, *args, **kwargs)</span>
 </code></dt>
@@ -682,7 +682,7 @@ Default: ''</p></div>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.nfse.Servico.asdict"><code class="name flex">
+<dt id="pysisnoapi.nfse.Servico.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -710,48 +710,48 @@ Default: ''</p></div>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="sisno" href="index.html">sisno</a></code></li>
+<li><code><a title="pysisnoapi" href="index.html">pysisnoapi</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="sisno.nfse.buscar_notas" href="#sisno.nfse.buscar_notas">buscar_notas</a></code></li>
-<li><code><a title="sisno.nfse.cancelar" href="#sisno.nfse.cancelar">cancelar</a></code></li>
-<li><code><a title="sisno.nfse.emitir" href="#sisno.nfse.emitir">emitir</a></code></li>
-<li><code><a title="sisno.nfse.recuperar_dados" href="#sisno.nfse.recuperar_dados">recuperar_dados</a></code></li>
-<li><code><a title="sisno.nfse.retransmitir" href="#sisno.nfse.retransmitir">retransmitir</a></code></li>
+<li><code><a title="pysisnoapi.nfse.buscar_notas" href="#pysisnoapi.nfse.buscar_notas">buscar_notas</a></code></li>
+<li><code><a title="pysisnoapi.nfse.cancelar" href="#pysisnoapi.nfse.cancelar">cancelar</a></code></li>
+<li><code><a title="pysisnoapi.nfse.emitir" href="#pysisnoapi.nfse.emitir">emitir</a></code></li>
+<li><code><a title="pysisnoapi.nfse.recuperar_dados" href="#pysisnoapi.nfse.recuperar_dados">recuperar_dados</a></code></li>
+<li><code><a title="pysisnoapi.nfse.retransmitir" href="#pysisnoapi.nfse.retransmitir">retransmitir</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="sisno.nfse.ConstrucaoCivil" href="#sisno.nfse.ConstrucaoCivil">ConstrucaoCivil</a></code></h4>
+<h4><code><a title="pysisnoapi.nfse.ConstrucaoCivil" href="#pysisnoapi.nfse.ConstrucaoCivil">ConstrucaoCivil</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.nfse.ConstrucaoCivil.asdict" href="#sisno.nfse.ConstrucaoCivil.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.nfse.ConstrucaoCivil.asdict" href="#pysisnoapi.nfse.ConstrucaoCivil.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.nfse.NotaFiscalServico" href="#sisno.nfse.NotaFiscalServico">NotaFiscalServico</a></code></h4>
+<h4><code><a title="pysisnoapi.nfse.NotaFiscalServico" href="#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.nfse.NotaFiscalServico.asdict" href="#sisno.nfse.NotaFiscalServico.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.asdict" href="#pysisnoapi.nfse.NotaFiscalServico.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.nfse.ObjetoEmissaoNFSe" href="#sisno.nfse.ObjetoEmissaoNFSe">ObjetoEmissaoNFSe</a></code></h4>
+<h4><code><a title="pysisnoapi.nfse.ObjetoEmissaoNFSe" href="#pysisnoapi.nfse.ObjetoEmissaoNFSe">ObjetoEmissaoNFSe</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.nfse.ObjetoEmissaoNFSe.asdict" href="#sisno.nfse.ObjetoEmissaoNFSe.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.nfse.ObjetoEmissaoNFSe.asdict" href="#pysisnoapi.nfse.ObjetoEmissaoNFSe.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.nfse.PaginaNotaServico" href="#sisno.nfse.PaginaNotaServico">PaginaNotaServico</a></code></h4>
+<h4><code><a title="pysisnoapi.nfse.PaginaNotaServico" href="#pysisnoapi.nfse.PaginaNotaServico">PaginaNotaServico</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.nfse.PaginaNotaServico.asdict" href="#sisno.nfse.PaginaNotaServico.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.nfse.PaginaNotaServico.asdict" href="#pysisnoapi.nfse.PaginaNotaServico.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.nfse.Servico" href="#sisno.nfse.Servico">Servico</a></code></h4>
+<h4><code><a title="pysisnoapi.nfse.Servico" href="#pysisnoapi.nfse.Servico">Servico</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.nfse.Servico.asdict" href="#sisno.nfse.Servico.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.nfse.Servico.asdict" href="#pysisnoapi.nfse.Servico.asdict">asdict</a></code></li>
 </ul>
 </li>
 </ul>

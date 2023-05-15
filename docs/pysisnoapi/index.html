@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>sisno API documentation</title>
+<title>pysisnoapi API documentation</title>
 <meta name="description" content="Package criado para integração com a API da plataforma SISNO …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,19 +19,19 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Package <code>sisno</code></h1>
+<h1 class="title">Package <code>pysisnoapi</code></h1>
 </header>
 <section id="section-intro">
 <p>Package criado para integração com a API da plataforma SISNO.</p>
 <p>Para utilizar esse package basta importá-lo da seguinte forma:
-"import sisno"</p>
+"import pysisnoapi"</p>
 <p>Dentro desse package existem outros módulos e que muito provavelmente serão necessários para você!</p>
 <h2 id="exemplos">Exemplos</h2>
 <ul>
 <li>Módulo "nfe" para emissão/consulta de Notas Fiscais de Produto
-"from sisno import nfe"</li>
+"from pysisnoapi import nfe"</li>
 <li>Módulo "nfse" para emissão/consulta de Notas Fiscais de Serviço
-"from sisno import nfse"</li>
+"from pysisnoapi import nfse"</li>
 </ul>
 <details class="source">
 <summary>
@@ -41,18 +41,16 @@
     Package criado para integração com a API da plataforma SISNO.
 
     Para utilizar esse package basta importá-lo da seguinte forma:
-    &#34;import sisno&#34;
+    &#34;import pysisnoapi&#34;
 
     Dentro desse package existem outros módulos e que muito provavelmente serão necessários para você!
 
     Exemplos:
         - Módulo &#34;nfe&#34; para emissão/consulta de Notas Fiscais de Produto
-            &#34;from sisno import nfe&#34;
+            &#34;from pysisnoapi import nfe&#34;
         - Módulo &#34;nfse&#34; para emissão/consulta de Notas Fiscais de Serviço
-            &#34;from sisno import nfse&#34;
+            &#34;from pysisnoapi import nfse&#34;
 &#34;&#34;&#34;
-
-__package_name__ = &#34;SISNO.py&#34;
 
 # ======================================================================================================================
 # Imports:
@@ -594,16 +592,16 @@ if __name__ == &#34;__main__&#34;:
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt><code class="name"><a title="sisno.misc" href="misc.html">sisno.misc</a></code></dt>
+<dt><code class="name"><a title="pysisnoapi.misc" href="misc.html">pysisnoapi.misc</a></code></dt>
 <dd>
 <div class="desc"><p>Módulo genérico para funções que não se encaixam em outros módulos, como por exemplo a função de realizar uma requisição para a API para consultar …</p></div>
 </dd>
-<dt><code class="name"><a title="sisno.nfe" href="nfe.html">sisno.nfe</a></code></dt>
+<dt><code class="name"><a title="pysisnoapi.nfe" href="nfe.html">pysisnoapi.nfe</a></code></dt>
 <dd>
 <div class="desc"><p>Módulo específico para geração de Notas Fiscais de Produto através da API da plataforma SISNO.
 Esse módulo faz parte de um package e é totalmente …</p></div>
 </dd>
-<dt><code class="name"><a title="sisno.nfse" href="nfse.html">sisno.nfse</a></code></dt>
+<dt><code class="name"><a title="pysisnoapi.nfse" href="nfse.html">pysisnoapi.nfse</a></code></dt>
 <dd>
 <div class="desc"><p>Módulo específico para geração de Notas Fiscais de Serviço através da API da plataforma SISNO.
 Esse módulo faz parte de um package e é totalmente …</p></div>
@@ -615,7 +613,7 @@ Esse módulo faz parte de um package e é totalmente …</p></div>
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="sisno.alterar_emissor"><code class="name flex">
+<dt id="pysisnoapi.alterar_emissor"><code class="name flex">
 <span>def <span class="ident">alterar_emissor</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str)</span>
 </code></dt>
 <dd>
@@ -676,7 +674,7 @@ A alteração das chaves de API é necessária para consultar/emitir notas fisca
     HEADERS[&#34;token-secret-empresa&#34;] = token_secret_empresa</code></pre>
 </details>
 </dd>
-<dt id="sisno.requires_keys"><code class="name flex">
+<dt id="pysisnoapi.requires_keys"><code class="name flex">
 <span>def <span class="ident">requires_keys</span></span>(<span>func)</span>
 </code></dt>
 <dd>
@@ -703,7 +701,7 @@ A alteração das chaves de API é necessária para consultar/emitir notas fisca
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="sisno.Cfop"><code class="flex name class">
+<dt id="pysisnoapi.Cfop"><code class="flex name class">
 <span>class <span class="ident">Cfop</span></span>
 <span>(</span><span>**kwargs)</span>
 </code></dt>
@@ -718,7 +716,7 @@ A alteração das chaves de API é necessária para consultar/emitir notas fisca
         raise NotImplementedError</code></pre>
 </details>
 </dd>
-<dt id="sisno.Cliente"><code class="flex name class">
+<dt id="pysisnoapi.Cliente"><code class="flex name class">
 <span>class <span class="ident">Cliente</span></span>
 <span>(</span><span>consumidor_final, contribuinte, endereco, **kwargs)</span>
 </code></dt>
@@ -778,7 +776,7 @@ A alteração das chaves de API é necessária para consultar/emitir notas fisca
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.Cliente.asdict"><code class="name flex">
+<dt id="pysisnoapi.Cliente.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -819,7 +817,7 @@ A alteração das chaves de API é necessária para consultar/emitir notas fisca
 </dd>
 </dl>
 </dd>
-<dt id="sisno.Cofins"><code class="flex name class">
+<dt id="pysisnoapi.Cofins"><code class="flex name class">
 <span>class <span class="ident">Cofins</span></span>
 <span>(</span><span>**kwargs)</span>
 </code></dt>
@@ -840,7 +838,7 @@ A alteração das chaves de API é necessária para consultar/emitir notas fisca
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.Cofins.asdict"><code class="name flex">
+<dt id="pysisnoapi.Cofins.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -857,7 +855,7 @@ A alteração das chaves de API é necessária para consultar/emitir notas fisca
 </dd>
 </dl>
 </dd>
-<dt id="sisno.DeclaracaoImportacaoAdicao"><code class="flex name class">
+<dt id="pysisnoapi.DeclaracaoImportacaoAdicao"><code class="flex name class">
 <span>class <span class="ident">DeclaracaoImportacaoAdicao</span></span>
 <span>(</span><span>**kwargs)</span>
 </code></dt>
@@ -873,7 +871,7 @@ A alteração das chaves de API é necessária para consultar/emitir notas fisca
         raise NotImplementedError</code></pre>
 </details>
 </dd>
-<dt id="sisno.Empresa"><code class="flex name class">
+<dt id="pysisnoapi.Empresa"><code class="flex name class">
 <span>class <span class="ident">Empresa</span></span>
 <span>(</span><span>**kwargs)</span>
 </code></dt>
@@ -1011,7 +1009,7 @@ Default is ''</p></div>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.Empresa.asdict"><code class="name flex">
+<dt id="pysisnoapi.Empresa.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1028,7 +1026,7 @@ Default is ''</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="sisno.Endereco"><code class="flex name class">
+<dt id="pysisnoapi.Endereco"><code class="flex name class">
 <span>class <span class="ident">Endereco</span></span>
 <span>(</span><span>codigo_pais, descricao_pais, bairro, logradouro, numero, **kwargs)</span>
 </code></dt>
@@ -1129,7 +1127,7 @@ Default is ''</p></div>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.Endereco.asdict"><code class="name flex">
+<dt id="pysisnoapi.Endereco.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1170,7 +1168,7 @@ Default is ''</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="sisno.Ibpt"><code class="flex name class">
+<dt id="pysisnoapi.Ibpt"><code class="flex name class">
 <span>class <span class="ident">Ibpt</span></span>
 <span>(</span><span>**kwargs)</span>
 </code></dt>
@@ -1185,7 +1183,7 @@ Default is ''</p></div>
         raise NotImplementedError</code></pre>
 </details>
 </dd>
-<dt id="sisno.Icms"><code class="flex name class">
+<dt id="pysisnoapi.Icms"><code class="flex name class">
 <span>class <span class="ident">Icms</span></span>
 <span>(</span><span>**kwargs)</span>
 </code></dt>
@@ -1206,7 +1204,7 @@ Default is ''</p></div>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.Icms.asdict"><code class="name flex">
+<dt id="pysisnoapi.Icms.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1223,7 +1221,7 @@ Default is ''</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="sisno.Impostos"><code class="flex name class">
+<dt id="pysisnoapi.Impostos"><code class="flex name class">
 <span>class <span class="ident">Impostos</span></span>
 <span>(</span><span>tipo, pis, cofins, **kwargs)</span>
 </code></dt>
@@ -1266,7 +1264,7 @@ Default is ''</p></div>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.Impostos.asdict"><code class="name flex">
+<dt id="pysisnoapi.Impostos.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1298,7 +1296,7 @@ Default is ''</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="sisno.Ipi"><code class="flex name class">
+<dt id="pysisnoapi.Ipi"><code class="flex name class">
 <span>class <span class="ident">Ipi</span></span>
 <span>(</span><span>**kwargs)</span>
 </code></dt>
@@ -1319,7 +1317,7 @@ Default is ''</p></div>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.Ipi.asdict"><code class="name flex">
+<dt id="pysisnoapi.Ipi.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1336,7 +1334,7 @@ Default is ''</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="sisno.Issqn"><code class="flex name class">
+<dt id="pysisnoapi.Issqn"><code class="flex name class">
 <span>class <span class="ident">Issqn</span></span>
 <span>(</span><span>**kwargs)</span>
 </code></dt>
@@ -1378,7 +1376,7 @@ Default is ''</p></div>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.Issqn.asdict"><code class="name flex">
+<dt id="pysisnoapi.Issqn.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1395,7 +1393,7 @@ Default is ''</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="sisno.Municipio"><code class="flex name class">
+<dt id="pysisnoapi.Municipio"><code class="flex name class">
 <span>class <span class="ident">Municipio</span></span>
 <span>(</span><span>**kwargs)</span>
 </code></dt>
@@ -1418,7 +1416,7 @@ Default is ''</p></div>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.Municipio.asdict"><code class="name flex">
+<dt id="pysisnoapi.Municipio.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1435,7 +1433,7 @@ Default is ''</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="sisno.NotaFiscal"><code class="flex name class">
+<dt id="pysisnoapi.NotaFiscal"><code class="flex name class">
 <span>class <span class="ident">NotaFiscal</span></span>
 <span>(</span><span>**kwargs)</span>
 </code></dt>
@@ -1477,7 +1475,7 @@ Default is ''</p></div>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.NotaFiscal.asdict"><code class="name flex">
+<dt id="pysisnoapi.NotaFiscal.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1504,7 +1502,7 @@ Default is ''</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="sisno.Observacao"><code class="flex name class">
+<dt id="pysisnoapi.Observacao"><code class="flex name class">
 <span>class <span class="ident">Observacao</span></span>
 <span>(</span><span>**kwargs)</span>
 </code></dt>
@@ -1528,7 +1526,7 @@ Default is ''</p></div>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.Observacao.asdict"><code class="name flex">
+<dt id="pysisnoapi.Observacao.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1545,7 +1543,7 @@ Default is ''</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="sisno.PessoaFisica"><code class="flex name class">
+<dt id="pysisnoapi.PessoaFisica"><code class="flex name class">
 <span>class <span class="ident">PessoaFisica</span></span>
 <span>(</span><span>nome_completo, **kwargs)</span>
 </code></dt>
@@ -1586,7 +1584,7 @@ Default is ''</p></div>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.PessoaFisica.asdict"><code class="name flex">
+<dt id="pysisnoapi.PessoaFisica.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1615,7 +1613,7 @@ Default is ''</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="sisno.PessoaJuridica"><code class="flex name class">
+<dt id="pysisnoapi.PessoaJuridica"><code class="flex name class">
 <span>class <span class="ident">PessoaJuridica</span></span>
 <span>(</span><span>**kwargs)</span>
 </code></dt>
@@ -1637,7 +1635,7 @@ Default is ''</p></div>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.PessoaJuridica.asdict"><code class="name flex">
+<dt id="pysisnoapi.PessoaJuridica.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1654,7 +1652,7 @@ Default is ''</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="sisno.Pis"><code class="flex name class">
+<dt id="pysisnoapi.Pis"><code class="flex name class">
 <span>class <span class="ident">Pis</span></span>
 <span>(</span><span>situacao_tributaria, **kwargs)</span>
 </code></dt>
@@ -1758,7 +1756,7 @@ string($0.0000)</p></div>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.Pis.asdict"><code class="name flex">
+<dt id="pysisnoapi.Pis.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1775,7 +1773,7 @@ string($0.0000)</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="sisno.RetencaoIcmsTransporte"><code class="flex name class">
+<dt id="pysisnoapi.RetencaoIcmsTransporte"><code class="flex name class">
 <span>class <span class="ident">RetencaoIcmsTransporte</span></span>
 <span>(</span><span>**kwargs)</span>
 </code></dt>
@@ -1791,7 +1789,7 @@ string($0.0000)</p></div>
         raise NotImplementedError</code></pre>
 </details>
 </dd>
-<dt id="sisno.Transporte"><code class="flex name class">
+<dt id="pysisnoapi.Transporte"><code class="flex name class">
 <span>class <span class="ident">Transporte</span></span>
 <span>(</span><span>**kwargs)</span>
 </code></dt>
@@ -1807,7 +1805,7 @@ string($0.0000)</p></div>
         raise NotImplementedError</code></pre>
 </details>
 </dd>
-<dt id="sisno.Uf"><code class="flex name class">
+<dt id="pysisnoapi.Uf"><code class="flex name class">
 <span>class <span class="ident">Uf</span></span>
 <span>(</span><span>**kwargs)</span>
 </code></dt>
@@ -1833,7 +1831,7 @@ string($0.0000)</p></div>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="sisno.Uf.asdict"><code class="name flex">
+<dt id="pysisnoapi.Uf.asdict"><code class="name flex">
 <span>def <span class="ident">asdict</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1861,122 +1859,122 @@ string($0.0000)</p></div>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li><code><a title="sisno.misc" href="misc.html">sisno.misc</a></code></li>
-<li><code><a title="sisno.nfe" href="nfe.html">sisno.nfe</a></code></li>
-<li><code><a title="sisno.nfse" href="nfse.html">sisno.nfse</a></code></li>
+<li><code><a title="pysisnoapi.misc" href="misc.html">pysisnoapi.misc</a></code></li>
+<li><code><a title="pysisnoapi.nfe" href="nfe.html">pysisnoapi.nfe</a></code></li>
+<li><code><a title="pysisnoapi.nfse" href="nfse.html">pysisnoapi.nfse</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="sisno.alterar_emissor" href="#sisno.alterar_emissor">alterar_emissor</a></code></li>
-<li><code><a title="sisno.requires_keys" href="#sisno.requires_keys">requires_keys</a></code></li>
+<li><code><a title="pysisnoapi.alterar_emissor" href="#pysisnoapi.alterar_emissor">alterar_emissor</a></code></li>
+<li><code><a title="pysisnoapi.requires_keys" href="#pysisnoapi.requires_keys">requires_keys</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="sisno.Cfop" href="#sisno.Cfop">Cfop</a></code></h4>
+<h4><code><a title="pysisnoapi.Cfop" href="#pysisnoapi.Cfop">Cfop</a></code></h4>
 </li>
 <li>
-<h4><code><a title="sisno.Cliente" href="#sisno.Cliente">Cliente</a></code></h4>
+<h4><code><a title="pysisnoapi.Cliente" href="#pysisnoapi.Cliente">Cliente</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.Cliente.asdict" href="#sisno.Cliente.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.asdict" href="#pysisnoapi.Cliente.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.Cofins" href="#sisno.Cofins">Cofins</a></code></h4>
+<h4><code><a title="pysisnoapi.Cofins" href="#pysisnoapi.Cofins">Cofins</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.Cofins.asdict" href="#sisno.Cofins.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Cofins.asdict" href="#pysisnoapi.Cofins.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.DeclaracaoImportacaoAdicao" href="#sisno.DeclaracaoImportacaoAdicao">DeclaracaoImportacaoAdicao</a></code></h4>
+<h4><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao" href="#pysisnoapi.DeclaracaoImportacaoAdicao">DeclaracaoImportacaoAdicao</a></code></h4>
 </li>
 <li>
-<h4><code><a title="sisno.Empresa" href="#sisno.Empresa">Empresa</a></code></h4>
+<h4><code><a title="pysisnoapi.Empresa" href="#pysisnoapi.Empresa">Empresa</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.Empresa.asdict" href="#sisno.Empresa.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.asdict" href="#pysisnoapi.Empresa.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.Endereco" href="#sisno.Endereco">Endereco</a></code></h4>
+<h4><code><a title="pysisnoapi.Endereco" href="#pysisnoapi.Endereco">Endereco</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.Endereco.asdict" href="#sisno.Endereco.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Endereco.asdict" href="#pysisnoapi.Endereco.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.Ibpt" href="#sisno.Ibpt">Ibpt</a></code></h4>
+<h4><code><a title="pysisnoapi.Ibpt" href="#pysisnoapi.Ibpt">Ibpt</a></code></h4>
 </li>
 <li>
-<h4><code><a title="sisno.Icms" href="#sisno.Icms">Icms</a></code></h4>
+<h4><code><a title="pysisnoapi.Icms" href="#pysisnoapi.Icms">Icms</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.Icms.asdict" href="#sisno.Icms.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Icms.asdict" href="#pysisnoapi.Icms.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.Impostos" href="#sisno.Impostos">Impostos</a></code></h4>
+<h4><code><a title="pysisnoapi.Impostos" href="#pysisnoapi.Impostos">Impostos</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.Impostos.asdict" href="#sisno.Impostos.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Impostos.asdict" href="#pysisnoapi.Impostos.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.Ipi" href="#sisno.Ipi">Ipi</a></code></h4>
+<h4><code><a title="pysisnoapi.Ipi" href="#pysisnoapi.Ipi">Ipi</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.Ipi.asdict" href="#sisno.Ipi.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Ipi.asdict" href="#pysisnoapi.Ipi.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.Issqn" href="#sisno.Issqn">Issqn</a></code></h4>
+<h4><code><a title="pysisnoapi.Issqn" href="#pysisnoapi.Issqn">Issqn</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.Issqn.asdict" href="#sisno.Issqn.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Issqn.asdict" href="#pysisnoapi.Issqn.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.Municipio" href="#sisno.Municipio">Municipio</a></code></h4>
+<h4><code><a title="pysisnoapi.Municipio" href="#pysisnoapi.Municipio">Municipio</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.Municipio.asdict" href="#sisno.Municipio.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Municipio.asdict" href="#pysisnoapi.Municipio.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.NotaFiscal" href="#sisno.NotaFiscal">NotaFiscal</a></code></h4>
+<h4><code><a title="pysisnoapi.NotaFiscal" href="#pysisnoapi.NotaFiscal">NotaFiscal</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.NotaFiscal.asdict" href="#sisno.NotaFiscal.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.asdict" href="#pysisnoapi.NotaFiscal.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.Observacao" href="#sisno.Observacao">Observacao</a></code></h4>
+<h4><code><a title="pysisnoapi.Observacao" href="#pysisnoapi.Observacao">Observacao</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.Observacao.asdict" href="#sisno.Observacao.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Observacao.asdict" href="#pysisnoapi.Observacao.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.PessoaFisica" href="#sisno.PessoaFisica">PessoaFisica</a></code></h4>
+<h4><code><a title="pysisnoapi.PessoaFisica" href="#pysisnoapi.PessoaFisica">PessoaFisica</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.PessoaFisica.asdict" href="#sisno.PessoaFisica.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.PessoaFisica.asdict" href="#pysisnoapi.PessoaFisica.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.PessoaJuridica" href="#sisno.PessoaJuridica">PessoaJuridica</a></code></h4>
+<h4><code><a title="pysisnoapi.PessoaJuridica" href="#pysisnoapi.PessoaJuridica">PessoaJuridica</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.PessoaJuridica.asdict" href="#sisno.PessoaJuridica.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.PessoaJuridica.asdict" href="#pysisnoapi.PessoaJuridica.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.Pis" href="#sisno.Pis">Pis</a></code></h4>
+<h4><code><a title="pysisnoapi.Pis" href="#pysisnoapi.Pis">Pis</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.Pis.asdict" href="#sisno.Pis.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Pis.asdict" href="#pysisnoapi.Pis.asdict">asdict</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="sisno.RetencaoIcmsTransporte" href="#sisno.RetencaoIcmsTransporte">RetencaoIcmsTransporte</a></code></h4>
+<h4><code><a title="pysisnoapi.RetencaoIcmsTransporte" href="#pysisnoapi.RetencaoIcmsTransporte">RetencaoIcmsTransporte</a></code></h4>
 </li>
 <li>
-<h4><code><a title="sisno.Transporte" href="#sisno.Transporte">Transporte</a></code></h4>
+<h4><code><a title="pysisnoapi.Transporte" href="#pysisnoapi.Transporte">Transporte</a></code></h4>
 </li>
 <li>
-<h4><code><a title="sisno.Uf" href="#sisno.Uf">Uf</a></code></h4>
+<h4><code><a title="pysisnoapi.Uf" href="#pysisnoapi.Uf">Uf</a></code></h4>
 <ul class="">
-<li><code><a title="sisno.Uf.asdict" href="#sisno.Uf.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Uf.asdict" href="#pysisnoapi.Uf.asdict">asdict</a></code></li>
 </ul>
 </li>
 </ul>

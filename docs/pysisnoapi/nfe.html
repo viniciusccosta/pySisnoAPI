@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>pysisnoapi.nfe API documentation</title>
+<meta name="description" content="Módulo específico para geração de Notas Fiscais de Produto através da API da plataforma SISNO.
+Esse módulo faz parte de um package e é totalmente …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>pysisnoapi.nfe</code></h1>
+</header>
+<section id="section-intro">
+<p>Módulo específico para geração de Notas Fiscais de Produto através da API da plataforma SISNO.
+Esse módulo faz parte de um package e é totalmente dependente de outros módulos.</p>
+<p>Para utilizar esse módulo basta importá-lo da seguinte forma:
+"from pysisnoapi import nfe"</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34; 
+    Módulo específico para geração de Notas Fiscais de Produto através da API da plataforma SISNO.
+    Esse módulo faz parte de um package e é totalmente dependente de outros módulos.
+
+    Para utilizar esse módulo basta importá-lo da seguinte forma:
+    &#34;from pysisnoapi import nfe&#34;
+&#34;&#34;&#34;
+
+# =====================================================================
+from . import *
+
+from datetime import datetime
+import requests
+
+# =====================================================================
+CSV_HEADERS = [
+    &#39;CNPJ EMITENTE&#39;,
+    &#39;MODELO&#39;,
+    &#39;CPF/CNPJ DESTINATÁRIO&#39;,
+    &#39;NOME/RAZAO SOCIAL DESTINATÁRIO&#39;,
+    &#39;INDICADOR IE&#39;,
+    &#39;CONSUMIDOR FINAL&#39;,
+    &#39;FAZ RETENÇÃO DE IMPOSTOS&#39;,
+    &#39;CEP&#39;,
+    &#39;BAIRRO&#39;,
+    &#39;LOGRADOURO&#39;,
+    &#39;NUMERO&#39;,
+    &#39;EMAIL DESTINATÁRIO&#39;,
+    &#39;OPERAÇÃO&#39;,
+    &#39;FINALIDADE&#39;,
+    &#39;PRODUTOS&#39;,
+    &#39;MEIO PAGAMENTO&#39;,
+    &#39;INFORMAÇÕES COMPLEMENTARES&#39;,
+    &#39;SIGLA UF&#39;,
+    &#39;IBGE MUNICÍPIO&#39;,
+    &#39;COMPLEMENTO ENDEREÇO&#39;
+]
+
+# =====================================================================
+class ObjetoEmissaoNFe:
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError
+
+class Pagamento:
+    def __init__(self, *args):
+        self.formas_pagamento        = [f for f in args]                                        # list[FORMAPAGAMENTO]
+
+    def asdict(self):
+        return {
+            &#34;formas_pagamento&#34;: [f.asdict() for f in self.formas_pagamento]
+        }
+
+class FormaPagamento:
+    def __init__(self, **kwargs):
+        self.forma_pagamento         = kwargs.get(&#34;forma_pagamento&#34;, None)                      # string (0: À Vista, 1: À Prazo)
+        self.meio_pagamento          = kwargs.get(&#34;meio_pagamento&#34;, None)                       # string [01, 02, 03, 04, 05, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 90, 99 ]
+        self.valor_pagamento         = kwargs.get(&#34;valor_pagamento&#34;, None)                      # string ($0.00)
+
+    def asdict(self):
+        return self.__dict__
+
+class Produto:
+    def __init__(self, tipo, **kwargs):
+        self.tipo                   = tipo                                      # TODO: 0: Produto, 1: Serviço
+
+        self.cfop                   = kwargs.get(&#34;cfop&#34;, None)                  # string
+        self.item                   = kwargs.get(&#34;item&#34;, None)                  # string (Número incremental na lista de produtos)
+        self.nome                   = kwargs.get(&#34;nome&#34;, None)                  # string
+        self.ncm                    = kwargs.get(&#34;ncm&#34;, None)                   # string
+        self.quantidade             = kwargs.get(&#34;quantidade&#34;, None)            # string
+        self.unidade                = kwargs.get(&#34;unidade&#34;, None)               # string (AMPOLA, BALDE, BANDEJ, BARRA, BISNAG, BLOCO, BOBINA, BOMB, CAPS, CART, CENTO, CJ, CM, CM2, CX, CX2, CX3, CX5, CX10, CX15, CX20, CX25, CX50, CX100, DISP, DUZIA, EMBAL, FARDO, FOLHA, FRASCO, GALAO, JOGO, KG, KIT, LATA, LITRO, M, M2, M3, MILHEI, ML, MWH, PACOTE, PALETE, PARES, PC, POTE, K, RESMA, ROLO, SACO, SACOLA, TAMBOR, TANQUE, TON, TUBO, UNID, VASIL, VIDRO)
+        self.subtotal               = kwargs.get(&#34;subtotal&#34;, None)              # string ($0.0000000000) - VALOR UNITÁRIO
+        self.total                  = kwargs.get(&#34;total&#34;, None)                 # string ($0.00) (Quantidade * Valor Unitário)
+        self.impostos               = kwargs.get(&#34;impostos&#34;, None)              # Objeto IMPOSTOS
+
+    def asdict(self):
+        return {
+            &#34;cfop&#34;          : self.cfop,
+            &#34;item&#34;          : self.item,
+            &#34;nome&#34;          : self.nome,
+            &#34;ncm&#34;           : self.ncm,
+            &#34;quantidade&#34;    : self.quantidade,
+            &#34;unidade&#34;       : self.unidade,
+            &#34;subtotal&#34;      : self.subtotal,
+            &#34;total&#34;         : self.total,
+            &#34;impostos&#34;      : self.impostos.asdict(),
+        }
+
+class Pedido:
+    def __init__(self, **kwargs):
+        self.presenca                        = kwargs.get(&#34;presenca&#34;, None)                     # string [ 0, 1, 2, 3, 4, 5, 9 ]
+        self.pagamento                       = kwargs.get(&#34;pagamento&#34;, None)                    # Objeto PAGAMENTO
+
+        self.informacoes_complementares      = kwargs.get(&#34;informacoes_complementares&#34;, None)   # string
+        self.informacoes_fisco               = kwargs.get(&#34;informacoes_fisco&#34;, None)            # string
+        self.observacoes_fisco               = kwargs.get(&#34;observacoes_fisco&#34;, None)            # list[OBSERVACAO]
+        self.observacoes_contribuinte        = kwargs.get(&#34;observacoes_contribuinte&#34;, None)     # list[OBSERVACAO]
+
+    def asdict(self):
+        # TODO: Adicionar o restante dos atributos ao dicionário
+
+        return {
+            &#34;presenca&#34;                      : self.presenca,
+            &#34;pagamento&#34;                     : self.pagamento.asdict(),
+        }
+
+class VeiculoNovo:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+class ExportacaoIndividual:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+class ImportacaoInvididual:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+class Rastreamento:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+class Fatura:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+class Exportacao:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+class Local:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+class Compra:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+class InformacaoIntermediador:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+class PaginaNotas:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+# =====================================================================
+@requires_keys
+def emitir(*args, **kwargs):
+    raise NotImplementedError
+
+@requires_keys
+def corrigir(*args, **kwargs):
+    raise NotImplementedError
+
+@requires_keys
+def cancelar(*args, **kwargs):
+    raise NotImplementedError
+
+@requires_keys
+def validar(*args, **kwargs):
+    raise NotImplementedError
+
+@requires_keys
+def listar(*args, **kwargs):
+    raise NotImplementedError
+
+@requires_keys
+def buscar_notas(*args, **kwargs):
+    raise NotImplementedError
+
+@requires_keys
+def get_nota(*args, **kwargs):
+    raise NotImplementedError
+
+@requires_keys
+def inutilizar_numeracao(*args, **kwargs):
+    raise NotImplementedError
+
+@requires_keys
+def get_pre_visualizacao(*args, **kwargs):
+    raise NotImplementedError
+
+@requires_keys
+def get_danfe(*args, **kwargs):
+    raise NotImplementedError
+
+# =====================================================================
+@requires_keys
+def __emitir_nota_teste(*args, **kwargs):
+    agora = datetime.datetime.now().strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
+
+    # TODO: Os impostos, os produtos (e até mesmo os clientes) já deverão estar cadastrados em algum banco de dados
+
+    # Grupos de Impostos:
+    pis             = Pis(situacao_tributaria=&#34;99&#34;)                                                                                                                     #
+    cofins          = Cofins(situacao_tributaria=&#34;99&#34;)                                                                                                                  #
+    issqn           = Issqn(indicador_exigibilidade_iss=&#34;1&#34;, indicador_incentivo_fiscal=&#34;1&#34;, item_lista_servicos=&#34;08.01&#34;, aliquota=&#34;0.0000&#34;)                            # Exigível, Não, 08.01, 0.0000%
+    impostos        = Impostos(tipo=&#34;1&#34;, pis=pis, cofins=cofins, issqn=issqn)                                                                                           # Serviço
+
+    # Produtos e Serviços:
+    produto         = Produto(tipo=&#34;1&#34;, cfop=&#34;5933&#34;, item=&#34;2&#34;, nome=&#34;MENSALIDADE DE ENSINO REGULAR, PRÉ-ESCOLAR, E FUNDAMENTAL&#34;, ncm=&#34;00000000&#34;, quantidade=&#34;1.0000&#34;, unidade=&#34;UNID&#34;, subtotal=&#34;1.0000000000&#34;, total=&#34;1.00&#34;, impostos=impostos)  # TODO: O total deveria ser calculado e não informado
+
+    # Destinatários:
+    endereco        = Endereco(codigo_pais=&#34;55&#34;, descricao_pais=&#34;Brasil&#34;, bairro=&#34;Nome do Bairro&#34;, logradouro=&#34;Rua Ciclano da Silva Júnior&#34;, numero=&#34;0&#34;)                #
+    pessoa_fisica   = PessoaFisica(cpf=&#34;65386056808&#34;, nome_completo=&#34;Nome do Cliente&#34;)                                                                                  # CPF gerado randomicamente pelo site https://www.geradordecpf.org/
+    cliente         = Cliente(pessoa_fisica=pessoa_fisica, consumidor_final=&#34;1&#34;, contribuinte=&#34;9&#34;, endereco=endereco)                                                   # Consumidor Final e Não Contribuinte
+
+    # Pedido:
+    forma_pagamento = FormaPagamento(forma_pagamento=&#34;0&#34;, meio_pagamento=&#34;01&#34;, valor_pagamento=&#34;1.00&#34;)                                                                  # À vista, dinheiro, R$ 1,00
+    pagamento       = Pagamento(forma_pagamento)                                                                                                                        # TODO: Supostamente podemos passar mais de uma forma de pagamento, mas será que ele irá validar o &#34;valor_pagamento&#34; com o total dos produtos/serviços ?
+    pedido          = Pedido(presenca=&#34;0&#34;, pagamento=pagamento)                                                                                                         # Não se aplica
+
+    # Nota Fiscal:
+    nota_fiscal     = NotaFiscal(serie=&#34;1&#34;, operacao=&#34;1&#34;, natureza_operacao=&#34;Prestação de Serviço&#34;, modelo=&#34;55&#34;, finalidade=&#34;1&#34;, ambiente=&#34;2&#34;, cliente=cliente, produtos=[produto], pedido=pedido, data_entrada_saida=agora, data_emissao=agora)  # TODO: Como saber qual a série?
+
+# =====================================================================
+if __name__ == &#34;__main__&#34;:
+    __emitir_nota_teste()
+
+# =====================================================================</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="pysisnoapi.nfe.buscar_notas"><code class="name flex">
+<span>def <span class="ident">buscar_notas</span></span>(<span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@requires_keys
+def buscar_notas(*args, **kwargs):
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.cancelar"><code class="name flex">
+<span>def <span class="ident">cancelar</span></span>(<span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@requires_keys
+def cancelar(*args, **kwargs):
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.corrigir"><code class="name flex">
+<span>def <span class="ident">corrigir</span></span>(<span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@requires_keys
+def corrigir(*args, **kwargs):
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.emitir"><code class="name flex">
+<span>def <span class="ident">emitir</span></span>(<span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@requires_keys
+def emitir(*args, **kwargs):
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.get_danfe"><code class="name flex">
+<span>def <span class="ident">get_danfe</span></span>(<span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@requires_keys
+def get_danfe(*args, **kwargs):
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.get_nota"><code class="name flex">
+<span>def <span class="ident">get_nota</span></span>(<span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@requires_keys
+def get_nota(*args, **kwargs):
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.get_pre_visualizacao"><code class="name flex">
+<span>def <span class="ident">get_pre_visualizacao</span></span>(<span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@requires_keys
+def get_pre_visualizacao(*args, **kwargs):
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.inutilizar_numeracao"><code class="name flex">
+<span>def <span class="ident">inutilizar_numeracao</span></span>(<span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@requires_keys
+def inutilizar_numeracao(*args, **kwargs):
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.listar"><code class="name flex">
+<span>def <span class="ident">listar</span></span>(<span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@requires_keys
+def listar(*args, **kwargs):
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.validar"><code class="name flex">
+<span>def <span class="ident">validar</span></span>(<span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@requires_keys
+def validar(*args, **kwargs):
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="pysisnoapi.nfe.Compra"><code class="flex name class">
+<span>class <span class="ident">Compra</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Compra:
+    def __init__(self, **kwargs):
+        raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.Exportacao"><code class="flex name class">
+<span>class <span class="ident">Exportacao</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Exportacao:
+    def __init__(self, **kwargs):
+        raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.ExportacaoIndividual"><code class="flex name class">
+<span>class <span class="ident">ExportacaoIndividual</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ExportacaoIndividual:
+    def __init__(self, **kwargs):
+        raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.Fatura"><code class="flex name class">
+<span>class <span class="ident">Fatura</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Fatura:
+    def __init__(self, **kwargs):
+        raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.FormaPagamento"><code class="flex name class">
+<span>class <span class="ident">FormaPagamento</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class FormaPagamento:
+    def __init__(self, **kwargs):
+        self.forma_pagamento         = kwargs.get(&#34;forma_pagamento&#34;, None)                      # string (0: À Vista, 1: À Prazo)
+        self.meio_pagamento          = kwargs.get(&#34;meio_pagamento&#34;, None)                       # string [01, 02, 03, 04, 05, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 90, 99 ]
+        self.valor_pagamento         = kwargs.get(&#34;valor_pagamento&#34;, None)                      # string ($0.00)
+
+    def asdict(self):
+        return self.__dict__</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="pysisnoapi.nfe.FormaPagamento.asdict"><code class="name flex">
+<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def asdict(self):
+    return self.__dict__</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="pysisnoapi.nfe.ImportacaoInvididual"><code class="flex name class">
+<span>class <span class="ident">ImportacaoInvididual</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ImportacaoInvididual:
+    def __init__(self, **kwargs):
+        raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.InformacaoIntermediador"><code class="flex name class">
+<span>class <span class="ident">InformacaoIntermediador</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class InformacaoIntermediador:
+    def __init__(self, **kwargs):
+        raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.Local"><code class="flex name class">
+<span>class <span class="ident">Local</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Local:
+    def __init__(self, **kwargs):
+        raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.ObjetoEmissaoNFe"><code class="flex name class">
+<span>class <span class="ident">ObjetoEmissaoNFe</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ObjetoEmissaoNFe:
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.Pagamento"><code class="flex name class">
+<span>class <span class="ident">Pagamento</span></span>
+<span>(</span><span>*args)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Pagamento:
+    def __init__(self, *args):
+        self.formas_pagamento        = [f for f in args]                                        # list[FORMAPAGAMENTO]
+
+    def asdict(self):
+        return {
+            &#34;formas_pagamento&#34;: [f.asdict() for f in self.formas_pagamento]
+        }</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="pysisnoapi.nfe.Pagamento.asdict"><code class="name flex">
+<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def asdict(self):
+    return {
+        &#34;formas_pagamento&#34;: [f.asdict() for f in self.formas_pagamento]
+    }</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="pysisnoapi.nfe.PaginaNotas"><code class="flex name class">
+<span>class <span class="ident">PaginaNotas</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PaginaNotas:
+    def __init__(self, **kwargs):
+        raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.Pedido"><code class="flex name class">
+<span>class <span class="ident">Pedido</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Pedido:
+    def __init__(self, **kwargs):
+        self.presenca                        = kwargs.get(&#34;presenca&#34;, None)                     # string [ 0, 1, 2, 3, 4, 5, 9 ]
+        self.pagamento                       = kwargs.get(&#34;pagamento&#34;, None)                    # Objeto PAGAMENTO
+
+        self.informacoes_complementares      = kwargs.get(&#34;informacoes_complementares&#34;, None)   # string
+        self.informacoes_fisco               = kwargs.get(&#34;informacoes_fisco&#34;, None)            # string
+        self.observacoes_fisco               = kwargs.get(&#34;observacoes_fisco&#34;, None)            # list[OBSERVACAO]
+        self.observacoes_contribuinte        = kwargs.get(&#34;observacoes_contribuinte&#34;, None)     # list[OBSERVACAO]
+
+    def asdict(self):
+        # TODO: Adicionar o restante dos atributos ao dicionário
+
+        return {
+            &#34;presenca&#34;                      : self.presenca,
+            &#34;pagamento&#34;                     : self.pagamento.asdict(),
+        }</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="pysisnoapi.nfe.Pedido.asdict"><code class="name flex">
+<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def asdict(self):
+    # TODO: Adicionar o restante dos atributos ao dicionário
+
+    return {
+        &#34;presenca&#34;                      : self.presenca,
+        &#34;pagamento&#34;                     : self.pagamento.asdict(),
+    }</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="pysisnoapi.nfe.Produto"><code class="flex name class">
+<span>class <span class="ident">Produto</span></span>
+<span>(</span><span>tipo, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Produto:
+    def __init__(self, tipo, **kwargs):
+        self.tipo                   = tipo                                      # TODO: 0: Produto, 1: Serviço
+
+        self.cfop                   = kwargs.get(&#34;cfop&#34;, None)                  # string
+        self.item                   = kwargs.get(&#34;item&#34;, None)                  # string (Número incremental na lista de produtos)
+        self.nome                   = kwargs.get(&#34;nome&#34;, None)                  # string
+        self.ncm                    = kwargs.get(&#34;ncm&#34;, None)                   # string
+        self.quantidade             = kwargs.get(&#34;quantidade&#34;, None)            # string
+        self.unidade                = kwargs.get(&#34;unidade&#34;, None)               # string (AMPOLA, BALDE, BANDEJ, BARRA, BISNAG, BLOCO, BOBINA, BOMB, CAPS, CART, CENTO, CJ, CM, CM2, CX, CX2, CX3, CX5, CX10, CX15, CX20, CX25, CX50, CX100, DISP, DUZIA, EMBAL, FARDO, FOLHA, FRASCO, GALAO, JOGO, KG, KIT, LATA, LITRO, M, M2, M3, MILHEI, ML, MWH, PACOTE, PALETE, PARES, PC, POTE, K, RESMA, ROLO, SACO, SACOLA, TAMBOR, TANQUE, TON, TUBO, UNID, VASIL, VIDRO)
+        self.subtotal               = kwargs.get(&#34;subtotal&#34;, None)              # string ($0.0000000000) - VALOR UNITÁRIO
+        self.total                  = kwargs.get(&#34;total&#34;, None)                 # string ($0.00) (Quantidade * Valor Unitário)
+        self.impostos               = kwargs.get(&#34;impostos&#34;, None)              # Objeto IMPOSTOS
+
+    def asdict(self):
+        return {
+            &#34;cfop&#34;          : self.cfop,
+            &#34;item&#34;          : self.item,
+            &#34;nome&#34;          : self.nome,
+            &#34;ncm&#34;           : self.ncm,
+            &#34;quantidade&#34;    : self.quantidade,
+            &#34;unidade&#34;       : self.unidade,
+            &#34;subtotal&#34;      : self.subtotal,
+            &#34;total&#34;         : self.total,
+            &#34;impostos&#34;      : self.impostos.asdict(),
+        }</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="pysisnoapi.nfe.Produto.asdict"><code class="name flex">
+<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def asdict(self):
+    return {
+        &#34;cfop&#34;          : self.cfop,
+        &#34;item&#34;          : self.item,
+        &#34;nome&#34;          : self.nome,
+        &#34;ncm&#34;           : self.ncm,
+        &#34;quantidade&#34;    : self.quantidade,
+        &#34;unidade&#34;       : self.unidade,
+        &#34;subtotal&#34;      : self.subtotal,
+        &#34;total&#34;         : self.total,
+        &#34;impostos&#34;      : self.impostos.asdict(),
+    }</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="pysisnoapi.nfe.Rastreamento"><code class="flex name class">
+<span>class <span class="ident">Rastreamento</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Rastreamento:
+    def __init__(self, **kwargs):
+        raise NotImplementedError</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo"><code class="flex name class">
+<span>class <span class="ident">VeiculoNovo</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class VeiculoNovo:
+    def __init__(self, **kwargs):
+        raise NotImplementedError</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="pysisnoapi" href="index.html">pysisnoapi</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="pysisnoapi.nfe.buscar_notas" href="#pysisnoapi.nfe.buscar_notas">buscar_notas</a></code></li>
+<li><code><a title="pysisnoapi.nfe.cancelar" href="#pysisnoapi.nfe.cancelar">cancelar</a></code></li>
+<li><code><a title="pysisnoapi.nfe.corrigir" href="#pysisnoapi.nfe.corrigir">corrigir</a></code></li>
+<li><code><a title="pysisnoapi.nfe.emitir" href="#pysisnoapi.nfe.emitir">emitir</a></code></li>
+<li><code><a title="pysisnoapi.nfe.get_danfe" href="#pysisnoapi.nfe.get_danfe">get_danfe</a></code></li>
+<li><code><a title="pysisnoapi.nfe.get_nota" href="#pysisnoapi.nfe.get_nota">get_nota</a></code></li>
+<li><code><a title="pysisnoapi.nfe.get_pre_visualizacao" href="#pysisnoapi.nfe.get_pre_visualizacao">get_pre_visualizacao</a></code></li>
+<li><code><a title="pysisnoapi.nfe.inutilizar_numeracao" href="#pysisnoapi.nfe.inutilizar_numeracao">inutilizar_numeracao</a></code></li>
+<li><code><a title="pysisnoapi.nfe.listar" href="#pysisnoapi.nfe.listar">listar</a></code></li>
+<li><code><a title="pysisnoapi.nfe.validar" href="#pysisnoapi.nfe.validar">validar</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="pysisnoapi.nfe.Compra" href="#pysisnoapi.nfe.Compra">Compra</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pysisnoapi.nfe.Exportacao" href="#pysisnoapi.nfe.Exportacao">Exportacao</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pysisnoapi.nfe.ExportacaoIndividual" href="#pysisnoapi.nfe.ExportacaoIndividual">ExportacaoIndividual</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pysisnoapi.nfe.Fatura" href="#pysisnoapi.nfe.Fatura">Fatura</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pysisnoapi.nfe.FormaPagamento" href="#pysisnoapi.nfe.FormaPagamento">FormaPagamento</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.nfe.FormaPagamento.asdict" href="#pysisnoapi.nfe.FormaPagamento.asdict">asdict</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="pysisnoapi.nfe.ImportacaoInvididual" href="#pysisnoapi.nfe.ImportacaoInvididual">ImportacaoInvididual</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pysisnoapi.nfe.InformacaoIntermediador" href="#pysisnoapi.nfe.InformacaoIntermediador">InformacaoIntermediador</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pysisnoapi.nfe.Local" href="#pysisnoapi.nfe.Local">Local</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pysisnoapi.nfe.Pagamento" href="#pysisnoapi.nfe.Pagamento">Pagamento</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.nfe.Pagamento.asdict" href="#pysisnoapi.nfe.Pagamento.asdict">asdict</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="pysisnoapi.nfe.PaginaNotas" href="#pysisnoapi.nfe.PaginaNotas">PaginaNotas</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pysisnoapi.nfe.Pedido" href="#pysisnoapi.nfe.Pedido">Pedido</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.nfe.Pedido.asdict" href="#pysisnoapi.nfe.Pedido.asdict">asdict</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="pysisnoapi.nfe.Produto" href="#pysisnoapi.nfe.Produto">Produto</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.nfe.Produto.asdict" href="#pysisnoapi.nfe.Produto.asdict">asdict</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="pysisnoapi.nfe.Rastreamento" href="#pysisnoapi.nfe.Rastreamento">Rastreamento</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pysisnoapi.nfe.VeiculoNovo" href="#pysisnoapi.nfe.VeiculoNovo">VeiculoNovo</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
