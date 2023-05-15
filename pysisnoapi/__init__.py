@@ -124,15 +124,15 @@ class Empresa:
         Em resumo: não há necessidade de se preocupar com os campos, caso não saiba algum deles, pois, eles serão preenchidos automaticamente com aquilo que vier do endpoint.
     """
     
-    def __init__(self, **kwargs):
+    def __init__(self, id, **kwargs):
         """
         Construtor da Classe.
 
-        Keyword Args:
-            id (int): ID da empresa registrada na plataforma SISNO.
+        Args:
+            id (int): ID da empresa registrada na plataforma SISNO.  
                 Default is 0
-            token (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API.
-                Default is ''
+            token (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API.  
+                Default is ''  
             token_secret (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".
                 Default is ''
             cnpj (str): CNPJ da Empresa.
@@ -206,12 +206,15 @@ class Endereco:
 
         Args:
             codigo_pais (str): Código do Pais (55 para Brasil).
+            
             descricao_pais (str): Nome do País.
+
             bairro (str): Bairro do Endereço.
+            
             logradouro (str): Endereço em si (sugestão: utilize exatamente aquilo que informado ao consultar o CEP nos correios).
+            
             numero (str): Número do Endereço (apenas números).
-        
-        Keyword Args:
+
             uf (str):
                 Default is ''
             codigo_municipio (str):
@@ -321,13 +324,13 @@ class Issqn:
     def __init__(self, **kwargs):
         """
             Indicador_exigibilidade_iss
-                1: Exigível
-                2: Não incidência
-                3: Isenção
-                4: Exportação
-                5: Imunidade
-                6: Exigibilidade suspensa por decisão judicial
-                7: Exigibilidade suspensa por processo administrativo
+                1: Exigível  
+                2: Não incidência  
+                3: Isenção  
+                4: Exportação  
+                5: Imunidade  
+                6: Exigibilidade suspensa por decisão judicial  
+                7: Exigibilidade suspensa por processo administrativo  
         """
 
         self.indicador_exigibilidade_iss     = kwargs.get("indicador_exigibilidade_iss", None)   # string [ 1, 2, 3, 4, 5, 6, 7 ]
@@ -435,46 +438,50 @@ class PessoaJuridica:
 class Pis:
     def __init__(self, situacao_tributaria, **kwargs):
         """
-        :param situacao_tributaria: string [ 00, 01, 02, 03, 04, 05, 49, 50, 51, 52, 53, 54, 55, 99 ]
-            01: Operação Tributável com Alíquota Básica
-            02: Operação Tributável com Alíquota por Unidade de Medida de Produto
-            03: Operação Tributável com Alíquota por Unidade de Medida de Produto
-            04: Operação Tributável Monofásica - Revenda a Alíquota Zero
-            05: Operação Tributável por Substituição Tributária
-            06: Operação Tributável a Alíquota Zero
-            07: Operação Isenta da Contribuição
-            08: Operação sem Incidência da Contribuição
-            09: Operação com Suspensão da Contribuição
-            49: Outras Operações de Saída
-            50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno
-            51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno
-            52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação
-            53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno
-            54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação
-            55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação
-            56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação
-            60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno
-            61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno
-            62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação
-            63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno
-            64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação
-            65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação
-            66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação
-            67: Crédito Presumido - Outras Operações
-            70: Operação de Aquisição sem Direito a Crédito
-            71: Operação de Aquisição com Isenção
-            72: Operação de Aquisição com Suspensão
-            73: Operação de Aquisição a Alíquota Zero
-            74: Operação de Aquisição sem Incidência da Contribuição
-            75: Operação de Aquisição por Substituição Tributária
-            98: Outras Operações de Entrada
-            99: Outras Operações
-        :param aliquota: string($0.0000)
-            Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade
-        :param aliquota_st	string($0.0000)
-        :aliquota_retencao	string($0.0000)
+        Args:
+            situacao_tributaria (str): Situação Tributária  
+                01: Operação Tributável com Alíquota Básica  
+                02: Operação Tributável com Alíquota por Unidade de Medida de Produto  
+                03: Operação Tributável com Alíquota por Unidade de Medida de Produto  
+                04: Operação Tributável Monofásica - Revenda a Alíquota Zero  
+                05: Operação Tributável por Substituição Tributária  
+                06: Operação Tributável a Alíquota Zero  
+                07: Operação Isenta da Contribuição  
+                08: Operação sem Incidência da Contribuição  
+                09: Operação com Suspensão da Contribuição  
+                49: Outras Operações de Saída  
+                50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno  
+                51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno  
+                52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação  
+                53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno  
+                54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação  
+                55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação  
+                56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação  
+                60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno  
+                61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno  
+                62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação  
+                63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno  
+                64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação  
+                65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação  
+                66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação  
+                67: Crédito Presumido - Outras Operações  
+                70: Operação de Aquisição sem Direito a Crédito  
+                71: Operação de Aquisição com Isenção  
+                72: Operação de Aquisição com Suspensão  
+                73: Operação de Aquisição a Alíquota Zero  
+                74: Operação de Aquisição sem Incidência da Contribuição  
+                75: Operação de Aquisição por Substituição Tributária  
+                98: Outras Operações de Entrada  
+                99: Outras Operações  
+            
+            aliquota (str): $0.0000 
+                Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
+            
+            aliquota_st	(str): $0.0000
+            
+            aliquota_retencao (str): $0.0000
         """
-        
+
         self.situacao_tributaria = situacao_tributaria
         self.aliquota            = kwargs.get("aliquota", None)
         self.aliquota_st         = kwargs.get("aliquota_st", None)

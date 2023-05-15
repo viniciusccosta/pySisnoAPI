@@ -17,9 +17,9 @@ def get_municipios(uf: str, *args, **kwargs) -> list[dict]:
     """Envia uma requisição para a API para consultar os municípios de um determinado estado.
 
     Args:
-        uf (str): UF do Estado.
-            SP para São Paulo
-            RJ para Rio de Janeiro
+        uf (str): UF do Estado.  
+            SP para São Paulo  
+            RJ para Rio de Janeiro  
             e etc.
 
     Returns:
@@ -67,6 +67,7 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> list[dict]:
     Args:
         cod_desc (str): Breve descrição do item ou código.
             Mínimo de 4 caracteres.
+        
         uf (str): UF do Estado
 
     Raises:
