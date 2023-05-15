@@ -6,7 +6,7 @@ def check_cfops_length(test_case, data):
 
 def check_cfop_attributes(test_case, data):
     atributos = ["codigo", "descricao", "aplicacao"]
-    cfop = data[0]
+    cfop = data[0]              # TODO: O teste anterior garantiu que existe pelo menos 1 item
     for atributo in atributos:
         with test_case.subTest(key=atributo):
             test_case.assertIn(atributo, cfop)
