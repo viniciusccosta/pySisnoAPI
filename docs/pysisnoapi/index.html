@@ -94,6 +94,11 @@ class Cfop:
     def __init__(self, **kwargs):
         raise NotImplementedError
 
+    def asdict(self):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+        return dados if len(dados) &gt; 0 else None
+
 class Cliente:
     def __init__(self, consumidor_final, contribuinte, endereco, **kwargs):
         # Deve ser informado apenas um dos campos [pessoa_fisica, pessoa_juridica]
@@ -155,6 +160,11 @@ class DeclaracaoImportacaoAdicao:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
     def __init__(self, **kwargs):
         raise NotImplementedError
+
+    def asdict(self):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+        return dados if len(dados) &gt; 0 else None
 
 class Empresa:
     &#34;&#34;&#34;
@@ -309,6 +319,11 @@ class Endereco:
 class Ibpt:
     def __init__(self, **kwargs):
         raise NotImplementedError
+
+    def asdict(self):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+        return dados if len(dados) &gt; 0 else None
 
 class Icms:
     def __init__(self, **kwargs):
@@ -536,6 +551,11 @@ class RetencaoIcmsTransporte:
     def __init__(self, **kwargs):
         raise NotImplementedError
 
+    def asdict(self):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+        return dados if len(dados) &gt; 0 else None
+
 class Transporte:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
     def __init__(self, **kwargs):
@@ -720,8 +740,31 @@ A alteração das chaves de API é necessária para consultar/emitir notas fisca
 </summary>
 <pre><code class="python">class Cfop:
     def __init__(self, **kwargs):
-        raise NotImplementedError</code></pre>
+        raise NotImplementedError
+
+    def asdict(self):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+        return dados if len(dados) &gt; 0 else None</code></pre>
 </details>
+<h3>Methods</h3>
+<dl>
+<dt id="pysisnoapi.Cfop.asdict"><code class="name flex">
+<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def asdict(self):
+    dados = self.__dict__
+    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+    return dados if len(dados) &gt; 0 else None</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.Cliente"><code class="flex name class">
 <span>class <span class="ident">Cliente</span></span>
@@ -875,8 +918,31 @@ A alteração das chaves de API é necessária para consultar/emitir notas fisca
 <pre><code class="python">class DeclaracaoImportacaoAdicao:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
     def __init__(self, **kwargs):
-        raise NotImplementedError</code></pre>
+        raise NotImplementedError
+
+    def asdict(self):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+        return dados if len(dados) &gt; 0 else None</code></pre>
 </details>
+<h3>Methods</h3>
+<dl>
+<dt id="pysisnoapi.DeclaracaoImportacaoAdicao.asdict"><code class="name flex">
+<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def asdict(self):
+    dados = self.__dict__
+    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+    return dados if len(dados) &gt; 0 else None</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.Empresa"><code class="flex name class">
 <span>class <span class="ident">Empresa</span></span>
@@ -1212,8 +1278,31 @@ Default is ''</p></div>
 </summary>
 <pre><code class="python">class Ibpt:
     def __init__(self, **kwargs):
-        raise NotImplementedError</code></pre>
+        raise NotImplementedError
+
+    def asdict(self):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+        return dados if len(dados) &gt; 0 else None</code></pre>
 </details>
+<h3>Methods</h3>
+<dl>
+<dt id="pysisnoapi.Ibpt.asdict"><code class="name flex">
+<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def asdict(self):
+    dados = self.__dict__
+    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+    return dados if len(dados) &gt; 0 else None</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.Icms"><code class="flex name class">
 <span>class <span class="ident">Icms</span></span>
@@ -1829,8 +1918,31 @@ Passar percentual quando tributado pela alíquota ou em reais quando tributado p
 <pre><code class="python">class RetencaoIcmsTransporte:
     # TODO: Até o dia 10/05/2023 essa classe só está sendo usada na classe &#34;Transporte&#34;, que não está sendo usada
     def __init__(self, **kwargs):
-        raise NotImplementedError</code></pre>
+        raise NotImplementedError
+
+    def asdict(self):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+        return dados if len(dados) &gt; 0 else None</code></pre>
 </details>
+<h3>Methods</h3>
+<dl>
+<dt id="pysisnoapi.RetencaoIcmsTransporte.asdict"><code class="name flex">
+<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def asdict(self):
+    dados = self.__dict__
+    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+    return dados if len(dados) &gt; 0 else None</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.Transporte"><code class="flex name class">
 <span>class <span class="ident">Transporte</span></span>
@@ -1917,6 +2029,9 @@ Passar percentual quando tributado pela alíquota ou em reais quando tributado p
 <ul>
 <li>
 <h4><code><a title="pysisnoapi.Cfop" href="#pysisnoapi.Cfop">Cfop</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.Cfop.asdict" href="#pysisnoapi.Cfop.asdict">asdict</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Cliente" href="#pysisnoapi.Cliente">Cliente</a></code></h4>
@@ -1932,6 +2047,9 @@ Passar percentual quando tributado pela alíquota ou em reais quando tributado p
 </li>
 <li>
 <h4><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao" href="#pysisnoapi.DeclaracaoImportacaoAdicao">DeclaracaoImportacaoAdicao</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao.asdict" href="#pysisnoapi.DeclaracaoImportacaoAdicao.asdict">asdict</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Empresa" href="#pysisnoapi.Empresa">Empresa</a></code></h4>
@@ -1947,6 +2065,9 @@ Passar percentual quando tributado pela alíquota ou em reais quando tributado p
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Ibpt" href="#pysisnoapi.Ibpt">Ibpt</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.Ibpt.asdict" href="#pysisnoapi.Ibpt.asdict">asdict</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Icms" href="#pysisnoapi.Icms">Icms</a></code></h4>
@@ -2010,6 +2131,9 @@ Passar percentual quando tributado pela alíquota ou em reais quando tributado p
 </li>
 <li>
 <h4><code><a title="pysisnoapi.RetencaoIcmsTransporte" href="#pysisnoapi.RetencaoIcmsTransporte">RetencaoIcmsTransporte</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.RetencaoIcmsTransporte.asdict" href="#pysisnoapi.RetencaoIcmsTransporte.asdict">asdict</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Transporte" href="#pysisnoapi.Transporte">Transporte</a></code></h4>
