@@ -55,6 +55,11 @@ class Cfop:
     def __init__(self, **kwargs):
         raise NotImplementedError
 
+    def asdict(self):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
+
 class Cliente:
     def __init__(self, consumidor_final, contribuinte, endereco, **kwargs):
         # Deve ser informado apenas um dos campos [pessoa_fisica, pessoa_juridica]
@@ -116,6 +121,11 @@ class DeclaracaoImportacaoAdicao:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
     def __init__(self, **kwargs):
         raise NotImplementedError
+
+    def asdict(self):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
 
 class Empresa:
     """
@@ -270,6 +280,11 @@ class Endereco:
 class Ibpt:
     def __init__(self, **kwargs):
         raise NotImplementedError
+
+    def asdict(self):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
 
 class Icms:
     def __init__(self, **kwargs):
@@ -496,6 +511,11 @@ class RetencaoIcmsTransporte:
     # TODO: Até o dia 10/05/2023 essa classe só está sendo usada na classe "Transporte", que não está sendo usada
     def __init__(self, **kwargs):
         raise NotImplementedError
+
+    def asdict(self):
+        dados = self.__dict__
+        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+        return dados if len(dados) > 0 else None
 
 class Transporte:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
