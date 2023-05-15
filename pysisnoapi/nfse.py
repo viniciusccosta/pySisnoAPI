@@ -175,8 +175,61 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
             return response.text
 
 @requires_keys
-def buscar_notas(*args, **kwargs):
-    raise NotImplementedError
+def buscar_notas(cnpj:str, data_inicio:datetime, data_fim:datetime, ambiente:str='1', status:str='aprovado', texto:str='', pagina:str='1', qtd_por_pagina:str='10', ordencao:str="numero_nota", tipo_ordenacao:str="desc", *args, **kwargs) -> list:
+    """Recupera as notas de uma determinada empresa.
+
+    Args:
+        cnpj (str): CNPJ Empresa apenas números
+        data_inicio (datetime): Início intervalo de datas (dd/MM/yyyy HH:mm:ss)
+        data_fim (datetime): Fim intervalo de datas (dd/MM/yyyy HH:mm:ss)
+        ambiente (str, optional):  
+            1: Produção  
+            2: Homologação
+        status (str, optional): Status da NFSe. Defaults to 'aprovado'.  
+            aprovado  
+            reprovado  
+            contingencia  
+            cancelado  
+            Em digitação
+        texto (str, optional): Texto de busca livre. Defaults to ''.
+        pagina (int, optional): Número da página. Defaults to 1.
+        qtd_por_pagina (int, optional): Quantidade de notas por página. Defaults to 10.
+        ordencao (str, optional): Campo para ordenação das notas. Defaults to "numero_nota".  
+            empresa  
+            ambiente  
+            numero_nota  
+            status  
+            data_emissao  
+            nome_destinatario  
+            uf_destinatario  
+            valor_total
+        tipo_ordenacao (str, optional): Tipo de Ordenação. Defaults to "desc".  
+            desc  
+            asc  
+    Returns:
+        list: Lista com todas as NFSe
+    """
+    headers = HEADERS
+    headers['CNPJ Empresa']  = cnpj
+    headers['dataInicio']    = data_inicio.strftime("%d/%m/%Y %H:%M:%S")
+    headers['dataFim']       = data_fim.strftime("%d/%m/%Y %H:%M:%S")
+    headers['ambiente']      = ambiente
+    headers['status']        = status
+    headers['textoBusca']    = texto
+    headers['pagina']        = pagina           # Na documentação diz que deve ser inteiro, mas "Header part (1) from ('pagina', 1) must be of type str or bytes, not <class 'int'>"
+    headers['qtdPorPagina']  = qtd_por_pagina   # Na documentação diz que deve ser inteiro, mas "Header part (10) from ('qtdPorPagina', 10) must be of type str or bytes, not <class 'int'>"
+    headers['ordenacao']     = ordencao
+    headers['tipoOrdenacao'] = tipo_ordenacao
+
+    url = f'{URL}/nfse'
+    response = requests.get(url, headers=headers)
+
+    match (response.status_code):
+        case 200:
+            # TODO: Retornar uma lista de objetos "NFSe"
+            return response.json().get('dados')
+        case _:
+            return response.text
 
 @requires_keys
 def retransmitir(*args, **kwargs):
@@ -205,38 +258,5 @@ def recuperar_dados(id_nfse:int, *args, **kwargs):
 @requires_keys
 def cancelar(*args, **kwargs):
     raise NotImplementedError
-
-# =====================================================================
-def __emitir_nota_teste(*args, **kwargs):
-    # TODO: Enviar para módulo de testes
-
-    # TODO: Os impostos, os produtos (e até mesmo os clientes) já deverão estar cadastrados em algum banco de dados
-    
-    # --------------------------------------------
-    # Cliente:
-    endereco        = Endereco(codigo_pais='55', descricao_pais='Brasil', bairro='Brasilia', logradouro='Praça dos 3 poderes', numero='123', )
-    pessoa_fisica   = PessoaFisica(cpf="00000000000", nome_completo="João da Silva Júnior")
-    cliente         = Cliente(pessoa_fisica=pessoa_fisica, consumidor_final='0', contribuinte='9', endereco=endereco)
-
-    # --------------------------------------------
-    # Serviço:
-    pis             = Pis(situacao_tributaria="99")                                                                                                                     #
-    cofins          = Cofins(situacao_tributaria="99")                                                                                                                  #
-    issqn           = Issqn(indicador_exigibilidade_iss="1", indicador_incentivo_fiscal="1", item_lista_servicos="08.01", aliquota="0.0000")                            # Exigível, Não, 08.01, 0.0000%
-    impostos        = Impostos(tipo="1", pis=pis, cofins=cofins, issqn=issqn)                                                                                           # Serviço
-
-    uf              = Uf(codigo_ibge=53, sigla='DF', descricao='Distrito Federal')
-    municipio       = Municipio(codigo_ibge=5300108, descricao='Brasilia')
-
-    servico         = Servico(valor_servicos="1.00", discriminacao="Teste", impostos=impostos, uf_local_prestacao=uf, municipio_local_prestacao=municipio)
-
-    # --------------------------------------------
-    # Construção Civil:
-
-    # --------------------------------------------
-    # Objeto Emissão NFSe:
-    obj_emissao_nfse = ObjetoEmissaoNFSe(cliente=cliente, servico=servico)
-    
-    return emitir(obj_emissao_nfse=obj_emissao_nfse)
 
 # =====================================================================

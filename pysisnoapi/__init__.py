@@ -576,7 +576,3 @@ def alterar_emissor(token_emissor:str, token_secret_emissor:str, token_empresa:s
     HEADERS["token-secret-empresa"] = token_secret_empresa
 
 # ======================================================================================================================
-if __name__ == "__main__":
-    print( help(Empresa) )
-
-# ======================================================================================================================

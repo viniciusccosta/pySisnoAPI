@@ -100,19 +100,4 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> list[dict]:
 if __name__ == "__main__":
     pass
 
-    # municipios = get_municipios('df')
-    # if municipios:
-    #     for municipio in municipios:
-    #         print(municipio)
-
-    # cfops = get_cfops()
-    # if cfops:
-    #     for cfop in cfops:
-    #         print(cfop)
-
-    # ibpts = get_ibpts("01012100", 'DF')
-    # if ibpts:
-    #     for ibpt in ibpts:
-    #         print(ibpt)
-
 # ======================================================================================================================
