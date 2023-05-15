@@ -518,9 +518,9 @@ def alterar_emissor(token_emissor:str, token_secret_emissor:str, token_empresa:s
 
     Args:
         token_emissor (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API
-        token_secret_emissor (str): tring de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".
+        token_secret_emissor (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".
         token_empresa (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API
-        token_secret_empresa (str): tring de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".
+        token_secret_empresa (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".
 
     Raises:
         Exception: Caso alguma das chaves seja inválida
