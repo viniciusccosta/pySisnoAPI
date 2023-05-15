@@ -16,3 +16,6 @@ class PySisnoApiTest(unittest.TestCase):
             data = misc.get_municipios(uf=uf)
         
         assert data == [{'codigo_ibge': 5300108, 'descricao': 'Brasilia'}]
+
+if __name__ == "__main__":
+    unittest.main()
