@@ -1,8 +1,9 @@
 """ 
-    Módulo genérico para funções que não se encaixam em outros módulos, como por exemplo a função de realizar uma requisição para a API para consultar municípios.
-    Esse módulo faz parte de um package e é totalmente dependente de outros módulos.
+    O módulo misc.py contém funções genéricas que não se enquadram em outros módulos específicos. 
+    Um exemplo é a função para realizar uma requisição à API a fim de consultar informações sobre municípios. 
+    Este módulo faz parte de um pacote e depende completamente de outros módulos.
 
-    Para utilizar esse módulo basta importá-lo da seguinte forma:
+    Para utilizar as funções deste módulo, basta importá-lo da seguinte forma:
     "from pysisnoapi import misc"
 """
 
@@ -10,22 +11,20 @@
 from . import *
 
 import requests
+from typing import List
 
 # ======================================================================================================================
-@requires_keys    # TODO: Sendo sincero, até o dia 11/05/2023 não está sendo exigido as API keys para consumir esse endpoint
-def get_municipios(uf: str, *args, **kwargs) -> list[dict]:
+@requires_keys
+def get_municipios(uf: str, *args, **kwargs) -> List[Municipio]:
     """Envia uma requisição para a API para consultar os municípios de um determinado estado.
 
     Args:
-        uf (str): UF do Estado.  
-            SP para São Paulo  
-            RJ para Rio de Janeiro  
-            e etc.
+        uf (str): Sigla do estado.  
+            Exemplo: "SP" para São Paulo, "RJ" para Rio de Janeiro, etc.
 
     Returns:
-        list[dict]: Lista de dicionários exatamente da forma que a API retornou.
+        List[Municipio]: Lista de objetos Municipio representando os municípios.
     """
-    # TODO: Retonar uma lista de objetos "Municipio"s
 
     headers  = HEADERS
     url      = f'{URL}/unidades-federativas/{uf}/municipios'
@@ -33,13 +32,15 @@ def get_municipios(uf: str, *args, **kwargs) -> list[dict]:
 
     match (response.status_code):
         case 200:
-            return response.json().get('dados')
+            json_data  = response.json().get('dados')
+            municipios = [Municipio(**d) for d in json_data]
+            return municipios
         case 412:
             return []
         case _:
             return
 
-@requires_keys    # TODO: Sendo sincero, até o dia 11/05/2023 não está sendo exigido as API keys para consumir esse endpoint
+@requires_keys
 def get_cfops(*args, **kwargs) -> list[dict]:
     """Envia uma requisição para a API para listar todos os CFOPs.
 
@@ -60,7 +61,7 @@ def get_cfops(*args, **kwargs) -> list[dict]:
         case _:
             return
 
-@requires_keys    # TODO: Sendo sincero, até o dia 11/05/2023 não está sendo exigido as API keys para consumir esse endpoint
+@requires_keys
 def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> list[dict]:
     """Envia uma requisição para a API para listar todos os IBPTs.
 
