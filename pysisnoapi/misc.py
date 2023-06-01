@@ -41,13 +41,12 @@ def get_municipios(uf: str, *args, **kwargs) -> List[Municipio]:
             return
 
 @requires_keys
-def get_cfops(*args, **kwargs) -> list[dict]:
-    """Envia uma requisição para a API para listar todos os CFOPs.
+def get_cfops(*args, **kwargs) -> List[Cfop]:
+    """Envia uma requisição para a API a fim de obter a lista de todos os CFOPs disponíveis.
 
     Returns:
-        list[dict]: Lista de dicionários exatamente da forma que a API retornou.
+        List[Cfop]: Uma lista de objetos Cfop representando os CFOPs.
     """
-    # TODO: Retonar uma lista de objetos "Cfop"s
 
     headers  = HEADERS
     url      = f'{URL}/cfops'
@@ -55,7 +54,9 @@ def get_cfops(*args, **kwargs) -> list[dict]:
 
     match (response.status_code):
         case 200:
-            return response.json().get('dados')
+            json_data = response.json().get('dados')
+            cfops     = [Cfop(**d) for d in json_data]
+            return cfops
         case 412:
             return []
         case _:
