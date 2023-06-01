@@ -19,6 +19,8 @@ import json
 import os
 import functools
 from dotenv import load_dotenv
+from dataclasses import dataclass, asdict
+from typing import Optional, List, Tuple
 
 # ======================================================================================================================
 # Globals:
@@ -358,16 +360,14 @@ class Issqn:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
         return dados if len(dados) > 0 else None
 
+@dataclass
 class Municipio:
-    def __init__(self, **kwargs):
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-        self.codigo_ibge = kwargs.get("codigo_ibge", '') # TODO: 0 ?
-        self.descricao   = kwargs.get("descricao", '')
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    codigo_ibge : Optional[str] = None
+    descricao   : Optional[str] = None
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+    def as_filtered_dict(self):
+        return asdict(self, dict_factory=dict_factory)
 
 class NotaFiscal:
     def __init__(self, **kwargs):
@@ -574,5 +574,9 @@ def alterar_emissor(token_emissor:str, token_secret_emissor:str, token_empresa:s
     HEADERS["token-secret-emissor"] = token_secret_emissor
     HEADERS["token-empresa"]        = token_empresa
     HEADERS["token-secret-empresa"] = token_secret_empresa
+
+def dict_factory(x: List[Tuple]):
+    dic = {k: v for (k, v) in x if v is not None}
+    return dic if len(dic) > 0 else None
 
 # ======================================================================================================================
