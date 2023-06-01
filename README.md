@@ -2,6 +2,7 @@
 # pySisnoAPI
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+[![Python 3.11.2](https://img.shields.io/badge/Python-3.11.2-blue)](https://www.python.org/downloads/release/python-3112/)
 
 
 **pySisnoAPI** é uma biblioteca Python que facilita o consumo da API do SISNO para emissão de Nota Fiscal Eletrônica (NFe) e Nota Fiscal de Serviços Eletrônica (NFSe) no Brasil. A biblioteca fornece classes, funções e endpoints para interagir com a API do SISNO de forma simples e eficiente.
@@ -24,7 +25,7 @@ Para instalar a biblioteca pySisnoAPI, execute o seguinte comando:
 pip install pysisnoapi
 ```
 
-**OBS: Ainda não está disponível para instalação**
+**OBS: Ainda não está disponível para instalação via pip**
 
 ## Contribuição
 Contribuições são bem-vindas! Se você deseja contribuir para o projeto, siga as etapas abaixo:
