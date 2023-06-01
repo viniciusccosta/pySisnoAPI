@@ -16,14 +16,16 @@ from typing import List
 # ======================================================================================================================
 @requires_keys
 def get_municipios(uf: str, *args, **kwargs) -> List[Municipio]:
-    """Envia uma requisição para a API para consultar os municípios de um determinado estado.
+    """Consulta os municípios de um determinado estado através de uma requisição à API.
+
+    Essa função permite consultar os municípios de um estado específico através de uma requisição à API.
+    Ela retorna uma lista de objetos Municipio contendo informações sobre cada município.
 
     Args:
-        uf (str): Sigla do estado.  
-            Exemplo: "SP" para São Paulo, "RJ" para Rio de Janeiro, etc.
+        uf (str): UF do estado para o qual deseja-se consultar os municípios.
 
     Returns:
-        List[Municipio]: Lista de objetos Municipio representando os municípios.
+        List[Municipio]: Uma lista de objetos Municipio, representando os municípios do estado consultado.
     """
 
     headers  = HEADERS
@@ -42,10 +44,12 @@ def get_municipios(uf: str, *args, **kwargs) -> List[Municipio]:
 
 @requires_keys
 def get_cfops(*args, **kwargs) -> List[Cfop]:
-    """Envia uma requisição para a API a fim de obter a lista de todos os CFOPs disponíveis.
+    """Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
+
+    Essa função permite obter a lista completa de CFOPs (Código Fiscal de Operações e Prestações) disponíveis através de uma requisição à API.
 
     Returns:
-        List[Cfop]: Uma lista de objetos Cfop representando os CFOPs.
+        List[Cfop]: Uma lista de objetos Cfop, representando os CFOPs disponíveis.
     """
 
     headers  = HEADERS
@@ -71,11 +75,10 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> List[Ibpt]:
     
     Args:
         cod_desc (str): Breve descrição do item ou código. Deve ter no mínimo 4 caracteres.
-        uf (str): Sigla do estado.  
-            Exemplo: "SP" para São Paulo, "RJ" para Rio de Janeiro, etc.
+        uf (str): UF do estado para o qual deseja-se consultar os IBPTs.
 
     Raises:
-        Exception: Se cod_desc tiver menos de 4 caracteres.
+        Exception: Caso o parâmetro cod_desc tenha menos de 4 caracteres.
 
     Returns:
         list[dict]: Uma lista de objetos Ibpt representando os IBPTs.
