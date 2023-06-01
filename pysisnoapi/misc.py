@@ -63,20 +63,22 @@ def get_cfops(*args, **kwargs) -> List[Cfop]:
             return
 
 @requires_keys
-def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> list[dict]:
-    """Envia uma requisição para a API para listar todos os IBPTs.
+def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> List[Ibpt]:
+    """
+    Obtém os IBPTs através de uma requisição à API.
 
+    Essa função permite obter os dados de IBPTs (Impostos sobre Produtos e Serviços) para um determinado item ou código, em uma determinada UF (Unidade Federativa)
+    
     Args:
-        cod_desc (str): Breve descrição do item ou código.
-            Mínimo de 4 caracteres.
-        
-        uf (str): UF do Estado
+        cod_desc (str): Breve descrição do item ou código. Deve ter no mínimo 4 caracteres.
+        uf (str): Sigla do estado.  
+            Exemplo: "SP" para São Paulo, "RJ" para Rio de Janeiro, etc.
 
     Raises:
-        Exception: cod_desc menor que 4 caracteres
+        Exception: Se cod_desc tiver menos de 4 caracteres.
 
     Returns:
-        list[dict]: Lista de dicionários exatamente da forma que a API retornou.
+        list[dict]: Uma lista de objetos Ibpt representando os IBPTs.
     """
     # TODO: Retonar uma lista de objetos "Ibpt"s
 
@@ -92,7 +94,9 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> list[dict]:
 
     match (response.status_code):
         case 200:
-            return response.json().get('dados')
+            json_data = response.json().get('dados')
+            ibpts     = [Ibpt.from_json(**d) for d in json_data]
+            return ibpts
         case 412:
             return []
         case _:
