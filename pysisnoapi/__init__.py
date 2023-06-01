@@ -53,14 +53,15 @@ def requires_keys(func):
 
 # ======================================================================================================================
 # Classes:
+@dataclass
 class Cfop:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    codigo: Optional[str] = None
+    descricao: Optional[str] = None
+    aplicacao: Optional[str] = None
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+    def as_filtered_dict(self):
+        return asdict(self, dict_factory=dict_factory)
 
 class Cliente:
     def __init__(self, consumidor_final, contribuinte, endereco, **kwargs):
