@@ -52,16 +52,19 @@ def requires_keys(func):
     return wrapper
 
 # ======================================================================================================================
+@dataclass
+class BaseClass:
+    def as_filtered_dict(self):
+        return asdict(self, dict_factory=dict_factory)
+
+# ======================================================================================================================
 # Classes:
 @dataclass
-class Cfop:
+class Cfop(BaseClass):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo: Optional[str] = None
     descricao: Optional[str] = None
     aplicacao: Optional[str] = None
-
-    def as_filtered_dict(self):
-        return asdict(self, dict_factory=dict_factory)
 
 class Cliente:
     def __init__(self, consumidor_final, contribuinte, endereco, **kwargs):
@@ -281,7 +284,7 @@ class Endereco:
         return dados if len(dados) > 0 else None
 
 @dataclass
-class Ibpt:
+class Ibpt(BaseClass):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo            : Optional[str]  = None
     ex                : Optional[str]  = None
@@ -301,11 +304,8 @@ class Ibpt:
     @classmethod
     def from_json(cls, **kwargs):
         uf_dict = kwargs.pop('unidade_federativa', None)
-        uf = Uf.from_json(uf_dict)
+        uf = Uf.from_json(**uf_dict)
         return cls(unidade_federativa=uf, **kwargs)
-    
-    def as_filtered_dict(self):
-        return asdict(self, dict_factory=dict_factory)
 
 class Icms:
     def __init__(self, **kwargs):
@@ -380,13 +380,10 @@ class Issqn:
         return dados if len(dados) > 0 else None
 
 @dataclass
-class Municipio:
+class Municipio(BaseClass):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo_ibge : Optional[str] = None
     descricao   : Optional[str] = None
-
-    def as_filtered_dict(self):
-        return asdict(self, dict_factory=dict_factory)
 
 class NotaFiscal:
     def __init__(self, **kwargs):
@@ -547,7 +544,7 @@ class Transporte:
         return dados if len(dados) > 0 else None
 
 @dataclass
-class Uf:
+class Uf(BaseClass):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     # TODO: Até o dia 01/06/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
     codigo_ibge: Optional[str]  = None
@@ -557,9 +554,6 @@ class Uf:
     @classmethod
     def from_json(cls, **kwargs):
         return cls(**kwargs)
-    
-    def as_filtered_dict(self):
-        return asdict(self, dict_factory=dict_factory)
 
 # ======================================================================================================================
 def alterar_emissor(token_emissor:str, token_secret_emissor:str, token_empresa:str, token_secret_empresa:str):
