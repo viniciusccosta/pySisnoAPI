@@ -280,14 +280,32 @@ class Endereco:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
         return dados if len(dados) > 0 else None
 
+@dataclass
 class Ibpt:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    codigo            : Optional[str]  = None
+    ex                : Optional[str]  = None
+    tipo              : Optional[str]  = None
+    descricao         : Optional[str]  = None
+    nacional_federal  : Optional[str]  = None
+    importados_federal: Optional[str]  = None
+    estadual          : Optional[str]  = None
+    municipal         : Optional[str]  = None
+    vigencia_inicio   : Optional[str]  = None
+    vigencia_fim      : Optional[str]  = None
+    versao            : Optional[str]  = None
+    fonte             : Optional[str]  = None
+    unidade_federativa: Optional['Uf'] = None
+    ativo             : Optional[str]  = None     # TODO: Até o dia 01/06/2023, não consta na Documentação
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        uf_dict = kwargs.pop('unidade_federativa', None)
+        uf = Uf.from_json(uf_dict)
+        return cls(unidade_federativa=uf, **kwargs)
+    
+    def as_filtered_dict(self):
+        return asdict(self, dict_factory=dict_factory)
 
 class Icms:
     def __init__(self, **kwargs):
@@ -528,19 +546,20 @@ class Transporte:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
         return dados if len(dados) > 0 else None
 
+@dataclass
 class Uf:
-    # TODO: Até o dia 10/05/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
-    
-    def __init__(self, **kwargs):
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-        self.codigo_ibge = kwargs.get("codigo_ibge", '')   # TODO: 0 ?
-        self.sigla       = kwargs.get("sigla", '')
-        self.descricao   = kwargs.get("descricao", '')
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    # TODO: Até o dia 01/06/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
+    codigo_ibge: Optional[str]  = None
+    sigla      : Optional[str]  = None
+    descricao  : Optional[str]  = None
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+    @classmethod
+    def from_json(cls, **kwargs):
+        return cls(**kwargs)
+    
+    def as_filtered_dict(self):
+        return asdict(self, dict_factory=dict_factory)
 
 # ======================================================================================================================
 def alterar_emissor(token_emissor:str, token_secret_emissor:str, token_empresa:str, token_secret_empresa:str):
