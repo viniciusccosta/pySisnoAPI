@@ -29,7 +29,7 @@ def get_municipios(uf: str, *args, **kwargs) -> List[Municipio]:
         List[Municipio]: Uma lista de objetos Municipio, representando os municípios do estado consultado.
     """
 
-    headers  = HEADERS
+    headers  = HEADERS.copy()
     url      = f'{URL}/unidades-federativas/{uf}/municipios'
     response = requests.get(url, headers=headers)
 
@@ -53,7 +53,7 @@ def get_cfops(*args, **kwargs) -> List[Cfop]:
         List[Cfop]: Uma lista de objetos Cfop, representando os CFOPs disponíveis.
     """
 
-    headers  = HEADERS
+    headers  = HEADERS.copy()
     url      = f'{URL}/cfops'
     response = requests.get(url, headers=headers)
 
@@ -88,7 +88,7 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> List[Ibpt]:
     if len(cod_desc) < 4:
         raise Exception("Código ou Descrição precisa ter no mínimo 4 caracteres")
     
-    headers  = HEADERS
+    headers  = HEADERS.copy()
     headers["codigo-ou-descricao"] = cod_desc
     headers["uf"] = uf
 

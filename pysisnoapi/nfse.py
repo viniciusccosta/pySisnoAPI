@@ -177,7 +177,7 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
 
     json_obj = json.dumps(obj_emissao_nfse, default=lambda o: o.asdict())
     
-    headers = HEADERS
+    headers = HEADERS.copy()
     url     = f'{URL}/nfse'
     response = requests.post(url, data=json_obj, headers=headers)
 
@@ -233,7 +233,7 @@ def buscar_notas(cnpj:str=None, data_inicio:datetime=None, data_fim:datetime=Non
         List[NotaFiscalServico]: Lista com todas as NFSe
     """
     
-    headers = HEADERS
+    headers = HEADERS.copy()
     
     if cnpj:
         headers['CNPJ Empresa'] = cnpj
@@ -281,7 +281,7 @@ def recuperar_dados(id_nfse:int, *args, **kwargs):
     if not isinstance(id_nfse, int):
         raise ValueError("Necessário informar um ID de NFSe válido.")
     
-    headers  = HEADERS
+    headers  = HEADERS.copy()
     url      = f'{URL}/nfse/{id_nfse}'
     response = requests.get(url, headers=headers)
 
