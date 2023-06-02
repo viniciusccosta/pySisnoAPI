@@ -1,10 +1,11 @@
 """ 
-    O módulo misc.py contém funções genéricas que não se enquadram em outros módulos específicos. 
+    O módulo misc.py contém funções genéricas que não se enquadram em outros módulos.
+    
     Um exemplo é a função para realizar uma requisição à API a fim de consultar informações sobre municípios. 
     Este módulo faz parte de um pacote e depende completamente de outros módulos.
 
-    Para utilizar as funções deste módulo, basta importá-lo da seguinte forma:
-    "from pysisnoapi import misc"
+    Para utilizar as funções deste módulo, basta importá-lo da seguinte forma:  
+    `from pysisnoapi import misc`
 """
 
 # ======================================================================================================================
@@ -81,7 +82,7 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> List[Ibpt]:
         Exception: Caso o parâmetro cod_desc tenha menos de 4 caracteres.
 
     Returns:
-        list[dict]: Uma lista de objetos Ibpt representando os IBPTs.
+        List[Ibpt]: Uma lista de objetos Ibpt representando os IBPTs.
     """
 
     if len(cod_desc) < 4:

@@ -1,9 +1,8 @@
 """ 
-    Módulo específico para geração de Notas Fiscais de Produto através da API da plataforma SISNO.
-    Esse módulo faz parte de um package e é totalmente dependente de outros módulos.
-
-    Para utilizar esse módulo basta importá-lo da seguinte forma:
-    "from pysisnoapi import nfe"
+    Módulo específico para geração de Notas Fiscais de Produto.
+    
+    Para utilizar esse módulo basta importá-lo da seguinte forma:  
+    `from pysisnoapi import nfe`
 """
 
 # =====================================================================

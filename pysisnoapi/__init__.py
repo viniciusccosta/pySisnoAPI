@@ -1,16 +1,11 @@
 """
     Package criado para integração com a API da plataforma SISNO.
 
-    Para utilizar esse package basta importá-lo da seguinte forma:
-    "import pysisnoapi"
-
-    Dentro desse package existem outros módulos e que muito provavelmente serão necessários para você!
-
-    Exemplos:
-        - Módulo "nfe" para emissão/consulta de Notas Fiscais de Produto
-            "from pysisnoapi import nfe"
-        - Módulo "nfse" para emissão/consulta de Notas Fiscais de Serviço
-            "from pysisnoapi import nfse"
+    Para utilizar esse package basta importá-lo da seguinte forma:  
+    `import pysisnoapi`  
+    
+    Ou também poderá importar apenas os módulos necessários, como por exemplo:  
+    `from pysisnoapi import nfe` 
 """
 
 # ======================================================================================================================
@@ -19,7 +14,7 @@ import os
 import functools
 from dotenv import load_dotenv
 from dataclasses import dataclass, asdict
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 
 # ======================================================================================================================
 # Globals:
@@ -54,11 +49,29 @@ def requires_keys(func):
 # Classes:
 @dataclass
 class BaseClass:
-    def as_filtered_dict(self):
+    """Classe genérica utilizada como base para as demais classes neste package.
+    
+    A principal finalidade desta classe é fornecer o método `as_filtered_dict` para filtrar e retornar um dicionário com os atributos relevantes da instância.
+    Para maiores informações consulte a documentação do método [aqui](#pysisnoapi.BaseClass.as_filtered_dict).
+    """
+    
+    def as_filtered_dict(self)-> dict[str:str]:
+        """
+        Retorna um dicionário contendo os campos/atributos da classe com valores não nulos.
+
+        O dicionário resultante possui chaves (str) correspondentes aos nomes dos campos
+        da classe e valores (str) representando os respectivos valores desses campos,
+        desde que esses valores não sejam nulos (None).
+        
+        Returns:
+            dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
+        """
         return asdict(self, dict_factory=dict_factory)
     
 @dataclass
 class Cfop(BaseClass):
+    """CFOP (Código Fiscal de Operações e Prestações)
+    """
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo: Optional[str] = None
     descricao: Optional[str] = None
@@ -229,16 +242,15 @@ class Endereco:
             
             numero (str): Número do Endereço (apenas números).
 
-            uf (str):
-                Default is ''
-            codigo_municipio (str):
-                Default is ''
-            descricao_municipio (str):
-                Default is ''
-            cep (str):
-                Default is ''
-            complemento (str):
-                Default is ''
+            uf (str): Default is ''
+            
+            codigo_municipio (str): Default is ''
+            
+            descricao_municipio (str): Default is ''
+            
+            cep (str): Default is ''
+            
+            complemento (str): Default is ''
         """
 
         self.codigo_pais            = codigo_pais
@@ -283,6 +295,8 @@ class Endereco:
 
 @dataclass
 class Ibpt(BaseClass):
+    """Classe `IBPT` (Impostos sobre Produtos e Serviços)
+    """
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo            : Optional[str]  = None
     ex                : Optional[str]  = None
@@ -357,16 +371,16 @@ class Ipi:
 class Issqn:
     def __init__(self, **kwargs):
         """
-            Indicador_exigibilidade_iss
-                1: Exigível  
-                2: Não incidência  
-                3: Isenção  
-                4: Exportação  
-                5: Imunidade  
-                6: Exigibilidade suspensa por decisão judicial  
-                7: Exigibilidade suspensa por processo administrativo  
+            Indicador_exigibilidade_iss  
+                1. Exigível  
+                2. Não incidência  
+                3. Isenção  
+                4. Exportação  
+                5. Imunidade  
+                6. Exigibilidade suspensa por decisão judicial  
+                7. Exigibilidade suspensa por processo administrativo  
         """
-
+        
         self.indicador_exigibilidade_iss     = kwargs.get("indicador_exigibilidade_iss", None)   # string [ 1, 2, 3, 4, 5, 6, 7 ]
         self.indicador_incentivo_fiscal      = kwargs.get("indicador_incentivo_fiscal", None)    # string (1: Não, 2: Sim)
         self.item_lista_servicos             = kwargs.get("item_lista_servicos", None)           # string - Item da lista de serviços no Padrão ABRASF (Formato NN.NN)
@@ -587,7 +601,22 @@ def alterar_emissor(token_emissor:str, token_secret_emissor:str, token_empresa:s
     HEADERS["token-empresa"]        = token_empresa
     HEADERS["token-secret-empresa"] = token_secret_empresa
 
-def dict_factory(x: List[Tuple]):
+def dict_factory(x: List[Tuple]) -> Optional[Dict]:
+    """Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.
+
+    Essa função é chamada automaticamente durante a conversão de uma classe para um dicionário usando `dataclasses.asdict`, 
+    quando é atribuída a opção `dict_factory` como seu valor. 
+    
+    No caso, estamos usando essa função no método `as_filtered_dict` da classe `BaseClass`.
+    
+    A função recebe uma lista de tuplas contendo pares chave-valor e retorna um dicionário contendo apenas as chaves cujos valores são diferentes de None.
+
+    Args:
+        x (List[Tuple]): Uma lista de tuplas contendo pares chave-valor.
+
+    Returns:
+        dict ou None: Um dicionário filtrado com as chaves cujos valores são diferentes de None ou retorna None se o dicionário resultante estiver vazio.
+    """
     dic = {k: v for (k, v) in x if v is not None}
     return dic if len(dic) > 0 else None
 

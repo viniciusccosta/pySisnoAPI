@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>pysisnoapi.misc API documentation</title>
-<meta name="description" content="Módulo genérico para funções que não se encaixam em outros módulos, como por exemplo a função de realizar uma requisição para a API para consultar …" />
+<meta name="description" content="O módulo misc.py contém funções genéricas que não se enquadram em outros módulos …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,42 +22,45 @@
 <h1 class="title">Module <code>pysisnoapi.misc</code></h1>
 </header>
 <section id="section-intro">
-<p>Módulo genérico para funções que não se encaixam em outros módulos, como por exemplo a função de realizar uma requisição para a API para consultar municípios.
-Esse módulo faz parte de um package e é totalmente dependente de outros módulos.</p>
-<p>Para utilizar esse módulo basta importá-lo da seguinte forma:
-"from pysisnoapi import misc"</p>
+<p>O módulo misc.py contém funções genéricas que não se enquadram em outros módulos.</p>
+<p>Um exemplo é a função para realizar uma requisição à API a fim de consultar informações sobre municípios.
+Este módulo faz parte de um pacote e depende completamente de outros módulos.</p>
+<p>Para utilizar as funções deste módulo, basta importá-lo da seguinte forma:<br>
+<code>from <a title="pysisnoapi" href="index.html">pysisnoapi</a> import misc</code></p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">&#34;&#34;&#34; 
-    Módulo genérico para funções que não se encaixam em outros módulos, como por exemplo a função de realizar uma requisição para a API para consultar municípios.
-    Esse módulo faz parte de um package e é totalmente dependente de outros módulos.
+    O módulo misc.py contém funções genéricas que não se enquadram em outros módulos.
+    
+    Um exemplo é a função para realizar uma requisição à API a fim de consultar informações sobre municípios. 
+    Este módulo faz parte de um pacote e depende completamente de outros módulos.
 
-    Para utilizar esse módulo basta importá-lo da seguinte forma:
-    &#34;from pysisnoapi import misc&#34;
+    Para utilizar as funções deste módulo, basta importá-lo da seguinte forma:  
+    `from pysisnoapi import misc`
 &#34;&#34;&#34;
 
 # ======================================================================================================================
 from . import *
 
 import requests
+from typing import List
 
 # ======================================================================================================================
-@requires_keys    # TODO: Sendo sincero, até o dia 11/05/2023 não está sendo exigido as API keys para consumir esse endpoint
-def get_municipios(uf: str, *args, **kwargs) -&gt; list[dict]:
-    &#34;&#34;&#34;Envia uma requisição para a API para consultar os municípios de um determinado estado.
+@requires_keys
+def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
+    &#34;&#34;&#34;Consulta os municípios de um determinado estado através de uma requisição à API.
+
+    Essa função permite consultar os municípios de um estado específico através de uma requisição à API.
+    Ela retorna uma lista de objetos Municipio contendo informações sobre cada município.
 
     Args:
-        uf (str): UF do Estado.  
-            SP para São Paulo  
-            RJ para Rio de Janeiro  
-            e etc.
+        uf (str): UF do estado para o qual deseja-se consultar os municípios.
 
     Returns:
-        list[dict]: Lista de dicionários exatamente da forma que a API retornou.
+        List[Municipio]: Uma lista de objetos Municipio, representando os municípios do estado consultado.
     &#34;&#34;&#34;
-    # TODO: Retonar uma lista de objetos &#34;Municipio&#34;s
 
     headers  = HEADERS
     url      = f&#39;{URL}/unidades-federativas/{uf}/municipios&#39;
@@ -65,20 +68,23 @@ def get_municipios(uf: str, *args, **kwargs) -&gt; list[dict]:
 
     match (response.status_code):
         case 200:
-            return response.json().get(&#39;dados&#39;)
+            json_data  = response.json().get(&#39;dados&#39;)
+            municipios = [Municipio(**d) for d in json_data]
+            return municipios
         case 412:
             return []
         case _:
             return
 
-@requires_keys    # TODO: Sendo sincero, até o dia 11/05/2023 não está sendo exigido as API keys para consumir esse endpoint
-def get_cfops(*args, **kwargs) -&gt; list[dict]:
-    &#34;&#34;&#34;Envia uma requisição para a API para listar todos os CFOPs.
+@requires_keys
+def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
+    &#34;&#34;&#34;Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
+
+    Essa função permite obter a lista completa de CFOPs (Código Fiscal de Operações e Prestações) disponíveis através de uma requisição à API.
 
     Returns:
-        list[dict]: Lista de dicionários exatamente da forma que a API retornou.
+        List[Cfop]: Uma lista de objetos Cfop, representando os CFOPs disponíveis.
     &#34;&#34;&#34;
-    # TODO: Retonar uma lista de objetos &#34;Cfop&#34;s
 
     headers  = HEADERS
     url      = f&#39;{URL}/cfops&#39;
@@ -86,29 +92,31 @@ def get_cfops(*args, **kwargs) -&gt; list[dict]:
 
     match (response.status_code):
         case 200:
-            return response.json().get(&#39;dados&#39;)
+            json_data = response.json().get(&#39;dados&#39;)
+            cfops     = [Cfop(**d) for d in json_data]
+            return cfops
         case 412:
             return []
         case _:
             return
 
-@requires_keys    # TODO: Sendo sincero, até o dia 11/05/2023 não está sendo exigido as API keys para consumir esse endpoint
-def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -&gt; list[dict]:
-    &#34;&#34;&#34;Envia uma requisição para a API para listar todos os IBPTs.
+@requires_keys
+def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -&gt; List[Ibpt]:
+    &#34;&#34;&#34;
+    Obtém os IBPTs através de uma requisição à API.
 
+    Essa função permite obter os dados de IBPTs (Impostos sobre Produtos e Serviços) para um determinado item ou código, em uma determinada UF (Unidade Federativa)
+    
     Args:
-        cod_desc (str): Breve descrição do item ou código.
-            Mínimo de 4 caracteres.
-        
-        uf (str): UF do Estado
+        cod_desc (str): Breve descrição do item ou código. Deve ter no mínimo 4 caracteres.
+        uf (str): UF do estado para o qual deseja-se consultar os IBPTs.
 
     Raises:
-        Exception: cod_desc menor que 4 caracteres
+        Exception: Caso o parâmetro cod_desc tenha menos de 4 caracteres.
 
     Returns:
-        list[dict]: Lista de dicionários exatamente da forma que a API retornou.
+        List[Ibpt]: Uma lista de objetos Ibpt representando os IBPTs.
     &#34;&#34;&#34;
-    # TODO: Retonar uma lista de objetos &#34;Ibpt&#34;s
 
     if len(cod_desc) &lt; 4:
         raise Exception(&#34;Código ou Descrição precisa ter no mínimo 4 caracteres&#34;)
@@ -122,30 +130,13 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -&gt; list[dict]:
 
     match (response.status_code):
         case 200:
-            return response.json().get(&#39;dados&#39;)
+            json_data = response.json().get(&#39;dados&#39;)
+            ibpts     = [Ibpt.from_json(**d) for d in json_data]
+            return ibpts
         case 412:
             return []
         case _:
             return
-
-# ======================================================================================================================
-if __name__ == &#34;__main__&#34;:
-    pass
-
-    # municipios = get_municipios(&#39;df&#39;)
-    # if municipios:
-    #     for municipio in municipios:
-    #         print(municipio)
-
-    # cfops = get_cfops()
-    # if cfops:
-    #     for cfop in cfops:
-    #         print(cfop)
-
-    # ibpts = get_ibpts(&#34;01012100&#34;, &#39;DF&#39;)
-    # if ibpts:
-    #     for ibpt in ibpts:
-    #         print(ibpt)
 
 # ======================================================================================================================</code></pre>
 </details>
@@ -158,27 +149,29 @@ if __name__ == &#34;__main__&#34;:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="pysisnoapi.misc.get_cfops"><code class="name flex">
-<span>def <span class="ident">get_cfops</span></span>(<span>*args, **kwargs) ‑> list[dict]</span>
+<span>def <span class="ident">get_cfops</span></span>(<span>*args, **kwargs) ‑> List[<a title="pysisnoapi.Cfop" href="index.html#pysisnoapi.Cfop">Cfop</a>]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Envia uma requisição para a API para listar todos os CFOPs.</p>
+<div class="desc"><p>Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.</p>
+<p>Essa função permite obter a lista completa de CFOPs (Código Fiscal de Operações e Prestações) disponíveis através de uma requisição à API.</p>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code>list[dict]</code></dt>
-<dd>Lista de dicionários exatamente da forma que a API retornou.</dd>
+<dt><code>List[Cfop]</code></dt>
+<dd>Uma lista de objetos Cfop, representando os CFOPs disponíveis.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys    # TODO: Sendo sincero, até o dia 11/05/2023 não está sendo exigido as API keys para consumir esse endpoint
-def get_cfops(*args, **kwargs) -&gt; list[dict]:
-    &#34;&#34;&#34;Envia uma requisição para a API para listar todos os CFOPs.
+<pre><code class="python">@requires_keys
+def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
+    &#34;&#34;&#34;Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
+
+    Essa função permite obter a lista completa de CFOPs (Código Fiscal de Operações e Prestações) disponíveis através de uma requisição à API.
 
     Returns:
-        list[dict]: Lista de dicionários exatamente da forma que a API retornou.
+        List[Cfop]: Uma lista de objetos Cfop, representando os CFOPs disponíveis.
     &#34;&#34;&#34;
-    # TODO: Retonar uma lista de objetos &#34;Cfop&#34;s
 
     headers  = HEADERS
     url      = f&#39;{URL}/cfops&#39;
@@ -186,7 +179,9 @@ def get_cfops(*args, **kwargs) -&gt; list[dict]:
 
     match (response.status_code):
         case 200:
-            return response.json().get(&#39;dados&#39;)
+            json_data = response.json().get(&#39;dados&#39;)
+            cfops     = [Cfop(**d) for d in json_data]
+            return cfops
         case 412:
             return []
         case _:
@@ -194,49 +189,49 @@ def get_cfops(*args, **kwargs) -&gt; list[dict]:
 </details>
 </dd>
 <dt id="pysisnoapi.misc.get_ibpts"><code class="name flex">
-<span>def <span class="ident">get_ibpts</span></span>(<span>cod_desc: str, uf: str, *args, **kwargs) ‑> list[dict]</span>
+<span>def <span class="ident">get_ibpts</span></span>(<span>cod_desc: str, uf: str, *args, **kwargs) ‑> List[<a title="pysisnoapi.Ibpt" href="index.html#pysisnoapi.Ibpt">Ibpt</a>]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Envia uma requisição para a API para listar todos os IBPTs.</p>
+<div class="desc"><p>Obtém os IBPTs através de uma requisição à API.</p>
+<p>Essa função permite obter os dados de IBPTs (Impostos sobre Produtos e Serviços) para um determinado item ou código, em uma determinada UF (Unidade Federativa)</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>cod_desc</code></strong> :&ensp;<code>str</code></dt>
-<dd>Breve descrição do item ou código.
-Mínimo de 4 caracteres.</dd>
+<dd>Breve descrição do item ou código. Deve ter no mínimo 4 caracteres.</dd>
 <dt><strong><code>uf</code></strong> :&ensp;<code>str</code></dt>
-<dd>UF do Estado</dd>
+<dd>UF do estado para o qual deseja-se consultar os IBPTs.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>Exception</code></dt>
-<dd>cod_desc menor que 4 caracteres</dd>
+<dd>Caso o parâmetro cod_desc tenha menos de 4 caracteres.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code>list[dict]</code></dt>
-<dd>Lista de dicionários exatamente da forma que a API retornou.</dd>
+<dt><code>List[Ibpt]</code></dt>
+<dd>Uma lista de objetos Ibpt representando os IBPTs.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys    # TODO: Sendo sincero, até o dia 11/05/2023 não está sendo exigido as API keys para consumir esse endpoint
-def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -&gt; list[dict]:
-    &#34;&#34;&#34;Envia uma requisição para a API para listar todos os IBPTs.
+<pre><code class="python">@requires_keys
+def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -&gt; List[Ibpt]:
+    &#34;&#34;&#34;
+    Obtém os IBPTs através de uma requisição à API.
 
+    Essa função permite obter os dados de IBPTs (Impostos sobre Produtos e Serviços) para um determinado item ou código, em uma determinada UF (Unidade Federativa)
+    
     Args:
-        cod_desc (str): Breve descrição do item ou código.
-            Mínimo de 4 caracteres.
-        
-        uf (str): UF do Estado
+        cod_desc (str): Breve descrição do item ou código. Deve ter no mínimo 4 caracteres.
+        uf (str): UF do estado para o qual deseja-se consultar os IBPTs.
 
     Raises:
-        Exception: cod_desc menor que 4 caracteres
+        Exception: Caso o parâmetro cod_desc tenha menos de 4 caracteres.
 
     Returns:
-        list[dict]: Lista de dicionários exatamente da forma que a API retornou.
+        List[Ibpt]: Uma lista de objetos Ibpt representando os IBPTs.
     &#34;&#34;&#34;
-    # TODO: Retonar uma lista de objetos &#34;Ibpt&#34;s
 
     if len(cod_desc) &lt; 4:
         raise Exception(&#34;Código ou Descrição precisa ter no mínimo 4 caracteres&#34;)
@@ -250,7 +245,9 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -&gt; list[dict]:
 
     match (response.status_code):
         case 200:
-            return response.json().get(&#39;dados&#39;)
+            json_data = response.json().get(&#39;dados&#39;)
+            ibpts     = [Ibpt.from_json(**d) for d in json_data]
+            return ibpts
         case 412:
             return []
         case _:
@@ -258,41 +255,39 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -&gt; list[dict]:
 </details>
 </dd>
 <dt id="pysisnoapi.misc.get_municipios"><code class="name flex">
-<span>def <span class="ident">get_municipios</span></span>(<span>uf: str, *args, **kwargs) ‑> list[dict]</span>
+<span>def <span class="ident">get_municipios</span></span>(<span>uf: str, *args, **kwargs) ‑> List[<a title="pysisnoapi.Municipio" href="index.html#pysisnoapi.Municipio">Municipio</a>]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Envia uma requisição para a API para consultar os municípios de um determinado estado.</p>
+<div class="desc"><p>Consulta os municípios de um determinado estado através de uma requisição à API.</p>
+<p>Essa função permite consultar os municípios de um estado específico através de uma requisição à API.
+Ela retorna uma lista de objetos Municipio contendo informações sobre cada município.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>uf</code></strong> :&ensp;<code>str</code></dt>
-<dd>UF do Estado.<br>
-SP para São Paulo<br>
-RJ para Rio de Janeiro<br>
-e etc.</dd>
+<dd>UF do estado para o qual deseja-se consultar os municípios.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code>list[dict]</code></dt>
-<dd>Lista de dicionários exatamente da forma que a API retornou.</dd>
+<dt><code>List[Municipio]</code></dt>
+<dd>Uma lista de objetos Municipio, representando os municípios do estado consultado.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys    # TODO: Sendo sincero, até o dia 11/05/2023 não está sendo exigido as API keys para consumir esse endpoint
-def get_municipios(uf: str, *args, **kwargs) -&gt; list[dict]:
-    &#34;&#34;&#34;Envia uma requisição para a API para consultar os municípios de um determinado estado.
+<pre><code class="python">@requires_keys
+def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
+    &#34;&#34;&#34;Consulta os municípios de um determinado estado através de uma requisição à API.
+
+    Essa função permite consultar os municípios de um estado específico através de uma requisição à API.
+    Ela retorna uma lista de objetos Municipio contendo informações sobre cada município.
 
     Args:
-        uf (str): UF do Estado.  
-            SP para São Paulo  
-            RJ para Rio de Janeiro  
-            e etc.
+        uf (str): UF do estado para o qual deseja-se consultar os municípios.
 
     Returns:
-        list[dict]: Lista de dicionários exatamente da forma que a API retornou.
+        List[Municipio]: Uma lista de objetos Municipio, representando os municípios do estado consultado.
     &#34;&#34;&#34;
-    # TODO: Retonar uma lista de objetos &#34;Municipio&#34;s
 
     headers  = HEADERS
     url      = f&#39;{URL}/unidades-federativas/{uf}/municipios&#39;
@@ -300,7 +295,9 @@ def get_municipios(uf: str, *args, **kwargs) -&gt; list[dict]:
 
     match (response.status_code):
         case 200:
-            return response.json().get(&#39;dados&#39;)
+            json_data  = response.json().get(&#39;dados&#39;)
+            municipios = [Municipio(**d) for d in json_data]
+            return municipios
         case 412:
             return []
         case _:

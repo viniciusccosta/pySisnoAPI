@@ -1,13 +1,14 @@
 """ 
-    Módulo específico para geração de Notas Fiscais de Serviço através da API da plataforma SISNO.
-    Esse módulo faz parte de um package e é totalmente dependente de outros módulos.
-
-    Para utilizar esse módulo basta importá-lo da seguinte forma:
-    "from pysisnoapi import nfse"
+    Módulo específico para geração de Notas Fiscais de Serviço.
+    
+    Para utilizar esse módulo basta importá-lo da seguinte forma:  
+    `from pysisnoapi import nfse`
 """
+
 # =====================================================================
 from . import *
 
+import json
 import requests
 from datetime import datetime
 

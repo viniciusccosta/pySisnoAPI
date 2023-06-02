@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>pysisnoapi.nfse API documentation</title>
-<meta name="description" content="Módulo específico para geração de Notas Fiscais de Serviço através da API da plataforma SISNO.
-Esse módulo faz parte de um package e é totalmente …" />
+<meta name="description" content="Módulo específico para geração de Notas Fiscais de Serviço …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -23,24 +22,24 @@ Esse módulo faz parte de um package e é totalmente …" />
 <h1 class="title">Module <code>pysisnoapi.nfse</code></h1>
 </header>
 <section id="section-intro">
-<p>Módulo específico para geração de Notas Fiscais de Serviço através da API da plataforma SISNO.
-Esse módulo faz parte de um package e é totalmente dependente de outros módulos.</p>
-<p>Para utilizar esse módulo basta importá-lo da seguinte forma:
-"from pysisnoapi import nfse"</p>
+<p>Módulo específico para geração de Notas Fiscais de Serviço.</p>
+<p>Para utilizar esse módulo basta importá-lo da seguinte forma:<br>
+<code>from <a title="pysisnoapi" href="index.html">pysisnoapi</a> import nfse</code></p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">&#34;&#34;&#34; 
-    Módulo específico para geração de Notas Fiscais de Serviço através da API da plataforma SISNO.
-    Esse módulo faz parte de um package e é totalmente dependente de outros módulos.
-
-    Para utilizar esse módulo basta importá-lo da seguinte forma:
-    &#34;from pysisnoapi import nfse&#34;
+    Módulo específico para geração de Notas Fiscais de Serviço.
+    
+    Para utilizar esse módulo basta importá-lo da seguinte forma:  
+    `from pysisnoapi import nfse`
 &#34;&#34;&#34;
+
 # =====================================================================
 from . import *
 
+import json
 import requests
 from datetime import datetime
 
@@ -208,8 +207,61 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
             return response.text
 
 @requires_keys
-def buscar_notas(*args, **kwargs):
-    raise NotImplementedError
+def buscar_notas(cnpj:str, data_inicio:datetime, data_fim:datetime, ambiente:str=&#39;1&#39;, status:str=&#39;aprovado&#39;, texto:str=&#39;&#39;, pagina:str=&#39;1&#39;, qtd_por_pagina:str=&#39;10&#39;, ordencao:str=&#34;numero_nota&#34;, tipo_ordenacao:str=&#34;desc&#34;, *args, **kwargs) -&gt; list:
+    &#34;&#34;&#34;Recupera as notas de uma determinada empresa.
+
+    Args:
+        cnpj (str): CNPJ Empresa apenas números
+        data_inicio (datetime): Início intervalo de datas (dd/MM/yyyy HH:mm:ss)
+        data_fim (datetime): Fim intervalo de datas (dd/MM/yyyy HH:mm:ss)
+        ambiente (str, optional):  
+            1: Produção  
+            2: Homologação
+        status (str, optional): Status da NFSe. Defaults to &#39;aprovado&#39;.  
+            aprovado  
+            reprovado  
+            contingencia  
+            cancelado  
+            Em digitação
+        texto (str, optional): Texto de busca livre. Defaults to &#39;&#39;.
+        pagina (int, optional): Número da página. Defaults to 1.
+        qtd_por_pagina (int, optional): Quantidade de notas por página. Defaults to 10.
+        ordencao (str, optional): Campo para ordenação das notas. Defaults to &#34;numero_nota&#34;.  
+            empresa  
+            ambiente  
+            numero_nota  
+            status  
+            data_emissao  
+            nome_destinatario  
+            uf_destinatario  
+            valor_total
+        tipo_ordenacao (str, optional): Tipo de Ordenação. Defaults to &#34;desc&#34;.  
+            desc  
+            asc  
+    Returns:
+        list: Lista com todas as NFSe
+    &#34;&#34;&#34;
+    headers = HEADERS
+    headers[&#39;CNPJ Empresa&#39;]  = cnpj
+    headers[&#39;dataInicio&#39;]    = data_inicio.strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
+    headers[&#39;dataFim&#39;]       = data_fim.strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
+    headers[&#39;ambiente&#39;]      = ambiente
+    headers[&#39;status&#39;]        = status
+    headers[&#39;textoBusca&#39;]    = texto
+    headers[&#39;pagina&#39;]        = pagina           # Na documentação diz que deve ser inteiro, mas &#34;Header part (1) from (&#39;pagina&#39;, 1) must be of type str or bytes, not &lt;class &#39;int&#39;&gt;&#34;
+    headers[&#39;qtdPorPagina&#39;]  = qtd_por_pagina   # Na documentação diz que deve ser inteiro, mas &#34;Header part (10) from (&#39;qtdPorPagina&#39;, 10) must be of type str or bytes, not &lt;class &#39;int&#39;&gt;&#34;
+    headers[&#39;ordenacao&#39;]     = ordencao
+    headers[&#39;tipoOrdenacao&#39;] = tipo_ordenacao
+
+    url = f&#39;{URL}/nfse&#39;
+    response = requests.get(url, headers=headers)
+
+    match (response.status_code):
+        case 200:
+            # TODO: Retornar uma lista de objetos &#34;NFSe&#34;
+            return response.json().get(&#39;dados&#39;)
+        case _:
+            return response.text
 
 @requires_keys
 def retransmitir(*args, **kwargs):
@@ -239,39 +291,6 @@ def recuperar_dados(id_nfse:int, *args, **kwargs):
 def cancelar(*args, **kwargs):
     raise NotImplementedError
 
-# =====================================================================
-def __emitir_nota_teste(*args, **kwargs):
-    # TODO: Enviar para módulo de testes
-
-    # TODO: Os impostos, os produtos (e até mesmo os clientes) já deverão estar cadastrados em algum banco de dados
-    
-    # --------------------------------------------
-    # Cliente:
-    endereco        = Endereco(codigo_pais=&#39;55&#39;, descricao_pais=&#39;Brasil&#39;, bairro=&#39;Brasilia&#39;, logradouro=&#39;Praça dos 3 poderes&#39;, numero=&#39;123&#39;, )
-    pessoa_fisica   = PessoaFisica(cpf=&#34;00000000000&#34;, nome_completo=&#34;João da Silva Júnior&#34;)
-    cliente         = Cliente(pessoa_fisica=pessoa_fisica, consumidor_final=&#39;0&#39;, contribuinte=&#39;9&#39;, endereco=endereco)
-
-    # --------------------------------------------
-    # Serviço:
-    pis             = Pis(situacao_tributaria=&#34;99&#34;)                                                                                                                     #
-    cofins          = Cofins(situacao_tributaria=&#34;99&#34;)                                                                                                                  #
-    issqn           = Issqn(indicador_exigibilidade_iss=&#34;1&#34;, indicador_incentivo_fiscal=&#34;1&#34;, item_lista_servicos=&#34;08.01&#34;, aliquota=&#34;0.0000&#34;)                            # Exigível, Não, 08.01, 0.0000%
-    impostos        = Impostos(tipo=&#34;1&#34;, pis=pis, cofins=cofins, issqn=issqn)                                                                                           # Serviço
-
-    uf              = Uf(codigo_ibge=53, sigla=&#39;DF&#39;, descricao=&#39;Distrito Federal&#39;)
-    municipio       = Municipio(codigo_ibge=5300108, descricao=&#39;Brasilia&#39;)
-
-    servico         = Servico(valor_servicos=&#34;1.00&#34;, discriminacao=&#34;Teste&#34;, impostos=impostos, uf_local_prestacao=uf, municipio_local_prestacao=municipio)
-
-    # --------------------------------------------
-    # Construção Civil:
-
-    # --------------------------------------------
-    # Objeto Emissão NFSe:
-    obj_emissao_nfse = ObjetoEmissaoNFSe(cliente=cliente, servico=servico)
-    
-    return emitir(obj_emissao_nfse=obj_emissao_nfse)
-
 # =====================================================================</code></pre>
 </details>
 </section>
@@ -283,17 +302,115 @@ def __emitir_nota_teste(*args, **kwargs):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="pysisnoapi.nfse.buscar_notas"><code class="name flex">
-<span>def <span class="ident">buscar_notas</span></span>(<span>*args, **kwargs)</span>
+<span>def <span class="ident">buscar_notas</span></span>(<span>cnpj: str, data_inicio: datetime.datetime, data_fim: datetime.datetime, ambiente: str = '1', status: str = 'aprovado', texto: str = '', pagina: str = '1', qtd_por_pagina: str = '10', ordencao: str = 'numero_nota', tipo_ordenacao: str = 'desc', *args, **kwargs) ‑> list</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Recupera as notas de uma determinada empresa.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>cnpj</code></strong> :&ensp;<code>str</code></dt>
+<dd>CNPJ Empresa apenas números</dd>
+<dt><strong><code>data_inicio</code></strong> :&ensp;<code>datetime</code></dt>
+<dd>Início intervalo de datas (dd/MM/yyyy HH:mm:ss)</dd>
+<dt><strong><code>data_fim</code></strong> :&ensp;<code>datetime</code></dt>
+<dd>Fim intervalo de datas (dd/MM/yyyy HH:mm:ss)</dd>
+<dt><strong><code>ambiente</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>1: Produção<br>
+2: Homologação</dd>
+<dt><strong><code>status</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Status da NFSe. Defaults to 'aprovado'.<br>
+aprovado<br>
+reprovado<br>
+contingencia<br>
+cancelado<br>
+Em digitação</dd>
+<dt><strong><code>texto</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Texto de busca livre. Defaults to ''.</dd>
+<dt><strong><code>pagina</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Número da página. Defaults to 1.</dd>
+<dt><strong><code>qtd_por_pagina</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Quantidade de notas por página. Defaults to 10.</dd>
+<dt><strong><code>ordencao</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Campo para ordenação das notas. Defaults to "numero_nota".<br>
+empresa<br>
+ambiente<br>
+numero_nota<br>
+status<br>
+data_emissao<br>
+nome_destinatario<br>
+uf_destinatario<br>
+valor_total</dd>
+<dt><strong><code>tipo_ordenacao</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Tipo de Ordenação. Defaults to "desc".<br>
+desc<br>
+asc
+</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code></dt>
+<dd>Lista com todas as NFSe</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@requires_keys
-def buscar_notas(*args, **kwargs):
-    raise NotImplementedError</code></pre>
+def buscar_notas(cnpj:str, data_inicio:datetime, data_fim:datetime, ambiente:str=&#39;1&#39;, status:str=&#39;aprovado&#39;, texto:str=&#39;&#39;, pagina:str=&#39;1&#39;, qtd_por_pagina:str=&#39;10&#39;, ordencao:str=&#34;numero_nota&#34;, tipo_ordenacao:str=&#34;desc&#34;, *args, **kwargs) -&gt; list:
+    &#34;&#34;&#34;Recupera as notas de uma determinada empresa.
+
+    Args:
+        cnpj (str): CNPJ Empresa apenas números
+        data_inicio (datetime): Início intervalo de datas (dd/MM/yyyy HH:mm:ss)
+        data_fim (datetime): Fim intervalo de datas (dd/MM/yyyy HH:mm:ss)
+        ambiente (str, optional):  
+            1: Produção  
+            2: Homologação
+        status (str, optional): Status da NFSe. Defaults to &#39;aprovado&#39;.  
+            aprovado  
+            reprovado  
+            contingencia  
+            cancelado  
+            Em digitação
+        texto (str, optional): Texto de busca livre. Defaults to &#39;&#39;.
+        pagina (int, optional): Número da página. Defaults to 1.
+        qtd_por_pagina (int, optional): Quantidade de notas por página. Defaults to 10.
+        ordencao (str, optional): Campo para ordenação das notas. Defaults to &#34;numero_nota&#34;.  
+            empresa  
+            ambiente  
+            numero_nota  
+            status  
+            data_emissao  
+            nome_destinatario  
+            uf_destinatario  
+            valor_total
+        tipo_ordenacao (str, optional): Tipo de Ordenação. Defaults to &#34;desc&#34;.  
+            desc  
+            asc  
+    Returns:
+        list: Lista com todas as NFSe
+    &#34;&#34;&#34;
+    headers = HEADERS
+    headers[&#39;CNPJ Empresa&#39;]  = cnpj
+    headers[&#39;dataInicio&#39;]    = data_inicio.strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
+    headers[&#39;dataFim&#39;]       = data_fim.strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
+    headers[&#39;ambiente&#39;]      = ambiente
+    headers[&#39;status&#39;]        = status
+    headers[&#39;textoBusca&#39;]    = texto
+    headers[&#39;pagina&#39;]        = pagina           # Na documentação diz que deve ser inteiro, mas &#34;Header part (1) from (&#39;pagina&#39;, 1) must be of type str or bytes, not &lt;class &#39;int&#39;&gt;&#34;
+    headers[&#39;qtdPorPagina&#39;]  = qtd_por_pagina   # Na documentação diz que deve ser inteiro, mas &#34;Header part (10) from (&#39;qtdPorPagina&#39;, 10) must be of type str or bytes, not &lt;class &#39;int&#39;&gt;&#34;
+    headers[&#39;ordenacao&#39;]     = ordencao
+    headers[&#39;tipoOrdenacao&#39;] = tipo_ordenacao
+
+    url = f&#39;{URL}/nfse&#39;
+    response = requests.get(url, headers=headers)
+
+    match (response.status_code):
+        case 200:
+            # TODO: Retornar uma lista de objetos &#34;NFSe&#34;
+            return response.json().get(&#39;dados&#39;)
+        case _:
+            return response.text</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfse.cancelar"><code class="name flex">
