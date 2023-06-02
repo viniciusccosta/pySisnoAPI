@@ -15,6 +15,8 @@ import functools
 from dotenv import load_dotenv
 from dataclasses import dataclass, asdict
 from typing import Optional, List, Tuple, Dict
+from datetime import datetime
+from dateutil import parser
 
 # ======================================================================================================================
 # Globals:
@@ -349,35 +351,48 @@ class Municipio(BaseClass):
     def from_json(cls, **kwargs):
         return cls(**kwargs)
 
+@dataclass
 class NotaFiscal:
-    def __init__(self, **kwargs):
-        self.empresa                 = kwargs.get("empresa", None)              # string
-        self.serie                   = kwargs.get("serie", None)                # string
-        self.operacao                = kwargs.get("operacao", None)             # string (0: Entrada, 1: Saída)
-        self.natureza_operacao       = kwargs.get("natureza_operacao", None)    # string
-        self.modelo                  = kwargs.get("modelo", None)               # string (55: NF-e, 65: NFC-e)
-        self.finalidade              = kwargs.get("finalidade", None)           # string (1: Normal, 2: Complementar, 3: Ajuste, 4: Devolução ou Retorno)
-        self.ambiente                = kwargs.get("ambiente", None)             # string (1: Produção, 2: Homologação)
-        self.cliente                 = kwargs.get("cliente", None)              # Objeto CLIENTE
-        self.produtos                = kwargs.get("produtos", None)             # list[PRODUTO]
-        self.pedido                  = kwargs.get("pedido", None)               # Objeto PEDIDO
-        self.data_entrada_saida      = kwargs.get("data_entrada_saida", None)   # string (dd/MM/yyyy HH:mm:ss)
-        self.data_emissao            = kwargs.get("data_emissao", None)         # string (dd/MM/yyyy HH:mm:ss)
-
-    def asdict(self):
-        return {
-            "serie"             : self.serie,
-            "operacao"          : self.operacao,
-            "natureza_operacao" : self.natureza_operacao,
-            "modelo"            : self.modelo,
-            "finalidade"        : self.finalidade,
-            "ambiente"          : self.ambiente,
-            "cliente"           : self.cliente.asdict(),
-            "produtos"          : [p.asdict() for p in self.produtos],
-            "pedido"            : self.pedido.asdict(),
-            "data_entrada_saida": self.data_entrada_saida,
-            "data_emissao"      : self.data_emissao,
-        }
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    id                      : Optional[int]         = None
+    empresa                 : Optional['Empresa']   = None
+    tipo                    : Optional[str]         = None
+    serie                   : Optional[str]         = None
+    numero_nota             : Optional[str]         = None
+    chave_acesso            : Optional[str]         = None
+    protocolo               : Optional[str]         = None
+    nome_destinatario       : Optional[str]         = None
+    uf_destinatario         : Optional[str]         = None
+    cpf_cnpj_destinatario   : Optional[str]         = None
+    valor_total             : Optional[str]         = None
+    status                  : Optional[str]         = None
+    motivo                  : Optional[str]         = None
+    data_emissao            : Optional[datetime]    = None
+    data_autorizacao        : Optional[datetime]    = None
+    modelo                  : Optional[str]         = None
+    ambiente                : Optional[str]         = None
+    xml                     : Optional[str]         = None
+    json_objeto_nfe         : Optional[str]         = None
+    tipo_emissao            : Optional[str]         = None
+    numero_lote             : Optional[str]         = None
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        empresa_dict = kwargs.pop('empresa', {})
+        empresa = Empresa.from_json(**empresa_dict)
+        
+        if data_emissao := kwargs.pop('data_emissao', None):
+            data_emissao = parser.parse(data_emissao, dayfirst=True)
+        
+        if data_autorizacao := kwargs.pop('data_autorizacao', None):
+            data_autorizacao = parser.parse(data_autorizacao, dayfirst=True)
+        
+        return cls(
+            empresa=empresa,
+            data_emissao=data_emissao, 
+            data_autorizacao=data_autorizacao, 
+            **kwargs
+        )
 
 class Observacao:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
