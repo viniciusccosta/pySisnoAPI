@@ -1,9 +1,8 @@
 """ 
-    Módulo específico para geração de Notas Fiscais de Produto através da API da plataforma SISNO.
-    Esse módulo faz parte de um package e é totalmente dependente de outros módulos.
-
-    Para utilizar esse módulo basta importá-lo da seguinte forma:
-    "from pysisnoapi import nfe"
+    Módulo específico para geração de Notas Fiscais de Produto.
+    
+    Para utilizar esse módulo basta importá-lo da seguinte forma:  
+    `from pysisnoapi import nfe`
 """
 
 # =====================================================================
@@ -145,48 +144,83 @@ class PaginaNotas:
         raise NotImplementedError
 
 # =====================================================================
-@requires_keys
+@requires_emissor
+@requires_empresa
 def emitir(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def corrigir(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def cancelar(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def validar(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
-def listar(*args, **kwargs):
-    raise NotImplementedError
+@requires_emissor
+def listar(qtd:str = None, pagina:str = None, *args, **kwargs) -> List[NotaFiscal]:
+    """Recupera as notas fiscais.
+    
+    No Distrito Federal (DF), antes de 01/2023, as notas fiscais de serviço eram emitidas como NFe.
 
-@requires_keys
+    Args:
+        qtd (str, optional): Quantidade de notas por página.
+        pagina (str, optional): Página a ser retornada.
+
+    Returns:
+        List[NotaFiscal]: Lista contendo as notas fiscais.
+    """
+    headers = HEADERS.copy()
+    params   = {}
+    
+    if qtd:
+        params["qtd"] = qtd
+    if pagina:
+        params["pagina"] = pagina
+    
+    url = f'{URL}/nfe/lista-notas'
+    response = requests.get(url, params, headers=headers)
+    
+    match (response.status_code):
+        case 200:
+            json_data = response.json().get('dados')
+            nfes = [NotaFiscal.from_json(**d) for d in json_data['itens']]
+            return nfes
+        case _:
+            return response.text
+
+@requires_emissor
 def buscar_notas(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
 def get_nota(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def inutilizar_numeracao(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def get_pre_visualizacao(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def get_danfe(*args, **kwargs):
     raise NotImplementedError
 
 # =====================================================================
-@requires_keys
+@requires_emissor
 def __emitir_nota_teste(*args, **kwargs):
     agora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 

@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>pysisnoapi.nfe API documentation</title>
-<meta name="description" content="Módulo específico para geração de Notas Fiscais de Produto através da API da plataforma SISNO.
-Esse módulo faz parte de um package e é totalmente …" />
+<meta name="description" content="Módulo específico para geração de Notas Fiscais de Produto …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -23,20 +22,18 @@ Esse módulo faz parte de um package e é totalmente …" />
 <h1 class="title">Module <code>pysisnoapi.nfe</code></h1>
 </header>
 <section id="section-intro">
-<p>Módulo específico para geração de Notas Fiscais de Produto através da API da plataforma SISNO.
-Esse módulo faz parte de um package e é totalmente dependente de outros módulos.</p>
-<p>Para utilizar esse módulo basta importá-lo da seguinte forma:
-"from pysisnoapi import nfe"</p>
+<p>Módulo específico para geração de Notas Fiscais de Produto.</p>
+<p>Para utilizar esse módulo basta importá-lo da seguinte forma:<br>
+<code>from <a title="pysisnoapi" href="index.html">pysisnoapi</a> import nfe</code></p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">&#34;&#34;&#34; 
-    Módulo específico para geração de Notas Fiscais de Produto através da API da plataforma SISNO.
-    Esse módulo faz parte de um package e é totalmente dependente de outros módulos.
-
-    Para utilizar esse módulo basta importá-lo da seguinte forma:
-    &#34;from pysisnoapi import nfe&#34;
+    Módulo específico para geração de Notas Fiscais de Produto.
+    
+    Para utilizar esse módulo basta importá-lo da seguinte forma:  
+    `from pysisnoapi import nfe`
 &#34;&#34;&#34;
 
 # =====================================================================
@@ -178,48 +175,83 @@ class PaginaNotas:
         raise NotImplementedError
 
 # =====================================================================
-@requires_keys
+@requires_emissor
+@requires_empresa
 def emitir(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def corrigir(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def cancelar(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def validar(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
-def listar(*args, **kwargs):
-    raise NotImplementedError
+@requires_emissor
+def listar(qtd:str = None, pagina:str = None, *args, **kwargs) -&gt; List[NotaFiscal]:
+    &#34;&#34;&#34;Recupera as notas fiscais.
+    
+    No Distrito Federal (DF), antes de 01/2023, as notas fiscais de serviço eram emitidas como NFe.
 
-@requires_keys
+    Args:
+        qtd (str, optional): Quantidade de notas por página.
+        pagina (str, optional): Página a ser retornada.
+
+    Returns:
+        List[NotaFiscal]: Lista contendo as notas fiscais.
+    &#34;&#34;&#34;
+    headers = HEADERS.copy()
+    params   = {}
+    
+    if qtd:
+        params[&#34;qtd&#34;] = qtd
+    if pagina:
+        params[&#34;pagina&#34;] = pagina
+    
+    url = f&#39;{URL}/nfe/lista-notas&#39;
+    response = requests.get(url, params, headers=headers)
+    
+    match (response.status_code):
+        case 200:
+            json_data = response.json().get(&#39;dados&#39;)
+            nfes = [NotaFiscal.from_json(**d) for d in json_data[&#39;itens&#39;]]
+            return nfes
+        case _:
+            return response.text
+
+@requires_emissor
 def buscar_notas(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
 def get_nota(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def inutilizar_numeracao(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def get_pre_visualizacao(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def get_danfe(*args, **kwargs):
     raise NotImplementedError
 
 # =====================================================================
-@requires_keys
+@requires_emissor
 def __emitir_nota_teste(*args, **kwargs):
     agora = datetime.datetime.now().strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
 
@@ -270,7 +302,7 @@ if __name__ == &#34;__main__&#34;:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
 def buscar_notas(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -284,7 +316,8 @@ def buscar_notas(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def cancelar(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -298,7 +331,8 @@ def cancelar(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def corrigir(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -312,7 +346,8 @@ def corrigir(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def emitir(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -326,7 +361,8 @@ def emitir(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def get_danfe(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -340,7 +376,7 @@ def get_danfe(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
 def get_nota(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -354,7 +390,8 @@ def get_nota(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def get_pre_visualizacao(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -368,23 +405,65 @@ def get_pre_visualizacao(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def inutilizar_numeracao(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.listar"><code class="name flex">
-<span>def <span class="ident">listar</span></span>(<span>*args, **kwargs)</span>
+<span>def <span class="ident">listar</span></span>(<span>qtd: str = None, pagina: str = None, *args, **kwargs) ‑> List[<a title="pysisnoapi.NotaFiscal" href="index.html#pysisnoapi.NotaFiscal">NotaFiscal</a>]</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Recupera as notas fiscais.</p>
+<p>No Distrito Federal (DF), antes de 01/2023, as notas fiscais de serviço eram emitidas como NFe.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>qtd</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Quantidade de notas por página.</dd>
+<dt><strong><code>pagina</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Página a ser retornada.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>List[NotaFiscal]</code></dt>
+<dd>Lista contendo as notas fiscais.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
-def listar(*args, **kwargs):
-    raise NotImplementedError</code></pre>
+<pre><code class="python">@requires_emissor
+def listar(qtd:str = None, pagina:str = None, *args, **kwargs) -&gt; List[NotaFiscal]:
+    &#34;&#34;&#34;Recupera as notas fiscais.
+    
+    No Distrito Federal (DF), antes de 01/2023, as notas fiscais de serviço eram emitidas como NFe.
+
+    Args:
+        qtd (str, optional): Quantidade de notas por página.
+        pagina (str, optional): Página a ser retornada.
+
+    Returns:
+        List[NotaFiscal]: Lista contendo as notas fiscais.
+    &#34;&#34;&#34;
+    headers = HEADERS.copy()
+    params   = {}
+    
+    if qtd:
+        params[&#34;qtd&#34;] = qtd
+    if pagina:
+        params[&#34;pagina&#34;] = pagina
+    
+    url = f&#39;{URL}/nfe/lista-notas&#39;
+    response = requests.get(url, params, headers=headers)
+    
+    match (response.status_code):
+        case 200:
+            json_data = response.json().get(&#39;dados&#39;)
+            nfes = [NotaFiscal.from_json(**d) for d in json_data[&#39;itens&#39;]]
+            return nfes
+        case _:
+            return response.text</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.validar"><code class="name flex">
@@ -396,7 +475,8 @@ def listar(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def validar(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>

@@ -1,30 +1,28 @@
 """
     Package criado para integração com a API da plataforma SISNO.
 
-    Para utilizar esse package basta importá-lo da seguinte forma:
-    "import pysisnoapi"
-
-    Dentro desse package existem outros módulos e que muito provavelmente serão necessários para você!
-
-    Exemplos:
-        - Módulo "nfe" para emissão/consulta de Notas Fiscais de Produto
-            "from pysisnoapi import nfe"
-        - Módulo "nfse" para emissão/consulta de Notas Fiscais de Serviço
-            "from pysisnoapi import nfse"
+    Para utilizar esse package basta importá-lo da seguinte forma:  
+    `import pysisnoapi`  
+    
+    Ou também poderá importar apenas os módulos necessários, como por exemplo:  
+    `from pysisnoapi import nfe` 
 """
 
 # ======================================================================================================================
 # Imports:
-import json
 import os
 import functools
 from dotenv import load_dotenv
+from dataclasses import dataclass, asdict
+from typing import Optional, List, Tuple, Dict
+from datetime import datetime
+from dateutil import parser
 
 # ======================================================================================================================
 # Globals:
 load_dotenv()
 
-URL     = "https://homolog.sisno.com.br/nfe-service"
+URL     = "http://homolog.arkaonline.com.br/nfe-service/"               # TODO: Provisório, em breve voltará para 'https://homolog.sisno.com.br/nfe-service/'
 HEADERS = {
     "token-emissor"         : os.getenv("token-emissor", ""),
     "token-secret-emissor"  : os.getenv("token-secret-emissor", ""),
@@ -33,16 +31,27 @@ HEADERS = {
     "accept"                : "application/json",
     "Content-Type"          : "application/json",
 }
-REQUIRED_KEYS = [ "token-emissor", "token-secret-emissor", "token-empresa", "token-secret-empresa", ]
 
 # ======================================================================================================================
 # Decorators:
-def requires_keys(func):
-    """Esse decorador é utilizado para garantir que as chaves de API estão presentes no HEADERS antes da função ser executada."""
+def requires_emissor(func):
+    """Esse decorador é utilizado para garantir que as chaves de API do emissor estão presentes no HEADERS antes da função ser executada."""
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        for key in REQUIRED_KEYS:
+        for key in ["token-emissor", "token-secret-emissor"]:
+            if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
+                return func(*args, **kwargs)
+            else:
+                raise ValueError(f"Chave '{key}' não configurada.")
+    return wrapper
+
+def requires_empresa(func):
+    """Esse decorador é utilizado para garantir que as chaves de API da empresa estão presentes no HEADERS antes da função ser executada."""
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        for key in ["token-empresa", "token-secret-empresa"]:
             if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
                 return func(*args, **kwargs)
             else:
@@ -51,14 +60,35 @@ def requires_keys(func):
 
 # ======================================================================================================================
 # Classes:
-class Cfop:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
+@dataclass
+class BaseClass:
+    """Classe genérica utilizada como base para as demais classes neste package.
+    
+    A principal finalidade desta classe é fornecer o método `as_filtered_dict` para filtrar e retornar um dicionário com os atributos relevantes da instância.
+    Para maiores informações consulte a documentação do método [aqui](#pysisnoapi.BaseClass.as_filtered_dict).
+    """
+    
+    def as_filtered_dict(self)-> dict[str:str]:
+        """
+        Retorna um dicionário contendo os campos/atributos da classe com valores não nulos.
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+        O dicionário resultante possui chaves (str) correspondentes aos nomes dos campos
+        da classe e valores (str) representando os respectivos valores desses campos,
+        desde que esses valores não sejam nulos (None).
+        
+        Returns:
+            dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
+        """
+        return asdict(self, dict_factory=dict_factory)
+    
+@dataclass
+class Cfop(BaseClass):
+    """CFOP (Código Fiscal de Operações e Prestações)
+    """
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    codigo: Optional[str] = None
+    descricao: Optional[str] = None
+    aplicacao: Optional[str] = None
 
 class Cliente:
     def __init__(self, consumidor_final, contribuinte, endereco, **kwargs):
@@ -127,164 +157,117 @@ class DeclaracaoImportacaoAdicao:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
         return dados if len(dados) > 0 else None
 
-class Empresa:
+@dataclass
+class Empresa(BaseClass):
     """
         Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
         Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
         Em resumo: não há necessidade de se preocupar com os campos, caso não saiba algum deles, pois, eles serão preenchidos automaticamente com aquilo que vier do endpoint.
     """
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    id                                          : Optional[str]         = None
+    token                                       : Optional[str]         = None
+    token_secret                                : Optional[str]         = None
+    cnpj                                        : Optional[str]         = None
+    nome_fantasia                               : Optional[str]         = None
+    razao_social                                : Optional[str]         = None
+    endereco                                    : Optional['Endereco']  = None
+    telefone                                    : Optional[str]         = None
+    inscricao_estadual                          : Optional[str]         = None
+    inscricao_municipal                         : Optional[str]         = None
+    inscricao_estadual_substituicao_tributaria  : Optional[str]         = None
+    regime_tributario                           : Optional[str]         = None
+    classificacao_nacional_atividades_economicas: Optional[str]         = None
+    ambiente                                    : Optional[str]         = None
+    id_csc                                      : Optional[str]         = None
+    csc                                         : Optional[str]         = None
+    codigo_regime_especial_tributacao           : Optional[str]         = None
+    porcentagem_icms_aproveitado                : Optional[str]         = None
+    site                                        : Optional[str]         = None
+    email                                       : Optional[str]         = None
+    utiliza_tributos_aproximados                : Optional[bool]        = None  # TODO: Não consta na documentação da API
+    informacoes_complementares                  : Optional[str]         = None  # TODO: Não consta na documentação da API
+    senha_portal_prefeitura                     : Optional[str]         = None  # TODO: Não consta na documentação da API
     
-    def __init__(self, id, **kwargs):
-        """
-        Construtor da Classe.
-
-        Args:
-            id (int): ID da empresa registrada na plataforma SISNO.  
-                Default is 0
-            token (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API.  
-                Default is ''  
-            token_secret (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".
-                Default is ''
-            cnpj (str): CNPJ da Empresa.
-                Default is ''
-            nome_fantasia (str): Nome Fantasia da Empresa.
-                Default is ''
-            razao_social (str): Razão Social da Empresa.
-                Default is ''
-            endereco (str): Endereço da Empresa.
-                Default is, None
-            telefone (str): Telefone da Empresa.
-                Default is ''
-            inscricao_estadual (str): Inscrição Estadual da Empresa.
-                Default is ''
-            inscricao_municipal (str): Inscrição Municipal da Empresa.
-                Default is ''
-            inscricao_estadual_substituicao_tributaria (str): .
-                Default is ''
-            regime_tributario (str): Regime Tributário da Empresa (Lucro Real, Lucro Presumido, Simples Nacional, ...).
-                Default is ''
-            classificacao_nacional_atividades_economicas (str): CNAE.
-                Default is ''
-            ambiente (str): Produção ou Homologação.
-                Default is ''
-            id_csc (str): ID do Código de Segurança do Contribuinte.
-                Default is ''
-            csc (str): Código de Segurança do Contribuinte.
-                Default is ''
-            codigo_regime_especial_tributacao (str): Código do Regime Especial de Tributação (Microempresa municipal, Estimativa, Sociedade Profissional, Cooperativa, Microempresario individual MEI, Microempresário e empresa de pequeno porte).
-                Default is ''
-            porcentagem_icms_aproveitado (float): % ICMS Aproveitado.
-                Default is 0.00
-            site (str): Site da Empresa.
-                Default is ''
-            email (str): E-mail da Empresa.
-                Default is ''
-        """
-
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-
-        self.id                                             = kwargs.get("id", 0)
-        self.token                                          = kwargs.get("token", '')
-        self.token_secret                                   = kwargs.get("token_secret", '')
-        self.cnpj                                           = kwargs.get("cnpj", '')
-        self.nome_fantasia                                  = kwargs.get("nome_fantasia", '')
-        self.razao_social                                   = kwargs.get("razao_social", '')
-        self.endereco                                       = kwargs.get("endereco	", None)
-        self.telefone                                       = kwargs.get("telefone", '')
-        self.inscricao_estadual                             = kwargs.get("inscricao_estadual", '')
-        self.inscricao_municipal                            = kwargs.get("inscricao_municipal", '')
-        self.inscricao_estadual_substituicao_tributaria     = kwargs.get("inscricao_estadual_substituicao_tributaria", '')
-        self.regime_tributario                              = kwargs.get("regime_tributario", '')
-        self.classificacao_nacional_atividades_economicas   = kwargs.get("classificacao_nacional_atividades_economicas", '')
-        self.ambiente                                       = kwargs.get("ambiente", '')
-        self.id_csc                                         = kwargs.get("id_csc", '')
-        self.csc                                            = kwargs.get("csc", '')
-        self.codigo_regime_especial_tributacao              = kwargs.get("codigo_regime_especial_tributacao", '')
-        self.porcentagem_icms_aproveitado                   = kwargs.get("porcentagem_icms_aproveitado", 0)
-        self.site                                           = kwargs.get("site", '')
-        self.email                                          = kwargs.get("email", '')
-    
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
-
-class Endereco:
-    def __init__(self, codigo_pais, descricao_pais, bairro, logradouro, numero, **kwargs):
-        """
-        Construtor da Classe.
-
-        Args:
-            codigo_pais (str): Código do Pais (55 para Brasil).
-            
-            descricao_pais (str): Nome do País.
-
-            bairro (str): Bairro do Endereço.
-            
-            logradouro (str): Endereço em si (sugestão: utilize exatamente aquilo que informado ao consultar o CEP nos correios).
-            
-            numero (str): Número do Endereço (apenas números).
-
-            uf (str):
-                Default is ''
-            codigo_municipio (str):
-                Default is ''
-            descricao_municipio (str):
-                Default is ''
-            cep (str):
-                Default is ''
-            complemento (str):
-                Default is ''
-        """
-
-        self.codigo_pais            = codigo_pais
-        self.descricao_pais         = descricao_pais
-        self.uf                     = kwargs.get("uf", '')
-        self.codigo_municipio       = kwargs.get("codigo_municipio", '')
-        self.descricao_municipio    = kwargs.get("descricao_municipio", '')
-        self.cep                    = kwargs.get("cep", '')                     # TODO: Apenas números
-        self.bairro                 = bairro
-        self.logradouro             = logradouro
-        self.numero                 = numero                                    # TODO: Apenas números
-        self.complemento            = kwargs.get("complemento", '')
-
-    def asdict(self):
-        # Quando o país não for Brasil, ignorar os campos [uf, codigo_municipio, descricao_municipio, cep]
-
-        if self.codigo_pais == "55":
-            dados = {
-                "codigo_pais"        : self.codigo_pais,
-                "descricao_pais"     : self.descricao_pais,
-                "uf"                 : self.uf,
-                "codigo_municipio"   : self.codigo_municipio,
-                "descricao_municipio": self.descricao_municipio,
-                "cep"                : self.cep,
-                "bairro"             : self.bairro,
-                "logradouro"         : self.logradouro,
-                "numero"             : self.numero,
-                "complemento"        : self.complemento
-            }
-        else:
-            dados = {
-                "codigo_pais"        : self.codigo_pais,
-                "descricao_pais"     : self.descricao_pais,
-                "bairro"             : self.bairro,
-                "logradouro"         : self.logradouro,
-                "numero"             : self.numero,
-                "complemento"        : self.complemento
-            }
+    @classmethod
+    def from_json(cls, **kwargs):
+        endereco_dict = kwargs.pop('endereco', {})
+        endereco = Endereco.from_json(**endereco_dict)
         
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+        return cls(endereco=endereco, **kwargs)
 
-class Ibpt:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
+@dataclass
+class Endereco(BaseClass):
+    id                 : int
+    codigo_pais        : str
+    descricao_pais     : str
+    bairro             : str
+    logradouro         : str
+    numero             : str
+    uf                 : Optional[str] = None
+    codigo_municipio   : Optional[str] = None
+    descricao_municipio: Optional[str] = None
+    cep                : Optional[str] = None
+    complemento        : Optional[str] = None
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        return cls(**kwargs)
+    
+    # def asdict(self):
+    #     # Quando o país não for Brasil, ignorar os campos [uf, codigo_municipio, descricao_municipio, cep]
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+    #     if self.codigo_pais == "55":
+    #         dados = {
+    #             "codigo_pais"        : self.codigo_pais,
+    #             "descricao_pais"     : self.descricao_pais,
+    #             "uf"                 : self.uf,
+    #             "codigo_municipio"   : self.codigo_municipio,
+    #             "descricao_municipio": self.descricao_municipio,
+    #             "cep"                : self.cep,
+    #             "bairro"             : self.bairro,
+    #             "logradouro"         : self.logradouro,
+    #             "numero"             : self.numero,
+    #             "complemento"        : self.complemento
+    #         }
+    #     else:
+    #         dados = {
+    #             "codigo_pais"        : self.codigo_pais,
+    #             "descricao_pais"     : self.descricao_pais,
+    #             "bairro"             : self.bairro,
+    #             "logradouro"         : self.logradouro,
+    #             "numero"             : self.numero,
+    #             "complemento"        : self.complemento
+    #         }
+        
+    #     dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+    #     return dados if len(dados) > 0 else None
+
+@dataclass
+class Ibpt(BaseClass):
+    """Classe `IBPT` (Impostos sobre Produtos e Serviços)
+    """
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    codigo            : Optional[str]  = None
+    ex                : Optional[str]  = None
+    tipo              : Optional[str]  = None
+    descricao         : Optional[str]  = None
+    nacional_federal  : Optional[str]  = None
+    importados_federal: Optional[str]  = None
+    estadual          : Optional[str]  = None
+    municipal         : Optional[str]  = None
+    vigencia_inicio   : Optional[str]  = None
+    vigencia_fim      : Optional[str]  = None
+    versao            : Optional[str]  = None
+    fonte             : Optional[str]  = None
+    unidade_federativa: Optional['Uf'] = None
+    ativo             : Optional[str]  = None     # TODO: Até o dia 01/06/2023, não consta na Documentação
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        uf_dict = kwargs.pop('unidade_federativa', {})
+        uf = Uf.from_json(**uf_dict)
+        return cls(unidade_federativa=uf, **kwargs)
 
 class Icms:
     def __init__(self, **kwargs):
@@ -338,16 +321,16 @@ class Ipi:
 class Issqn:
     def __init__(self, **kwargs):
         """
-            Indicador_exigibilidade_iss
-                1: Exigível  
-                2: Não incidência  
-                3: Isenção  
-                4: Exportação  
-                5: Imunidade  
-                6: Exigibilidade suspensa por decisão judicial  
-                7: Exigibilidade suspensa por processo administrativo  
+            Indicador_exigibilidade_iss  
+                1. Exigível  
+                2. Não incidência  
+                3. Isenção  
+                4. Exportação  
+                5. Imunidade  
+                6. Exigibilidade suspensa por decisão judicial  
+                7. Exigibilidade suspensa por processo administrativo  
         """
-
+        
         self.indicador_exigibilidade_iss     = kwargs.get("indicador_exigibilidade_iss", None)   # string [ 1, 2, 3, 4, 5, 6, 7 ]
         self.indicador_incentivo_fiscal      = kwargs.get("indicador_incentivo_fiscal", None)    # string (1: Não, 2: Sim)
         self.item_lista_servicos             = kwargs.get("item_lista_servicos", None)           # string - Item da lista de serviços no Padrão ABRASF (Formato NN.NN)
@@ -358,46 +341,58 @@ class Issqn:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
         return dados if len(dados) > 0 else None
 
-class Municipio:
-    def __init__(self, **kwargs):
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-        self.codigo_ibge = kwargs.get("codigo_ibge", '') # TODO: 0 ?
-        self.descricao   = kwargs.get("descricao", '')
+@dataclass
+class Municipio(BaseClass):
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    codigo_ibge : Optional[int] = None
+    descricao   : Optional[str] = None
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        return cls(**kwargs)
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
-
+@dataclass
 class NotaFiscal:
-    def __init__(self, **kwargs):
-        self.empresa                 = kwargs.get("empresa", None)              # string
-        self.serie                   = kwargs.get("serie", None)                # string
-        self.operacao                = kwargs.get("operacao", None)             # string (0: Entrada, 1: Saída)
-        self.natureza_operacao       = kwargs.get("natureza_operacao", None)    # string
-        self.modelo                  = kwargs.get("modelo", None)               # string (55: NF-e, 65: NFC-e)
-        self.finalidade              = kwargs.get("finalidade", None)           # string (1: Normal, 2: Complementar, 3: Ajuste, 4: Devolução ou Retorno)
-        self.ambiente                = kwargs.get("ambiente", None)             # string (1: Produção, 2: Homologação)
-        self.cliente                 = kwargs.get("cliente", None)              # Objeto CLIENTE
-        self.produtos                = kwargs.get("produtos", None)             # list[PRODUTO]
-        self.pedido                  = kwargs.get("pedido", None)               # Objeto PEDIDO
-        self.data_entrada_saida      = kwargs.get("data_entrada_saida", None)   # string (dd/MM/yyyy HH:mm:ss)
-        self.data_emissao            = kwargs.get("data_emissao", None)         # string (dd/MM/yyyy HH:mm:ss)
-
-    def asdict(self):
-        return {
-            "serie"             : self.serie,
-            "operacao"          : self.operacao,
-            "natureza_operacao" : self.natureza_operacao,
-            "modelo"            : self.modelo,
-            "finalidade"        : self.finalidade,
-            "ambiente"          : self.ambiente,
-            "cliente"           : self.cliente.asdict(),
-            "produtos"          : [p.asdict() for p in self.produtos],
-            "pedido"            : self.pedido.asdict(),
-            "data_entrada_saida": self.data_entrada_saida,
-            "data_emissao"      : self.data_emissao,
-        }
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    id                      : Optional[int]         = None
+    empresa                 : Optional['Empresa']   = None
+    tipo                    : Optional[str]         = None
+    serie                   : Optional[str]         = None
+    numero_nota             : Optional[str]         = None
+    chave_acesso            : Optional[str]         = None
+    protocolo               : Optional[str]         = None
+    nome_destinatario       : Optional[str]         = None
+    uf_destinatario         : Optional[str]         = None
+    cpf_cnpj_destinatario   : Optional[str]         = None
+    valor_total             : Optional[str]         = None
+    status                  : Optional[str]         = None
+    motivo                  : Optional[str]         = None
+    data_emissao            : Optional[datetime]    = None
+    data_autorizacao        : Optional[datetime]    = None
+    modelo                  : Optional[str]         = None
+    ambiente                : Optional[str]         = None
+    xml                     : Optional[str]         = None
+    json_objeto_nfe         : Optional[str]         = None
+    tipo_emissao            : Optional[str]         = None
+    numero_lote             : Optional[str]         = None
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        empresa_dict = kwargs.pop('empresa', {})
+        empresa = Empresa.from_json(**empresa_dict)
+        
+        if data_emissao := kwargs.pop('data_emissao', None):
+            data_emissao = parser.parse(data_emissao, dayfirst=True)
+        
+        if data_autorizacao := kwargs.pop('data_autorizacao', None):
+            data_autorizacao = parser.parse(data_autorizacao, dayfirst=True)
+        
+        return cls(
+            empresa=empresa,
+            data_emissao=data_emissao, 
+            data_autorizacao=data_autorizacao, 
+            **kwargs
+        )
 
 class Observacao:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
@@ -527,52 +522,61 @@ class Transporte:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
         return dados if len(dados) > 0 else None
 
-class Uf:
-    # TODO: Até o dia 10/05/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
-    
-    def __init__(self, **kwargs):
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-        self.codigo_ibge = kwargs.get("codigo_ibge", '')   # TODO: 0 ?
-        self.sigla       = kwargs.get("sigla", '')
-        self.descricao   = kwargs.get("descricao", '')
+@dataclass
+class Uf(BaseClass):
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    # TODO: Até o dia 01/06/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
+    codigo_ibge: Optional[str]  = None
+    sigla      : Optional[str]  = None
+    descricao  : Optional[str]  = None
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+    @classmethod
+    def from_json(cls, **kwargs):
+        return cls(**kwargs)
 
 # ======================================================================================================================
-def alterar_emissor(token_emissor:str, token_secret_emissor:str, token_empresa:str, token_secret_empresa:str):
+def alterar_empresa(token_empresa:str, token_secret_empresa:str):
     """
-    Método responsável por alterar as chaves de API.
-    A alteração das chaves de API é necessária para consultar/emitir notas fiscais de diferente empresas.
-    É através das chaves que a plataforma de SISNO irá identificar quem é o emissor e irá listar (ou emitir) as notas para essa empresa em específico.
+    Altera as chaves de API utilizadas para a emissão de notas fiscais na plataforma SISNO.
+
+    Esse método é responsável por modificar as chaves de API, necessárias para a emissão de notas fiscais em empresas distintas.
+    As chaves de API são utilizadas pela plataforma SISNO para identificar a empresa na qual a nota fiscal será emitida.
 
     Args:
-        token_emissor (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API
-        token_secret_emissor (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".
-        token_empresa (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API
+        token_empresa (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API.
         token_secret_empresa (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".
 
     Raises:
-        Exception: Caso alguma das chaves seja inválida
+        Exception: Lançada caso alguma das chaves seja inválida.
     """
-    global HEADERS
-
-    # TODO: Validar outros parâmetros, como tipos de caracters e etc.
-
-    if not isinstance(token_emissor, str) or len(token_emissor) != 775:
-        raise Exception('Token Emissor inválido')
-    if not isinstance(token_secret_emissor, str) or len(token_secret_emissor) != 166:
-        raise Exception('Token Secret Emissor inválido')
+    
+    # TODO: Realizar melhores validações
+    
     if not isinstance(token_empresa, str) or len(token_empresa) != 775:
         raise Exception('Token Empresa inválido')
     if not isinstance(token_secret_empresa, str) or len(token_secret_empresa) != 166:
         raise Exception('Token Secret Empresa inválido')
     
-    HEADERS["token-emissor"]        = token_emissor
-    HEADERS["token-secret-emissor"] = token_secret_emissor
     HEADERS["token-empresa"]        = token_empresa
     HEADERS["token-secret-empresa"] = token_secret_empresa
+
+def dict_factory(x: List[Tuple]) -> Optional[Dict]:
+    """Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.
+
+    Essa função é chamada automaticamente durante a conversão de uma classe para um dicionário usando `dataclasses.asdict`, 
+    quando é atribuída a opção `dict_factory` como seu valor. 
+    
+    No caso, estamos usando essa função no método `as_filtered_dict` da classe `BaseClass`.
+    
+    A função recebe uma lista de tuplas contendo pares chave-valor e retorna um dicionário contendo apenas as chaves cujos valores são diferentes de None.
+
+    Args:
+        x (List[Tuple]): Uma lista de tuplas contendo pares chave-valor.
+
+    Returns:
+        dict ou None: Um dicionário filtrado com as chaves cujos valores são diferentes de None ou retorna None se o dicionário resultante estiver vazio.
+    """
+    dic = {k: v for (k, v) in x if v is not None}
+    return dic if len(dic) > 0 else None
 
 # ======================================================================================================================

@@ -1,5 +1,5 @@
-def check_buscar_notas_atributos(test_case, data):
-    atributos = ["informacoesAdicionais", "itens", "itens_por_pagina", "pagina_atual", "total"]
-    for atributo in atributos:
-        with test_case.subTest(key=atributo):
-            test_case.assertIn(atributo, data)
+import unittest
+from pysisnoapi.nfse import *
+
+def check_buscar_notas_pelo_menos_uma(test_case: unittest.TestCase, data: List[NotaFiscalServico]):
+    test_case.assertGreaterEqual(len(data), 1)

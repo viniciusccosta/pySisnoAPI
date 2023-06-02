@@ -1,87 +1,94 @@
 """ 
-    Módulo genérico para funções que não se encaixam em outros módulos, como por exemplo a função de realizar uma requisição para a API para consultar municípios.
-    Esse módulo faz parte de um package e é totalmente dependente de outros módulos.
+    O módulo misc.py contém funções genéricas que não se enquadram em outros módulos.
+    
+    Um exemplo é a função para realizar uma requisição à API a fim de consultar informações sobre municípios. 
+    Este módulo faz parte de um pacote e depende completamente de outros módulos.
 
-    Para utilizar esse módulo basta importá-lo da seguinte forma:
-    "from pysisnoapi import misc"
+    Para utilizar as funções deste módulo, basta importá-lo da seguinte forma:  
+    `from pysisnoapi import misc`
 """
 
 # ======================================================================================================================
 from . import *
 
 import requests
+from typing import List
 
 # ======================================================================================================================
-@requires_keys    # TODO: Sendo sincero, até o dia 11/05/2023 não está sendo exigido as API keys para consumir esse endpoint
-def get_municipios(uf: str, *args, **kwargs) -> list[dict]:
-    """Envia uma requisição para a API para consultar os municípios de um determinado estado.
+@requires_emissor
+def get_municipios(uf: str, *args, **kwargs) -> List[Municipio]:
+    """Consulta os municípios de um determinado estado através de uma requisição à API.
+
+    Essa função permite consultar os municípios de um estado específico através de uma requisição à API.
+    Ela retorna uma lista de objetos Municipio contendo informações sobre cada município.
 
     Args:
-        uf (str): UF do Estado.  
-            SP para São Paulo  
-            RJ para Rio de Janeiro  
-            e etc.
+        uf (str): UF do estado para o qual deseja-se consultar os municípios.
 
     Returns:
-        list[dict]: Lista de dicionários exatamente da forma que a API retornou.
+        List[Municipio]: Uma lista de objetos Municipio, representando os municípios do estado consultado.
     """
-    # TODO: Retonar uma lista de objetos "Municipio"s
 
-    headers  = HEADERS
+    headers  = HEADERS.copy()
     url      = f'{URL}/unidades-federativas/{uf}/municipios'
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
         case 200:
-            return response.json().get('dados')
+            json_data  = response.json().get('dados')
+            municipios = [Municipio(**d) for d in json_data]
+            return municipios
         case 412:
             return []
         case _:
             return
 
-@requires_keys    # TODO: Sendo sincero, até o dia 11/05/2023 não está sendo exigido as API keys para consumir esse endpoint
-def get_cfops(*args, **kwargs) -> list[dict]:
-    """Envia uma requisição para a API para listar todos os CFOPs.
+@requires_emissor
+def get_cfops(*args, **kwargs) -> List[Cfop]:
+    """Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
+
+    Essa função permite obter a lista completa de CFOPs (Código Fiscal de Operações e Prestações) disponíveis através de uma requisição à API.
 
     Returns:
-        list[dict]: Lista de dicionários exatamente da forma que a API retornou.
+        List[Cfop]: Uma lista de objetos Cfop, representando os CFOPs disponíveis.
     """
-    # TODO: Retonar uma lista de objetos "Cfop"s
 
-    headers  = HEADERS
+    headers  = HEADERS.copy()
     url      = f'{URL}/cfops'
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
         case 200:
-            return response.json().get('dados')
+            json_data = response.json().get('dados')
+            cfops     = [Cfop(**d) for d in json_data]
+            return cfops
         case 412:
             return []
         case _:
             return
 
-@requires_keys    # TODO: Sendo sincero, até o dia 11/05/2023 não está sendo exigido as API keys para consumir esse endpoint
-def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> list[dict]:
-    """Envia uma requisição para a API para listar todos os IBPTs.
+@requires_emissor
+def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> List[Ibpt]:
+    """
+    Obtém os IBPTs através de uma requisição à API.
 
+    Essa função permite obter os dados de IBPTs (Impostos sobre Produtos e Serviços) para um determinado item ou código, em uma determinada UF (Unidade Federativa)
+    
     Args:
-        cod_desc (str): Breve descrição do item ou código.
-            Mínimo de 4 caracteres.
-        
-        uf (str): UF do Estado
+        cod_desc (str): Breve descrição do item ou código. Deve ter no mínimo 4 caracteres.
+        uf (str): UF do estado para o qual deseja-se consultar os IBPTs.
 
     Raises:
-        Exception: cod_desc menor que 4 caracteres
+        Exception: Caso o parâmetro cod_desc tenha menos de 4 caracteres.
 
     Returns:
-        list[dict]: Lista de dicionários exatamente da forma que a API retornou.
+        List[Ibpt]: Uma lista de objetos Ibpt representando os IBPTs.
     """
-    # TODO: Retonar uma lista de objetos "Ibpt"s
 
     if len(cod_desc) < 4:
         raise Exception("Código ou Descrição precisa ter no mínimo 4 caracteres")
     
-    headers  = HEADERS
+    headers  = HEADERS.copy()
     headers["codigo-ou-descricao"] = cod_desc
     headers["uf"] = uf
 
@@ -90,14 +97,12 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> list[dict]:
 
     match (response.status_code):
         case 200:
-            return response.json().get('dados')
+            json_data = response.json().get('dados')
+            ibpts     = [Ibpt.from_json(**d) for d in json_data]
+            return ibpts
         case 412:
             return []
         case _:
             return
-
-# ======================================================================================================================
-if __name__ == "__main__":
-    pass
 
 # ======================================================================================================================

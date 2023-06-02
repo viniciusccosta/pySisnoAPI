@@ -23,16 +23,11 @@
 </header>
 <section id="section-intro">
 <p>Package criado para integração com a API da plataforma SISNO.</p>
-<p>Para utilizar esse package basta importá-lo da seguinte forma:
-"import pysisnoapi"</p>
-<p>Dentro desse package existem outros módulos e que muito provavelmente serão necessários para você!</p>
-<h2 id="exemplos">Exemplos</h2>
-<ul>
-<li>Módulo "nfe" para emissão/consulta de Notas Fiscais de Produto
-"from pysisnoapi import nfe"</li>
-<li>Módulo "nfse" para emissão/consulta de Notas Fiscais de Serviço
-"from pysisnoapi import nfse"</li>
-</ul>
+<p>Para utilizar esse package basta importá-lo da seguinte forma:<br>
+<code>import <a title="pysisnoapi" href="#pysisnoapi">pysisnoapi</a></code>
+</p>
+<p>Ou também poderá importar apenas os módulos necessários, como por exemplo:<br>
+<code>from <a title="pysisnoapi" href="#pysisnoapi">pysisnoapi</a> import <a title="pysisnoapi.nfe" href="nfe.html">pysisnoapi.nfe</a></code></p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -40,30 +35,28 @@
 <pre><code class="python">&#34;&#34;&#34;
     Package criado para integração com a API da plataforma SISNO.
 
-    Para utilizar esse package basta importá-lo da seguinte forma:
-    &#34;import pysisnoapi&#34;
-
-    Dentro desse package existem outros módulos e que muito provavelmente serão necessários para você!
-
-    Exemplos:
-        - Módulo &#34;nfe&#34; para emissão/consulta de Notas Fiscais de Produto
-            &#34;from pysisnoapi import nfe&#34;
-        - Módulo &#34;nfse&#34; para emissão/consulta de Notas Fiscais de Serviço
-            &#34;from pysisnoapi import nfse&#34;
+    Para utilizar esse package basta importá-lo da seguinte forma:  
+    `import pysisnoapi`  
+    
+    Ou também poderá importar apenas os módulos necessários, como por exemplo:  
+    `from pysisnoapi import nfe` 
 &#34;&#34;&#34;
 
 # ======================================================================================================================
 # Imports:
-import json
 import os
 import functools
 from dotenv import load_dotenv
+from dataclasses import dataclass, asdict
+from typing import Optional, List, Tuple, Dict
+from datetime import datetime
+from dateutil import parser
 
 # ======================================================================================================================
 # Globals:
 load_dotenv()
 
-URL     = &#34;https://homolog.sisno.com.br/nfe-service&#34;
+URL     = &#34;http://homolog.arkaonline.com.br/nfe-service/&#34;               # TODO: Provisório, em breve voltará para &#39;https://homolog.sisno.com.br/nfe-service/&#39;
 HEADERS = {
     &#34;token-emissor&#34;         : os.getenv(&#34;token-emissor&#34;, &#34;&#34;),
     &#34;token-secret-emissor&#34;  : os.getenv(&#34;token-secret-emissor&#34;, &#34;&#34;),
@@ -72,16 +65,27 @@ HEADERS = {
     &#34;accept&#34;                : &#34;application/json&#34;,
     &#34;Content-Type&#34;          : &#34;application/json&#34;,
 }
-REQUIRED_KEYS = [ &#34;token-emissor&#34;, &#34;token-secret-emissor&#34;, &#34;token-empresa&#34;, &#34;token-secret-empresa&#34;, ]
 
 # ======================================================================================================================
 # Decorators:
-def requires_keys(func):
-    &#34;&#34;&#34;Esse decorador é utilizado para garantir que as chaves de API estão presentes no HEADERS antes da função ser executada.&#34;&#34;&#34;
+def requires_emissor(func):
+    &#34;&#34;&#34;Esse decorador é utilizado para garantir que as chaves de API do emissor estão presentes no HEADERS antes da função ser executada.&#34;&#34;&#34;
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        for key in REQUIRED_KEYS:
+        for key in [&#34;token-emissor&#34;, &#34;token-secret-emissor&#34;]:
+            if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
+                return func(*args, **kwargs)
+            else:
+                raise ValueError(f&#34;Chave &#39;{key}&#39; não configurada.&#34;)
+    return wrapper
+
+def requires_empresa(func):
+    &#34;&#34;&#34;Esse decorador é utilizado para garantir que as chaves de API da empresa estão presentes no HEADERS antes da função ser executada.&#34;&#34;&#34;
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        for key in [&#34;token-empresa&#34;, &#34;token-secret-empresa&#34;]:
             if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
                 return func(*args, **kwargs)
             else:
@@ -90,14 +94,35 @@ def requires_keys(func):
 
 # ======================================================================================================================
 # Classes:
-class Cfop:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
+@dataclass
+class BaseClass:
+    &#34;&#34;&#34;Classe genérica utilizada como base para as demais classes neste package.
+    
+    A principal finalidade desta classe é fornecer o método `as_filtered_dict` para filtrar e retornar um dicionário com os atributos relevantes da instância.
+    Para maiores informações consulte a documentação do método [aqui](#pysisnoapi.BaseClass.as_filtered_dict).
+    &#34;&#34;&#34;
+    
+    def as_filtered_dict(self)-&gt; dict[str:str]:
+        &#34;&#34;&#34;
+        Retorna um dicionário contendo os campos/atributos da classe com valores não nulos.
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
+        O dicionário resultante possui chaves (str) correspondentes aos nomes dos campos
+        da classe e valores (str) representando os respectivos valores desses campos,
+        desde que esses valores não sejam nulos (None).
+        
+        Returns:
+            dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
+        &#34;&#34;&#34;
+        return asdict(self, dict_factory=dict_factory)
+    
+@dataclass
+class Cfop(BaseClass):
+    &#34;&#34;&#34;CFOP (Código Fiscal de Operações e Prestações)
+    &#34;&#34;&#34;
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    codigo: Optional[str] = None
+    descricao: Optional[str] = None
+    aplicacao: Optional[str] = None
 
 class Cliente:
     def __init__(self, consumidor_final, contribuinte, endereco, **kwargs):
@@ -166,164 +191,117 @@ class DeclaracaoImportacaoAdicao:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
         return dados if len(dados) &gt; 0 else None
 
-class Empresa:
+@dataclass
+class Empresa(BaseClass):
     &#34;&#34;&#34;
         Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
         Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
         Em resumo: não há necessidade de se preocupar com os campos, caso não saiba algum deles, pois, eles serão preenchidos automaticamente com aquilo que vier do endpoint.
     &#34;&#34;&#34;
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    id                                          : Optional[str]         = None
+    token                                       : Optional[str]         = None
+    token_secret                                : Optional[str]         = None
+    cnpj                                        : Optional[str]         = None
+    nome_fantasia                               : Optional[str]         = None
+    razao_social                                : Optional[str]         = None
+    endereco                                    : Optional[&#39;Endereco&#39;]  = None
+    telefone                                    : Optional[str]         = None
+    inscricao_estadual                          : Optional[str]         = None
+    inscricao_municipal                         : Optional[str]         = None
+    inscricao_estadual_substituicao_tributaria  : Optional[str]         = None
+    regime_tributario                           : Optional[str]         = None
+    classificacao_nacional_atividades_economicas: Optional[str]         = None
+    ambiente                                    : Optional[str]         = None
+    id_csc                                      : Optional[str]         = None
+    csc                                         : Optional[str]         = None
+    codigo_regime_especial_tributacao           : Optional[str]         = None
+    porcentagem_icms_aproveitado                : Optional[str]         = None
+    site                                        : Optional[str]         = None
+    email                                       : Optional[str]         = None
+    utiliza_tributos_aproximados                : Optional[bool]        = None  # TODO: Não consta na documentação da API
+    informacoes_complementares                  : Optional[str]         = None  # TODO: Não consta na documentação da API
+    senha_portal_prefeitura                     : Optional[str]         = None  # TODO: Não consta na documentação da API
     
-    def __init__(self, id, **kwargs):
-        &#34;&#34;&#34;
-        Construtor da Classe.
-
-        Args:
-            id (int): ID da empresa registrada na plataforma SISNO.  
-                Default is 0
-            token (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API.  
-                Default is &#39;&#39;  
-            token_secret (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com &#34;1000:&#34;.
-                Default is &#39;&#39;
-            cnpj (str): CNPJ da Empresa.
-                Default is &#39;&#39;
-            nome_fantasia (str): Nome Fantasia da Empresa.
-                Default is &#39;&#39;
-            razao_social (str): Razão Social da Empresa.
-                Default is &#39;&#39;
-            endereco (str): Endereço da Empresa.
-                Default is, None
-            telefone (str): Telefone da Empresa.
-                Default is &#39;&#39;
-            inscricao_estadual (str): Inscrição Estadual da Empresa.
-                Default is &#39;&#39;
-            inscricao_municipal (str): Inscrição Municipal da Empresa.
-                Default is &#39;&#39;
-            inscricao_estadual_substituicao_tributaria (str): .
-                Default is &#39;&#39;
-            regime_tributario (str): Regime Tributário da Empresa (Lucro Real, Lucro Presumido, Simples Nacional, ...).
-                Default is &#39;&#39;
-            classificacao_nacional_atividades_economicas (str): CNAE.
-                Default is &#39;&#39;
-            ambiente (str): Produção ou Homologação.
-                Default is &#39;&#39;
-            id_csc (str): ID do Código de Segurança do Contribuinte.
-                Default is &#39;&#39;
-            csc (str): Código de Segurança do Contribuinte.
-                Default is &#39;&#39;
-            codigo_regime_especial_tributacao (str): Código do Regime Especial de Tributação (Microempresa municipal, Estimativa, Sociedade Profissional, Cooperativa, Microempresario individual MEI, Microempresário e empresa de pequeno porte).
-                Default is &#39;&#39;
-            porcentagem_icms_aproveitado (float): % ICMS Aproveitado.
-                Default is 0.00
-            site (str): Site da Empresa.
-                Default is &#39;&#39;
-            email (str): E-mail da Empresa.
-                Default is &#39;&#39;
-        &#34;&#34;&#34;
-
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-
-        self.id                                             = kwargs.get(&#34;id&#34;, 0)
-        self.token                                          = kwargs.get(&#34;token&#34;, &#39;&#39;)
-        self.token_secret                                   = kwargs.get(&#34;token_secret&#34;, &#39;&#39;)
-        self.cnpj                                           = kwargs.get(&#34;cnpj&#34;, &#39;&#39;)
-        self.nome_fantasia                                  = kwargs.get(&#34;nome_fantasia&#34;, &#39;&#39;)
-        self.razao_social                                   = kwargs.get(&#34;razao_social&#34;, &#39;&#39;)
-        self.endereco                                       = kwargs.get(&#34;endereco      &#34;, None)
-        self.telefone                                       = kwargs.get(&#34;telefone&#34;, &#39;&#39;)
-        self.inscricao_estadual                             = kwargs.get(&#34;inscricao_estadual&#34;, &#39;&#39;)
-        self.inscricao_municipal                            = kwargs.get(&#34;inscricao_municipal&#34;, &#39;&#39;)
-        self.inscricao_estadual_substituicao_tributaria     = kwargs.get(&#34;inscricao_estadual_substituicao_tributaria&#34;, &#39;&#39;)
-        self.regime_tributario                              = kwargs.get(&#34;regime_tributario&#34;, &#39;&#39;)
-        self.classificacao_nacional_atividades_economicas   = kwargs.get(&#34;classificacao_nacional_atividades_economicas&#34;, &#39;&#39;)
-        self.ambiente                                       = kwargs.get(&#34;ambiente&#34;, &#39;&#39;)
-        self.id_csc                                         = kwargs.get(&#34;id_csc&#34;, &#39;&#39;)
-        self.csc                                            = kwargs.get(&#34;csc&#34;, &#39;&#39;)
-        self.codigo_regime_especial_tributacao              = kwargs.get(&#34;codigo_regime_especial_tributacao&#34;, &#39;&#39;)
-        self.porcentagem_icms_aproveitado                   = kwargs.get(&#34;porcentagem_icms_aproveitado&#34;, 0)
-        self.site                                           = kwargs.get(&#34;site&#34;, &#39;&#39;)
-        self.email                                          = kwargs.get(&#34;email&#34;, &#39;&#39;)
-    
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
-
-class Endereco:
-    def __init__(self, codigo_pais, descricao_pais, bairro, logradouro, numero, **kwargs):
-        &#34;&#34;&#34;
-        Construtor da Classe.
-
-        Args:
-            codigo_pais (str): Código do Pais (55 para Brasil).
-            
-            descricao_pais (str): Nome do País.
-
-            bairro (str): Bairro do Endereço.
-            
-            logradouro (str): Endereço em si (sugestão: utilize exatamente aquilo que informado ao consultar o CEP nos correios).
-            
-            numero (str): Número do Endereço (apenas números).
-
-            uf (str):
-                Default is &#39;&#39;
-            codigo_municipio (str):
-                Default is &#39;&#39;
-            descricao_municipio (str):
-                Default is &#39;&#39;
-            cep (str):
-                Default is &#39;&#39;
-            complemento (str):
-                Default is &#39;&#39;
-        &#34;&#34;&#34;
-
-        self.codigo_pais            = codigo_pais
-        self.descricao_pais         = descricao_pais
-        self.uf                     = kwargs.get(&#34;uf&#34;, &#39;&#39;)
-        self.codigo_municipio       = kwargs.get(&#34;codigo_municipio&#34;, &#39;&#39;)
-        self.descricao_municipio    = kwargs.get(&#34;descricao_municipio&#34;, &#39;&#39;)
-        self.cep                    = kwargs.get(&#34;cep&#34;, &#39;&#39;)                     # TODO: Apenas números
-        self.bairro                 = bairro
-        self.logradouro             = logradouro
-        self.numero                 = numero                                    # TODO: Apenas números
-        self.complemento            = kwargs.get(&#34;complemento&#34;, &#39;&#39;)
-
-    def asdict(self):
-        # Quando o país não for Brasil, ignorar os campos [uf, codigo_municipio, descricao_municipio, cep]
-
-        if self.codigo_pais == &#34;55&#34;:
-            dados = {
-                &#34;codigo_pais&#34;        : self.codigo_pais,
-                &#34;descricao_pais&#34;     : self.descricao_pais,
-                &#34;uf&#34;                 : self.uf,
-                &#34;codigo_municipio&#34;   : self.codigo_municipio,
-                &#34;descricao_municipio&#34;: self.descricao_municipio,
-                &#34;cep&#34;                : self.cep,
-                &#34;bairro&#34;             : self.bairro,
-                &#34;logradouro&#34;         : self.logradouro,
-                &#34;numero&#34;             : self.numero,
-                &#34;complemento&#34;        : self.complemento
-            }
-        else:
-            dados = {
-                &#34;codigo_pais&#34;        : self.codigo_pais,
-                &#34;descricao_pais&#34;     : self.descricao_pais,
-                &#34;bairro&#34;             : self.bairro,
-                &#34;logradouro&#34;         : self.logradouro,
-                &#34;numero&#34;             : self.numero,
-                &#34;complemento&#34;        : self.complemento
-            }
+    @classmethod
+    def from_json(cls, **kwargs):
+        endereco_dict = kwargs.pop(&#39;endereco&#39;, {})
+        endereco = Endereco.from_json(**endereco_dict)
         
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
+        return cls(endereco=endereco, **kwargs)
 
-class Ibpt:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
+@dataclass
+class Endereco(BaseClass):
+    id                 : int
+    codigo_pais        : str
+    descricao_pais     : str
+    bairro             : str
+    logradouro         : str
+    numero             : str
+    uf                 : Optional[str] = None
+    codigo_municipio   : Optional[str] = None
+    descricao_municipio: Optional[str] = None
+    cep                : Optional[str] = None
+    complemento        : Optional[str] = None
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        return cls(**kwargs)
+    
+    # def asdict(self):
+    #     # Quando o país não for Brasil, ignorar os campos [uf, codigo_municipio, descricao_municipio, cep]
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
+    #     if self.codigo_pais == &#34;55&#34;:
+    #         dados = {
+    #             &#34;codigo_pais&#34;        : self.codigo_pais,
+    #             &#34;descricao_pais&#34;     : self.descricao_pais,
+    #             &#34;uf&#34;                 : self.uf,
+    #             &#34;codigo_municipio&#34;   : self.codigo_municipio,
+    #             &#34;descricao_municipio&#34;: self.descricao_municipio,
+    #             &#34;cep&#34;                : self.cep,
+    #             &#34;bairro&#34;             : self.bairro,
+    #             &#34;logradouro&#34;         : self.logradouro,
+    #             &#34;numero&#34;             : self.numero,
+    #             &#34;complemento&#34;        : self.complemento
+    #         }
+    #     else:
+    #         dados = {
+    #             &#34;codigo_pais&#34;        : self.codigo_pais,
+    #             &#34;descricao_pais&#34;     : self.descricao_pais,
+    #             &#34;bairro&#34;             : self.bairro,
+    #             &#34;logradouro&#34;         : self.logradouro,
+    #             &#34;numero&#34;             : self.numero,
+    #             &#34;complemento&#34;        : self.complemento
+    #         }
+        
+    #     dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+    #     return dados if len(dados) &gt; 0 else None
+
+@dataclass
+class Ibpt(BaseClass):
+    &#34;&#34;&#34;Classe `IBPT` (Impostos sobre Produtos e Serviços)
+    &#34;&#34;&#34;
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    codigo            : Optional[str]  = None
+    ex                : Optional[str]  = None
+    tipo              : Optional[str]  = None
+    descricao         : Optional[str]  = None
+    nacional_federal  : Optional[str]  = None
+    importados_federal: Optional[str]  = None
+    estadual          : Optional[str]  = None
+    municipal         : Optional[str]  = None
+    vigencia_inicio   : Optional[str]  = None
+    vigencia_fim      : Optional[str]  = None
+    versao            : Optional[str]  = None
+    fonte             : Optional[str]  = None
+    unidade_federativa: Optional[&#39;Uf&#39;] = None
+    ativo             : Optional[str]  = None     # TODO: Até o dia 01/06/2023, não consta na Documentação
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        uf_dict = kwargs.pop(&#39;unidade_federativa&#39;, {})
+        uf = Uf.from_json(**uf_dict)
+        return cls(unidade_federativa=uf, **kwargs)
 
 class Icms:
     def __init__(self, **kwargs):
@@ -377,16 +355,16 @@ class Ipi:
 class Issqn:
     def __init__(self, **kwargs):
         &#34;&#34;&#34;
-            Indicador_exigibilidade_iss
-                1: Exigível  
-                2: Não incidência  
-                3: Isenção  
-                4: Exportação  
-                5: Imunidade  
-                6: Exigibilidade suspensa por decisão judicial  
-                7: Exigibilidade suspensa por processo administrativo  
+            Indicador_exigibilidade_iss  
+                1. Exigível  
+                2. Não incidência  
+                3. Isenção  
+                4. Exportação  
+                5. Imunidade  
+                6. Exigibilidade suspensa por decisão judicial  
+                7. Exigibilidade suspensa por processo administrativo  
         &#34;&#34;&#34;
-
+        
         self.indicador_exigibilidade_iss     = kwargs.get(&#34;indicador_exigibilidade_iss&#34;, None)   # string [ 1, 2, 3, 4, 5, 6, 7 ]
         self.indicador_incentivo_fiscal      = kwargs.get(&#34;indicador_incentivo_fiscal&#34;, None)    # string (1: Não, 2: Sim)
         self.item_lista_servicos             = kwargs.get(&#34;item_lista_servicos&#34;, None)           # string - Item da lista de serviços no Padrão ABRASF (Formato NN.NN)
@@ -397,46 +375,58 @@ class Issqn:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
         return dados if len(dados) &gt; 0 else None
 
-class Municipio:
-    def __init__(self, **kwargs):
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-        self.codigo_ibge = kwargs.get(&#34;codigo_ibge&#34;, &#39;&#39;) # TODO: 0 ?
-        self.descricao   = kwargs.get(&#34;descricao&#34;, &#39;&#39;)
+@dataclass
+class Municipio(BaseClass):
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    codigo_ibge : Optional[int] = None
+    descricao   : Optional[str] = None
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        return cls(**kwargs)
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
-
+@dataclass
 class NotaFiscal:
-    def __init__(self, **kwargs):
-        self.empresa                 = kwargs.get(&#34;empresa&#34;, None)              # string
-        self.serie                   = kwargs.get(&#34;serie&#34;, None)                # string
-        self.operacao                = kwargs.get(&#34;operacao&#34;, None)             # string (0: Entrada, 1: Saída)
-        self.natureza_operacao       = kwargs.get(&#34;natureza_operacao&#34;, None)    # string
-        self.modelo                  = kwargs.get(&#34;modelo&#34;, None)               # string (55: NF-e, 65: NFC-e)
-        self.finalidade              = kwargs.get(&#34;finalidade&#34;, None)           # string (1: Normal, 2: Complementar, 3: Ajuste, 4: Devolução ou Retorno)
-        self.ambiente                = kwargs.get(&#34;ambiente&#34;, None)             # string (1: Produção, 2: Homologação)
-        self.cliente                 = kwargs.get(&#34;cliente&#34;, None)              # Objeto CLIENTE
-        self.produtos                = kwargs.get(&#34;produtos&#34;, None)             # list[PRODUTO]
-        self.pedido                  = kwargs.get(&#34;pedido&#34;, None)               # Objeto PEDIDO
-        self.data_entrada_saida      = kwargs.get(&#34;data_entrada_saida&#34;, None)   # string (dd/MM/yyyy HH:mm:ss)
-        self.data_emissao            = kwargs.get(&#34;data_emissao&#34;, None)         # string (dd/MM/yyyy HH:mm:ss)
-
-    def asdict(self):
-        return {
-            &#34;serie&#34;             : self.serie,
-            &#34;operacao&#34;          : self.operacao,
-            &#34;natureza_operacao&#34; : self.natureza_operacao,
-            &#34;modelo&#34;            : self.modelo,
-            &#34;finalidade&#34;        : self.finalidade,
-            &#34;ambiente&#34;          : self.ambiente,
-            &#34;cliente&#34;           : self.cliente.asdict(),
-            &#34;produtos&#34;          : [p.asdict() for p in self.produtos],
-            &#34;pedido&#34;            : self.pedido.asdict(),
-            &#34;data_entrada_saida&#34;: self.data_entrada_saida,
-            &#34;data_emissao&#34;      : self.data_emissao,
-        }
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    id                      : Optional[int]         = None
+    empresa                 : Optional[&#39;Empresa&#39;]   = None
+    tipo                    : Optional[str]         = None
+    serie                   : Optional[str]         = None
+    numero_nota             : Optional[str]         = None
+    chave_acesso            : Optional[str]         = None
+    protocolo               : Optional[str]         = None
+    nome_destinatario       : Optional[str]         = None
+    uf_destinatario         : Optional[str]         = None
+    cpf_cnpj_destinatario   : Optional[str]         = None
+    valor_total             : Optional[str]         = None
+    status                  : Optional[str]         = None
+    motivo                  : Optional[str]         = None
+    data_emissao            : Optional[datetime]    = None
+    data_autorizacao        : Optional[datetime]    = None
+    modelo                  : Optional[str]         = None
+    ambiente                : Optional[str]         = None
+    xml                     : Optional[str]         = None
+    json_objeto_nfe         : Optional[str]         = None
+    tipo_emissao            : Optional[str]         = None
+    numero_lote             : Optional[str]         = None
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        empresa_dict = kwargs.pop(&#39;empresa&#39;, {})
+        empresa = Empresa.from_json(**empresa_dict)
+        
+        if data_emissao := kwargs.pop(&#39;data_emissao&#39;, None):
+            data_emissao = parser.parse(data_emissao, dayfirst=True)
+        
+        if data_autorizacao := kwargs.pop(&#39;data_autorizacao&#39;, None):
+            data_autorizacao = parser.parse(data_autorizacao, dayfirst=True)
+        
+        return cls(
+            empresa=empresa,
+            data_emissao=data_emissao, 
+            data_autorizacao=data_autorizacao, 
+            **kwargs
+        )
 
 class Observacao:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
@@ -566,57 +556,62 @@ class Transporte:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
         return dados if len(dados) &gt; 0 else None
 
-class Uf:
-    # TODO: Até o dia 10/05/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
-    
-    def __init__(self, **kwargs):
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-        self.codigo_ibge = kwargs.get(&#34;codigo_ibge&#34;, &#39;&#39;)   # TODO: 0 ?
-        self.sigla       = kwargs.get(&#34;sigla&#34;, &#39;&#39;)
-        self.descricao   = kwargs.get(&#34;descricao&#34;, &#39;&#39;)
+@dataclass
+class Uf(BaseClass):
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    # TODO: Até o dia 01/06/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
+    codigo_ibge: Optional[str]  = None
+    sigla      : Optional[str]  = None
+    descricao  : Optional[str]  = None
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
+    @classmethod
+    def from_json(cls, **kwargs):
+        return cls(**kwargs)
 
 # ======================================================================================================================
-def alterar_emissor(token_emissor:str, token_secret_emissor:str, token_empresa:str, token_secret_empresa:str):
+def alterar_empresa(token_empresa:str, token_secret_empresa:str):
     &#34;&#34;&#34;
-    Método responsável por alterar as chaves de API.
-    A alteração das chaves de API é necessária para consultar/emitir notas fiscais de diferente empresas.
-    É através das chaves que a plataforma de SISNO irá identificar quem é o emissor e irá listar (ou emitir) as notas para essa empresa em específico.
+    Altera as chaves de API utilizadas para a emissão de notas fiscais na plataforma SISNO.
+
+    Esse método é responsável por modificar as chaves de API, necessárias para a emissão de notas fiscais em empresas distintas.
+    As chaves de API são utilizadas pela plataforma SISNO para identificar a empresa na qual a nota fiscal será emitida.
 
     Args:
-        token_emissor (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API
-        token_secret_emissor (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com &#34;1000:&#34;.
-        token_empresa (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API
+        token_empresa (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API.
         token_secret_empresa (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com &#34;1000:&#34;.
 
     Raises:
-        Exception: Caso alguma das chaves seja inválida
+        Exception: Lançada caso alguma das chaves seja inválida.
     &#34;&#34;&#34;
-    global HEADERS
-
-    # TODO: Validar outros parâmetros, como tipos de caracters e etc.
-
-    if not isinstance(token_emissor, str) or len(token_emissor) != 775:
-        raise Exception(&#39;Token Emissor inválido&#39;)
-    if not isinstance(token_secret_emissor, str) or len(token_secret_emissor) != 166:
-        raise Exception(&#39;Token Secret Emissor inválido&#39;)
+    
+    # TODO: Realizar melhores validações
+    
     if not isinstance(token_empresa, str) or len(token_empresa) != 775:
         raise Exception(&#39;Token Empresa inválido&#39;)
     if not isinstance(token_secret_empresa, str) or len(token_secret_empresa) != 166:
         raise Exception(&#39;Token Secret Empresa inválido&#39;)
     
-    HEADERS[&#34;token-emissor&#34;]        = token_emissor
-    HEADERS[&#34;token-secret-emissor&#34;] = token_secret_emissor
     HEADERS[&#34;token-empresa&#34;]        = token_empresa
     HEADERS[&#34;token-secret-empresa&#34;] = token_secret_empresa
 
-# ======================================================================================================================
-if __name__ == &#34;__main__&#34;:
-    print( help(Empresa) )
+def dict_factory(x: List[Tuple]) -&gt; Optional[Dict]:
+    &#34;&#34;&#34;Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.
+
+    Essa função é chamada automaticamente durante a conversão de uma classe para um dicionário usando `dataclasses.asdict`, 
+    quando é atribuída a opção `dict_factory` como seu valor. 
+    
+    No caso, estamos usando essa função no método `as_filtered_dict` da classe `BaseClass`.
+    
+    A função recebe uma lista de tuplas contendo pares chave-valor e retorna um dicionário contendo apenas as chaves cujos valores são diferentes de None.
+
+    Args:
+        x (List[Tuple]): Uma lista de tuplas contendo pares chave-valor.
+
+    Returns:
+        dict ou None: Um dicionário filtrado com as chaves cujos valores são diferentes de None ou retorna None se o dicionário resultante estiver vazio.
+    &#34;&#34;&#34;
+    dic = {k: v for (k, v) in x if v is not None}
+    return dic if len(dic) &gt; 0 else None
 
 # ======================================================================================================================</code></pre>
 </details>
@@ -626,17 +621,15 @@ if __name__ == &#34;__main__&#34;:
 <dl>
 <dt><code class="name"><a title="pysisnoapi.misc" href="misc.html">pysisnoapi.misc</a></code></dt>
 <dd>
-<div class="desc"><p>Módulo genérico para funções que não se encaixam em outros módulos, como por exemplo a função de realizar uma requisição para a API para consultar …</p></div>
+<div class="desc"><p>O módulo misc.py contém funções genéricas que não se enquadram em outros módulos …</p></div>
 </dd>
 <dt><code class="name"><a title="pysisnoapi.nfe" href="nfe.html">pysisnoapi.nfe</a></code></dt>
 <dd>
-<div class="desc"><p>Módulo específico para geração de Notas Fiscais de Produto através da API da plataforma SISNO.
-Esse módulo faz parte de um package e é totalmente …</p></div>
+<div class="desc"><p>Módulo específico para geração de Notas Fiscais de Produto …</p></div>
 </dd>
 <dt><code class="name"><a title="pysisnoapi.nfse" href="nfse.html">pysisnoapi.nfse</a></code></dt>
 <dd>
-<div class="desc"><p>Módulo específico para geração de Notas Fiscais de Serviço através da API da plataforma SISNO.
-Esse módulo faz parte de um package e é totalmente …</p></div>
+<div class="desc"><p>Módulo específico para geração de Notas Fiscais de Serviço …</p></div>
 </dd>
 </dl>
 </section>
@@ -645,82 +638,135 @@ Esse módulo faz parte de um package e é totalmente …</p></div>
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="pysisnoapi.alterar_emissor"><code class="name flex">
-<span>def <span class="ident">alterar_emissor</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str)</span>
+<dt id="pysisnoapi.alterar_empresa"><code class="name flex">
+<span>def <span class="ident">alterar_empresa</span></span>(<span>token_empresa: str, token_secret_empresa: str)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Método responsável por alterar as chaves de API.
-A alteração das chaves de API é necessária para consultar/emitir notas fiscais de diferente empresas.
-É através das chaves que a plataforma de SISNO irá identificar quem é o emissor e irá listar (ou emitir) as notas para essa empresa em específico.</p>
+<div class="desc"><p>Altera as chaves de API utilizadas para a emissão de notas fiscais na plataforma SISNO.</p>
+<p>Esse método é responsável por modificar as chaves de API, necessárias para a emissão de notas fiscais em empresas distintas.
+As chaves de API são utilizadas pela plataforma SISNO para identificar a empresa na qual a nota fiscal será emitida.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>token_emissor</code></strong> :&ensp;<code>str</code></dt>
-<dd>String de 775 caracters fornecido pela plataforma SISNO para utilização da API</dd>
-<dt><strong><code>token_secret_emissor</code></strong> :&ensp;<code>str</code></dt>
-<dd>String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".</dd>
 <dt><strong><code>token_empresa</code></strong> :&ensp;<code>str</code></dt>
-<dd>String de 775 caracters fornecido pela plataforma SISNO para utilização da API</dd>
+<dd>String de 775 caracters fornecido pela plataforma SISNO para utilização da API.</dd>
 <dt><strong><code>token_secret_empresa</code></strong> :&ensp;<code>str</code></dt>
 <dd>String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>Exception</code></dt>
-<dd>Caso alguma das chaves seja inválida</dd>
+<dd>Lançada caso alguma das chaves seja inválida.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def alterar_emissor(token_emissor:str, token_secret_emissor:str, token_empresa:str, token_secret_empresa:str):
+<pre><code class="python">def alterar_empresa(token_empresa:str, token_secret_empresa:str):
     &#34;&#34;&#34;
-    Método responsável por alterar as chaves de API.
-    A alteração das chaves de API é necessária para consultar/emitir notas fiscais de diferente empresas.
-    É através das chaves que a plataforma de SISNO irá identificar quem é o emissor e irá listar (ou emitir) as notas para essa empresa em específico.
+    Altera as chaves de API utilizadas para a emissão de notas fiscais na plataforma SISNO.
+
+    Esse método é responsável por modificar as chaves de API, necessárias para a emissão de notas fiscais em empresas distintas.
+    As chaves de API são utilizadas pela plataforma SISNO para identificar a empresa na qual a nota fiscal será emitida.
 
     Args:
-        token_emissor (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API
-        token_secret_emissor (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com &#34;1000:&#34;.
-        token_empresa (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API
+        token_empresa (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API.
         token_secret_empresa (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com &#34;1000:&#34;.
 
     Raises:
-        Exception: Caso alguma das chaves seja inválida
+        Exception: Lançada caso alguma das chaves seja inválida.
     &#34;&#34;&#34;
-    global HEADERS
-
-    # TODO: Validar outros parâmetros, como tipos de caracters e etc.
-
-    if not isinstance(token_emissor, str) or len(token_emissor) != 775:
-        raise Exception(&#39;Token Emissor inválido&#39;)
-    if not isinstance(token_secret_emissor, str) or len(token_secret_emissor) != 166:
-        raise Exception(&#39;Token Secret Emissor inválido&#39;)
+    
+    # TODO: Realizar melhores validações
+    
     if not isinstance(token_empresa, str) or len(token_empresa) != 775:
         raise Exception(&#39;Token Empresa inválido&#39;)
     if not isinstance(token_secret_empresa, str) or len(token_secret_empresa) != 166:
         raise Exception(&#39;Token Secret Empresa inválido&#39;)
     
-    HEADERS[&#34;token-emissor&#34;]        = token_emissor
-    HEADERS[&#34;token-secret-emissor&#34;] = token_secret_emissor
     HEADERS[&#34;token-empresa&#34;]        = token_empresa
     HEADERS[&#34;token-secret-empresa&#34;] = token_secret_empresa</code></pre>
 </details>
 </dd>
-<dt id="pysisnoapi.requires_keys"><code class="name flex">
-<span>def <span class="ident">requires_keys</span></span>(<span>func)</span>
+<dt id="pysisnoapi.dict_factory"><code class="name flex">
+<span>def <span class="ident">dict_factory</span></span>(<span>x: List[Tuple]) ‑> Optional[Dict]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Esse decorador é utilizado para garantir que as chaves de API estão presentes no HEADERS antes da função ser executada.</p></div>
+<div class="desc"><p>Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.</p>
+<p>Essa função é chamada automaticamente durante a conversão de uma classe para um dicionário usando <code>dataclasses.asdict</code>,
+quando é atribuída a opção <code><a title="pysisnoapi.dict_factory" href="#pysisnoapi.dict_factory">dict_factory()</a></code> como seu valor. </p>
+<p>No caso, estamos usando essa função no método <code>as_filtered_dict</code> da classe <code><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></code>.</p>
+<p>A função recebe uma lista de tuplas contendo pares chave-valor e retorna um dicionário contendo apenas as chaves cujos valores são diferentes de None.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>List[Tuple]</code></dt>
+<dd>Uma lista de tuplas contendo pares chave-valor.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict ou None</code></dt>
+<dd>Um dicionário filtrado com as chaves cujos valores são diferentes de None ou retorna None se o dicionário resultante estiver vazio.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def requires_keys(func):
-    &#34;&#34;&#34;Esse decorador é utilizado para garantir que as chaves de API estão presentes no HEADERS antes da função ser executada.&#34;&#34;&#34;
+<pre><code class="python">def dict_factory(x: List[Tuple]) -&gt; Optional[Dict]:
+    &#34;&#34;&#34;Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.
+
+    Essa função é chamada automaticamente durante a conversão de uma classe para um dicionário usando `dataclasses.asdict`, 
+    quando é atribuída a opção `dict_factory` como seu valor. 
+    
+    No caso, estamos usando essa função no método `as_filtered_dict` da classe `BaseClass`.
+    
+    A função recebe uma lista de tuplas contendo pares chave-valor e retorna um dicionário contendo apenas as chaves cujos valores são diferentes de None.
+
+    Args:
+        x (List[Tuple]): Uma lista de tuplas contendo pares chave-valor.
+
+    Returns:
+        dict ou None: Um dicionário filtrado com as chaves cujos valores são diferentes de None ou retorna None se o dicionário resultante estiver vazio.
+    &#34;&#34;&#34;
+    dic = {k: v for (k, v) in x if v is not None}
+    return dic if len(dic) &gt; 0 else None</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.requires_emissor"><code class="name flex">
+<span>def <span class="ident">requires_emissor</span></span>(<span>func)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Esse decorador é utilizado para garantir que as chaves de API do emissor estão presentes no HEADERS antes da função ser executada.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def requires_emissor(func):
+    &#34;&#34;&#34;Esse decorador é utilizado para garantir que as chaves de API do emissor estão presentes no HEADERS antes da função ser executada.&#34;&#34;&#34;
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        for key in REQUIRED_KEYS:
+        for key in [&#34;token-emissor&#34;, &#34;token-secret-emissor&#34;]:
+            if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
+                return func(*args, **kwargs)
+            else:
+                raise ValueError(f&#34;Chave &#39;{key}&#39; não configurada.&#34;)
+    return wrapper</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.requires_empresa"><code class="name flex">
+<span>def <span class="ident">requires_empresa</span></span>(<span>func)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Esse decorador é utilizado para garantir que as chaves de API da empresa estão presentes no HEADERS antes da função ser executada.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def requires_empresa(func):
+    &#34;&#34;&#34;Esse decorador é utilizado para garantir que as chaves de API da empresa estão presentes no HEADERS antes da função ser executada.&#34;&#34;&#34;
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        for key in [&#34;token-empresa&#34;, &#34;token-secret-empresa&#34;]:
             if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
                 return func(*args, **kwargs)
             else:
@@ -733,43 +779,129 @@ A alteração das chaves de API é necessária para consultar/emitir notas fisca
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="pysisnoapi.Cfop"><code class="flex name class">
-<span>class <span class="ident">Cfop</span></span>
-<span>(</span><span>**kwargs)</span>
+<dt id="pysisnoapi.BaseClass"><code class="flex name class">
+<span>class <span class="ident">BaseClass</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Classe genérica utilizada como base para as demais classes neste package.</p>
+<p>A principal finalidade desta classe é fornecer o método <code>as_filtered_dict</code> para filtrar e retornar um dicionário com os atributos relevantes da instância.
+Para maiores informações consulte a documentação do método <a href="#pysisnoapi.BaseClass.as_filtered_dict">aqui</a>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Cfop:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
+<pre><code class="python">@dataclass
+class BaseClass:
+    &#34;&#34;&#34;Classe genérica utilizada como base para as demais classes neste package.
+    
+    A principal finalidade desta classe é fornecer o método `as_filtered_dict` para filtrar e retornar um dicionário com os atributos relevantes da instância.
+    Para maiores informações consulte a documentação do método [aqui](#pysisnoapi.BaseClass.as_filtered_dict).
+    &#34;&#34;&#34;
+    
+    def as_filtered_dict(self)-&gt; dict[str:str]:
+        &#34;&#34;&#34;
+        Retorna um dicionário contendo os campos/atributos da classe com valores não nulos.
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
+        O dicionário resultante possui chaves (str) correspondentes aos nomes dos campos
+        da classe e valores (str) representando os respectivos valores desses campos,
+        desde que esses valores não sejam nulos (None).
+        
+        Returns:
+            dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
+        &#34;&#34;&#34;
+        return asdict(self, dict_factory=dict_factory)</code></pre>
 </details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="pysisnoapi.Cfop" href="#pysisnoapi.Cfop">Cfop</a></li>
+<li><a title="pysisnoapi.Empresa" href="#pysisnoapi.Empresa">Empresa</a></li>
+<li><a title="pysisnoapi.Endereco" href="#pysisnoapi.Endereco">Endereco</a></li>
+<li><a title="pysisnoapi.Ibpt" href="#pysisnoapi.Ibpt">Ibpt</a></li>
+<li><a title="pysisnoapi.Municipio" href="#pysisnoapi.Municipio">Municipio</a></li>
+<li><a title="pysisnoapi.Uf" href="#pysisnoapi.Uf">Uf</a></li>
+<li><a title="pysisnoapi.nfse.NotaFiscalServico" href="nfse.html#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a></li>
+</ul>
 <h3>Methods</h3>
 <dl>
-<dt id="pysisnoapi.Cfop.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+<dt id="pysisnoapi.BaseClass.as_filtered_dict"><code class="name flex">
+<span>def <span class="ident">as_filtered_dict</span></span>(<span>self) ‑> dict[slice(<class 'str'>, <class 'str'>, None)]</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Retorna um dicionário contendo os campos/atributos da classe com valores não nulos.</p>
+<p>O dicionário resultante possui chaves (str) correspondentes aos nomes dos campos
+da classe e valores (str) representando os respectivos valores desses campos,
+desde que esses valores não sejam nulos (None).</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict</code></dt>
+<dd>Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def asdict(self):
-    dados = self.__dict__
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
+<pre><code class="python">def as_filtered_dict(self)-&gt; dict[str:str]:
+    &#34;&#34;&#34;
+    Retorna um dicionário contendo os campos/atributos da classe com valores não nulos.
+
+    O dicionário resultante possui chaves (str) correspondentes aos nomes dos campos
+    da classe e valores (str) representando os respectivos valores desses campos,
+    desde que esses valores não sejam nulos (None).
+    
+    Returns:
+        dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
+    &#34;&#34;&#34;
+    return asdict(self, dict_factory=dict_factory)</code></pre>
 </details>
 </dd>
 </dl>
+</dd>
+<dt id="pysisnoapi.Cfop"><code class="flex name class">
+<span>class <span class="ident">Cfop</span></span>
+<span>(</span><span>codigo: Optional[str] = None, descricao: Optional[str] = None, aplicacao: Optional[str] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>CFOP (Código Fiscal de Operações e Prestações)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@dataclass
+class Cfop(BaseClass):
+    &#34;&#34;&#34;CFOP (Código Fiscal de Operações e Prestações)
+    &#34;&#34;&#34;
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    codigo: Optional[str] = None
+    descricao: Optional[str] = None
+    aplicacao: Optional[str] = None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="pysisnoapi.Cfop.aplicacao"><code class="name">var <span class="ident">aplicacao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Cfop.codigo"><code class="name">var <span class="ident">codigo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Cfop.descricao"><code class="name">var <span class="ident">descricao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></b></code>:
+<ul class="hlist">
+<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="pysisnoapi.Cliente"><code class="flex name class">
 <span>class <span class="ident">Cliente</span></span>
@@ -951,167 +1083,158 @@ A alteração das chaves de API é necessária para consultar/emitir notas fisca
 </dd>
 <dt id="pysisnoapi.Empresa"><code class="flex name class">
 <span>class <span class="ident">Empresa</span></span>
-<span>(</span><span>id, **kwargs)</span>
+<span>(</span><span>id: Optional[str] = None, token: Optional[str] = None, token_secret: Optional[str] = None, cnpj: Optional[str] = None, nome_fantasia: Optional[str] = None, razao_social: Optional[str] = None, endereco: Optional[ForwardRef('<a title="pysisnoapi.Endereco" href="#pysisnoapi.Endereco">Endereco</a>')] = None, telefone: Optional[str] = None, inscricao_estadual: Optional[str] = None, inscricao_municipal: Optional[str] = None, inscricao_estadual_substituicao_tributaria: Optional[str] = None, regime_tributario: Optional[str] = None, classificacao_nacional_atividades_economicas: Optional[str] = None, ambiente: Optional[str] = None, id_csc: Optional[str] = None, csc: Optional[str] = None, codigo_regime_especial_tributacao: Optional[str] = None, porcentagem_icms_aproveitado: Optional[str] = None, site: Optional[str] = None, email: Optional[str] = None, utiliza_tributos_aproximados: Optional[bool] = None, informacoes_complementares: Optional[str] = None, senha_portal_prefeitura: Optional[str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
 Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
-Em resumo: não há necessidade de se preocupar com os campos, caso não saiba algum deles, pois, eles serão preenchidos automaticamente com aquilo que vier do endpoint.</p>
-<p>Construtor da Classe.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>id</code></strong> :&ensp;<code>int</code></dt>
-<dd>ID da empresa registrada na plataforma SISNO.<br>
-Default is 0</dd>
-<dt><strong><code>token</code></strong> :&ensp;<code>str</code></dt>
-<dd>String de 775 caracters fornecido pela plataforma SISNO para utilização da API.<br>
-Default is ''
-</dd>
-<dt><strong><code>token_secret</code></strong> :&ensp;<code>str</code></dt>
-<dd>String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".
-Default is ''</dd>
-<dt><strong><code>cnpj</code></strong> :&ensp;<code>str</code></dt>
-<dd>CNPJ da Empresa.
-Default is ''</dd>
-<dt><strong><code>nome_fantasia</code></strong> :&ensp;<code>str</code></dt>
-<dd>Nome Fantasia da Empresa.
-Default is ''</dd>
-<dt><strong><code>razao_social</code></strong> :&ensp;<code>str</code></dt>
-<dd>Razão Social da Empresa.
-Default is ''</dd>
-<dt><strong><code>endereco</code></strong> :&ensp;<code>str</code></dt>
-<dd>Endereço da Empresa.
-Default is, None</dd>
-<dt><strong><code>telefone</code></strong> :&ensp;<code>str</code></dt>
-<dd>Telefone da Empresa.
-Default is ''</dd>
-<dt><strong><code>inscricao_estadual</code></strong> :&ensp;<code>str</code></dt>
-<dd>Inscrição Estadual da Empresa.
-Default is ''</dd>
-<dt><strong><code>inscricao_municipal</code></strong> :&ensp;<code>str</code></dt>
-<dd>Inscrição Municipal da Empresa.
-Default is ''</dd>
-<dt><strong><code>inscricao_estadual_substituicao_tributaria</code></strong> :&ensp;<code>str</code></dt>
-<dd>.
-Default is ''</dd>
-<dt><strong><code>regime_tributario</code></strong> :&ensp;<code>str</code></dt>
-<dd>Regime Tributário da Empresa (Lucro Real, Lucro Presumido, Simples Nacional, &hellip;).
-Default is ''</dd>
-<dt><strong><code>classificacao_nacional_atividades_economicas</code></strong> :&ensp;<code>str</code></dt>
-<dd>CNAE.
-Default is ''</dd>
-<dt><strong><code>ambiente</code></strong> :&ensp;<code>str</code></dt>
-<dd>Produção ou Homologação.
-Default is ''</dd>
-<dt><strong><code>id_csc</code></strong> :&ensp;<code>str</code></dt>
-<dd>ID do Código de Segurança do Contribuinte.
-Default is ''</dd>
-<dt><strong><code>csc</code></strong> :&ensp;<code>str</code></dt>
-<dd>Código de Segurança do Contribuinte.
-Default is ''</dd>
-<dt><strong><code>codigo_regime_especial_tributacao</code></strong> :&ensp;<code>str</code></dt>
-<dd>Código do Regime Especial de Tributação (Microempresa municipal, Estimativa, Sociedade Profissional, Cooperativa, Microempresario individual MEI, Microempresário e empresa de pequeno porte).
-Default is ''</dd>
-<dt><strong><code>porcentagem_icms_aproveitado</code></strong> :&ensp;<code>float</code></dt>
-<dd>% ICMS Aproveitado.
-Default is 0.00</dd>
-<dt><strong><code>site</code></strong> :&ensp;<code>str</code></dt>
-<dd>Site da Empresa.
-Default is ''</dd>
-<dt><strong><code>email</code></strong> :&ensp;<code>str</code></dt>
-<dd>E-mail da Empresa.
-Default is ''</dd>
-</dl></div>
+Em resumo: não há necessidade de se preocupar com os campos, caso não saiba algum deles, pois, eles serão preenchidos automaticamente com aquilo que vier do endpoint.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Empresa:
+<pre><code class="python">@dataclass
+class Empresa(BaseClass):
     &#34;&#34;&#34;
         Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
         Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
         Em resumo: não há necessidade de se preocupar com os campos, caso não saiba algum deles, pois, eles serão preenchidos automaticamente com aquilo que vier do endpoint.
     &#34;&#34;&#34;
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    id                                          : Optional[str]         = None
+    token                                       : Optional[str]         = None
+    token_secret                                : Optional[str]         = None
+    cnpj                                        : Optional[str]         = None
+    nome_fantasia                               : Optional[str]         = None
+    razao_social                                : Optional[str]         = None
+    endereco                                    : Optional[&#39;Endereco&#39;]  = None
+    telefone                                    : Optional[str]         = None
+    inscricao_estadual                          : Optional[str]         = None
+    inscricao_municipal                         : Optional[str]         = None
+    inscricao_estadual_substituicao_tributaria  : Optional[str]         = None
+    regime_tributario                           : Optional[str]         = None
+    classificacao_nacional_atividades_economicas: Optional[str]         = None
+    ambiente                                    : Optional[str]         = None
+    id_csc                                      : Optional[str]         = None
+    csc                                         : Optional[str]         = None
+    codigo_regime_especial_tributacao           : Optional[str]         = None
+    porcentagem_icms_aproveitado                : Optional[str]         = None
+    site                                        : Optional[str]         = None
+    email                                       : Optional[str]         = None
+    utiliza_tributos_aproximados                : Optional[bool]        = None  # TODO: Não consta na documentação da API
+    informacoes_complementares                  : Optional[str]         = None  # TODO: Não consta na documentação da API
+    senha_portal_prefeitura                     : Optional[str]         = None  # TODO: Não consta na documentação da API
     
-    def __init__(self, id, **kwargs):
-        &#34;&#34;&#34;
-        Construtor da Classe.
-
-        Args:
-            id (int): ID da empresa registrada na plataforma SISNO.  
-                Default is 0
-            token (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API.  
-                Default is &#39;&#39;  
-            token_secret (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com &#34;1000:&#34;.
-                Default is &#39;&#39;
-            cnpj (str): CNPJ da Empresa.
-                Default is &#39;&#39;
-            nome_fantasia (str): Nome Fantasia da Empresa.
-                Default is &#39;&#39;
-            razao_social (str): Razão Social da Empresa.
-                Default is &#39;&#39;
-            endereco (str): Endereço da Empresa.
-                Default is, None
-            telefone (str): Telefone da Empresa.
-                Default is &#39;&#39;
-            inscricao_estadual (str): Inscrição Estadual da Empresa.
-                Default is &#39;&#39;
-            inscricao_municipal (str): Inscrição Municipal da Empresa.
-                Default is &#39;&#39;
-            inscricao_estadual_substituicao_tributaria (str): .
-                Default is &#39;&#39;
-            regime_tributario (str): Regime Tributário da Empresa (Lucro Real, Lucro Presumido, Simples Nacional, ...).
-                Default is &#39;&#39;
-            classificacao_nacional_atividades_economicas (str): CNAE.
-                Default is &#39;&#39;
-            ambiente (str): Produção ou Homologação.
-                Default is &#39;&#39;
-            id_csc (str): ID do Código de Segurança do Contribuinte.
-                Default is &#39;&#39;
-            csc (str): Código de Segurança do Contribuinte.
-                Default is &#39;&#39;
-            codigo_regime_especial_tributacao (str): Código do Regime Especial de Tributação (Microempresa municipal, Estimativa, Sociedade Profissional, Cooperativa, Microempresario individual MEI, Microempresário e empresa de pequeno porte).
-                Default is &#39;&#39;
-            porcentagem_icms_aproveitado (float): % ICMS Aproveitado.
-                Default is 0.00
-            site (str): Site da Empresa.
-                Default is &#39;&#39;
-            email (str): E-mail da Empresa.
-                Default is &#39;&#39;
-        &#34;&#34;&#34;
-
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-
-        self.id                                             = kwargs.get(&#34;id&#34;, 0)
-        self.token                                          = kwargs.get(&#34;token&#34;, &#39;&#39;)
-        self.token_secret                                   = kwargs.get(&#34;token_secret&#34;, &#39;&#39;)
-        self.cnpj                                           = kwargs.get(&#34;cnpj&#34;, &#39;&#39;)
-        self.nome_fantasia                                  = kwargs.get(&#34;nome_fantasia&#34;, &#39;&#39;)
-        self.razao_social                                   = kwargs.get(&#34;razao_social&#34;, &#39;&#39;)
-        self.endereco                                       = kwargs.get(&#34;endereco      &#34;, None)
-        self.telefone                                       = kwargs.get(&#34;telefone&#34;, &#39;&#39;)
-        self.inscricao_estadual                             = kwargs.get(&#34;inscricao_estadual&#34;, &#39;&#39;)
-        self.inscricao_municipal                            = kwargs.get(&#34;inscricao_municipal&#34;, &#39;&#39;)
-        self.inscricao_estadual_substituicao_tributaria     = kwargs.get(&#34;inscricao_estadual_substituicao_tributaria&#34;, &#39;&#39;)
-        self.regime_tributario                              = kwargs.get(&#34;regime_tributario&#34;, &#39;&#39;)
-        self.classificacao_nacional_atividades_economicas   = kwargs.get(&#34;classificacao_nacional_atividades_economicas&#34;, &#39;&#39;)
-        self.ambiente                                       = kwargs.get(&#34;ambiente&#34;, &#39;&#39;)
-        self.id_csc                                         = kwargs.get(&#34;id_csc&#34;, &#39;&#39;)
-        self.csc                                            = kwargs.get(&#34;csc&#34;, &#39;&#39;)
-        self.codigo_regime_especial_tributacao              = kwargs.get(&#34;codigo_regime_especial_tributacao&#34;, &#39;&#39;)
-        self.porcentagem_icms_aproveitado                   = kwargs.get(&#34;porcentagem_icms_aproveitado&#34;, 0)
-        self.site                                           = kwargs.get(&#34;site&#34;, &#39;&#39;)
-        self.email                                          = kwargs.get(&#34;email&#34;, &#39;&#39;)
-    
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
+    @classmethod
+    def from_json(cls, **kwargs):
+        endereco_dict = kwargs.pop(&#39;endereco&#39;, {})
+        endereco = Endereco.from_json(**endereco_dict)
+        
+        return cls(endereco=endereco, **kwargs)</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></li>
+</ul>
+<h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.Empresa.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+<dt id="pysisnoapi.Empresa.ambiente"><code class="name">var <span class="ident">ambiente</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.classificacao_nacional_atividades_economicas"><code class="name">var <span class="ident">classificacao_nacional_atividades_economicas</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.cnpj"><code class="name">var <span class="ident">cnpj</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.codigo_regime_especial_tributacao"><code class="name">var <span class="ident">codigo_regime_especial_tributacao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.csc"><code class="name">var <span class="ident">csc</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.email"><code class="name">var <span class="ident">email</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.endereco"><code class="name">var <span class="ident">endereco</span> : Optional[<a title="pysisnoapi.Endereco" href="#pysisnoapi.Endereco">Endereco</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.id"><code class="name">var <span class="ident">id</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.id_csc"><code class="name">var <span class="ident">id_csc</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.informacoes_complementares"><code class="name">var <span class="ident">informacoes_complementares</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.inscricao_estadual"><code class="name">var <span class="ident">inscricao_estadual</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.inscricao_estadual_substituicao_tributaria"><code class="name">var <span class="ident">inscricao_estadual_substituicao_tributaria</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.inscricao_municipal"><code class="name">var <span class="ident">inscricao_municipal</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.nome_fantasia"><code class="name">var <span class="ident">nome_fantasia</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.porcentagem_icms_aproveitado"><code class="name">var <span class="ident">porcentagem_icms_aproveitado</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.razao_social"><code class="name">var <span class="ident">razao_social</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.regime_tributario"><code class="name">var <span class="ident">regime_tributario</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.senha_portal_prefeitura"><code class="name">var <span class="ident">senha_portal_prefeitura</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.site"><code class="name">var <span class="ident">site</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.telefone"><code class="name">var <span class="ident">telefone</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.token"><code class="name">var <span class="ident">token</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.token_secret"><code class="name">var <span class="ident">token_secret</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.utiliza_tributos_aproximados"><code class="name">var <span class="ident">utiliza_tributos_aproximados</span> : Optional[bool]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="pysisnoapi.Empresa.from_json"><code class="name flex">
+<span>def <span class="ident">from_json</span></span>(<span>**kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1119,119 +1242,136 @@ Default is ''</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def asdict(self):
-    dados = self.__dict__
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
+<pre><code class="python">@classmethod
+def from_json(cls, **kwargs):
+    endereco_dict = kwargs.pop(&#39;endereco&#39;, {})
+    endereco = Endereco.from_json(**endereco_dict)
+    
+    return cls(endereco=endereco, **kwargs)</code></pre>
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></b></code>:
+<ul class="hlist">
+<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="pysisnoapi.Endereco"><code class="flex name class">
 <span>class <span class="ident">Endereco</span></span>
-<span>(</span><span>codigo_pais, descricao_pais, bairro, logradouro, numero, **kwargs)</span>
+<span>(</span><span>id: int, codigo_pais: str, descricao_pais: str, bairro: str, logradouro: str, numero: str, uf: Optional[str] = None, codigo_municipio: Optional[str] = None, descricao_municipio: Optional[str] = None, cep: Optional[str] = None, complemento: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Construtor da Classe.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>codigo_pais</code></strong> :&ensp;<code>str</code></dt>
-<dd>Código do Pais (55 para Brasil).</dd>
-<dt><strong><code>descricao_pais</code></strong> :&ensp;<code>str</code></dt>
-<dd>Nome do País.</dd>
-<dt><strong><code>bairro</code></strong> :&ensp;<code>str</code></dt>
-<dd>Bairro do Endereço.</dd>
-<dt><strong><code>logradouro</code></strong> :&ensp;<code>str</code></dt>
-<dd>Endereço em si (sugestão: utilize exatamente aquilo que informado ao consultar o CEP nos correios).</dd>
-<dt><strong><code>numero</code></strong> :&ensp;<code>str</code></dt>
-<dd>Número do Endereço (apenas números).</dd>
-</dl>
-<p>uf (str):
-Default is ''
-codigo_municipio (str):
-Default is ''
-descricao_municipio (str):
-Default is ''
-cep (str):
-Default is ''
-complemento (str):
-Default is ''</p></div>
+<div class="desc"><p>Endereco(id: int, codigo_pais: str, descricao_pais: str, bairro: str, logradouro: str, numero: str, uf: Optional[str] = None, codigo_municipio: Optional[str] = None, descricao_municipio: Optional[str] = None, cep: Optional[str] = None, complemento: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Endereco:
-    def __init__(self, codigo_pais, descricao_pais, bairro, logradouro, numero, **kwargs):
-        &#34;&#34;&#34;
-        Construtor da Classe.
+<pre><code class="python">@dataclass
+class Endereco(BaseClass):
+    id                 : int
+    codigo_pais        : str
+    descricao_pais     : str
+    bairro             : str
+    logradouro         : str
+    numero             : str
+    uf                 : Optional[str] = None
+    codigo_municipio   : Optional[str] = None
+    descricao_municipio: Optional[str] = None
+    cep                : Optional[str] = None
+    complemento        : Optional[str] = None
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        return cls(**kwargs)
+    
+    # def asdict(self):
+    #     # Quando o país não for Brasil, ignorar os campos [uf, codigo_municipio, descricao_municipio, cep]
 
-        Args:
-            codigo_pais (str): Código do Pais (55 para Brasil).
-            
-            descricao_pais (str): Nome do País.
-
-            bairro (str): Bairro do Endereço.
-            
-            logradouro (str): Endereço em si (sugestão: utilize exatamente aquilo que informado ao consultar o CEP nos correios).
-            
-            numero (str): Número do Endereço (apenas números).
-
-            uf (str):
-                Default is &#39;&#39;
-            codigo_municipio (str):
-                Default is &#39;&#39;
-            descricao_municipio (str):
-                Default is &#39;&#39;
-            cep (str):
-                Default is &#39;&#39;
-            complemento (str):
-                Default is &#39;&#39;
-        &#34;&#34;&#34;
-
-        self.codigo_pais            = codigo_pais
-        self.descricao_pais         = descricao_pais
-        self.uf                     = kwargs.get(&#34;uf&#34;, &#39;&#39;)
-        self.codigo_municipio       = kwargs.get(&#34;codigo_municipio&#34;, &#39;&#39;)
-        self.descricao_municipio    = kwargs.get(&#34;descricao_municipio&#34;, &#39;&#39;)
-        self.cep                    = kwargs.get(&#34;cep&#34;, &#39;&#39;)                     # TODO: Apenas números
-        self.bairro                 = bairro
-        self.logradouro             = logradouro
-        self.numero                 = numero                                    # TODO: Apenas números
-        self.complemento            = kwargs.get(&#34;complemento&#34;, &#39;&#39;)
-
-    def asdict(self):
-        # Quando o país não for Brasil, ignorar os campos [uf, codigo_municipio, descricao_municipio, cep]
-
-        if self.codigo_pais == &#34;55&#34;:
-            dados = {
-                &#34;codigo_pais&#34;        : self.codigo_pais,
-                &#34;descricao_pais&#34;     : self.descricao_pais,
-                &#34;uf&#34;                 : self.uf,
-                &#34;codigo_municipio&#34;   : self.codigo_municipio,
-                &#34;descricao_municipio&#34;: self.descricao_municipio,
-                &#34;cep&#34;                : self.cep,
-                &#34;bairro&#34;             : self.bairro,
-                &#34;logradouro&#34;         : self.logradouro,
-                &#34;numero&#34;             : self.numero,
-                &#34;complemento&#34;        : self.complemento
-            }
-        else:
-            dados = {
-                &#34;codigo_pais&#34;        : self.codigo_pais,
-                &#34;descricao_pais&#34;     : self.descricao_pais,
-                &#34;bairro&#34;             : self.bairro,
-                &#34;logradouro&#34;         : self.logradouro,
-                &#34;numero&#34;             : self.numero,
-                &#34;complemento&#34;        : self.complemento
-            }
+    #     if self.codigo_pais == &#34;55&#34;:
+    #         dados = {
+    #             &#34;codigo_pais&#34;        : self.codigo_pais,
+    #             &#34;descricao_pais&#34;     : self.descricao_pais,
+    #             &#34;uf&#34;                 : self.uf,
+    #             &#34;codigo_municipio&#34;   : self.codigo_municipio,
+    #             &#34;descricao_municipio&#34;: self.descricao_municipio,
+    #             &#34;cep&#34;                : self.cep,
+    #             &#34;bairro&#34;             : self.bairro,
+    #             &#34;logradouro&#34;         : self.logradouro,
+    #             &#34;numero&#34;             : self.numero,
+    #             &#34;complemento&#34;        : self.complemento
+    #         }
+    #     else:
+    #         dados = {
+    #             &#34;codigo_pais&#34;        : self.codigo_pais,
+    #             &#34;descricao_pais&#34;     : self.descricao_pais,
+    #             &#34;bairro&#34;             : self.bairro,
+    #             &#34;logradouro&#34;         : self.logradouro,
+    #             &#34;numero&#34;             : self.numero,
+    #             &#34;complemento&#34;        : self.complemento
+    #         }
         
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
+    #     dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
+    #     return dados if len(dados) &gt; 0 else None</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></li>
+</ul>
+<h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.Endereco.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+<dt id="pysisnoapi.Endereco.bairro"><code class="name">var <span class="ident">bairro</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Endereco.cep"><code class="name">var <span class="ident">cep</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Endereco.codigo_municipio"><code class="name">var <span class="ident">codigo_municipio</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Endereco.codigo_pais"><code class="name">var <span class="ident">codigo_pais</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Endereco.complemento"><code class="name">var <span class="ident">complemento</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Endereco.descricao_municipio"><code class="name">var <span class="ident">descricao_municipio</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Endereco.descricao_pais"><code class="name">var <span class="ident">descricao_pais</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Endereco.id"><code class="name">var <span class="ident">id</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Endereco.logradouro"><code class="name">var <span class="ident">logradouro</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Endereco.numero"><code class="name">var <span class="ident">numero</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Endereco.uf"><code class="name">var <span class="ident">uf</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="pysisnoapi.Endereco.from_json"><code class="name flex">
+<span>def <span class="ident">from_json</span></span>(<span>**kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1239,61 +1379,124 @@ Default is ''</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def asdict(self):
-    # Quando o país não for Brasil, ignorar os campos [uf, codigo_municipio, descricao_municipio, cep]
-
-    if self.codigo_pais == &#34;55&#34;:
-        dados = {
-            &#34;codigo_pais&#34;        : self.codigo_pais,
-            &#34;descricao_pais&#34;     : self.descricao_pais,
-            &#34;uf&#34;                 : self.uf,
-            &#34;codigo_municipio&#34;   : self.codigo_municipio,
-            &#34;descricao_municipio&#34;: self.descricao_municipio,
-            &#34;cep&#34;                : self.cep,
-            &#34;bairro&#34;             : self.bairro,
-            &#34;logradouro&#34;         : self.logradouro,
-            &#34;numero&#34;             : self.numero,
-            &#34;complemento&#34;        : self.complemento
-        }
-    else:
-        dados = {
-            &#34;codigo_pais&#34;        : self.codigo_pais,
-            &#34;descricao_pais&#34;     : self.descricao_pais,
-            &#34;bairro&#34;             : self.bairro,
-            &#34;logradouro&#34;         : self.logradouro,
-            &#34;numero&#34;             : self.numero,
-            &#34;complemento&#34;        : self.complemento
-        }
-    
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
+<pre><code class="python">@classmethod
+def from_json(cls, **kwargs):
+    return cls(**kwargs)</code></pre>
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></b></code>:
+<ul class="hlist">
+<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="pysisnoapi.Ibpt"><code class="flex name class">
 <span>class <span class="ident">Ibpt</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>codigo: Optional[str] = None, ex: Optional[str] = None, tipo: Optional[str] = None, descricao: Optional[str] = None, nacional_federal: Optional[str] = None, importados_federal: Optional[str] = None, estadual: Optional[str] = None, municipal: Optional[str] = None, vigencia_inicio: Optional[str] = None, vigencia_fim: Optional[str] = None, versao: Optional[str] = None, fonte: Optional[str] = None, unidade_federativa: Optional[ForwardRef('<a title="pysisnoapi.Uf" href="#pysisnoapi.Uf">Uf</a>')] = None, ativo: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Classe <code>IBPT</code> (Impostos sobre Produtos e Serviços)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Ibpt:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
+<pre><code class="python">@dataclass
+class Ibpt(BaseClass):
+    &#34;&#34;&#34;Classe `IBPT` (Impostos sobre Produtos e Serviços)
+    &#34;&#34;&#34;
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    codigo            : Optional[str]  = None
+    ex                : Optional[str]  = None
+    tipo              : Optional[str]  = None
+    descricao         : Optional[str]  = None
+    nacional_federal  : Optional[str]  = None
+    importados_federal: Optional[str]  = None
+    estadual          : Optional[str]  = None
+    municipal         : Optional[str]  = None
+    vigencia_inicio   : Optional[str]  = None
+    vigencia_fim      : Optional[str]  = None
+    versao            : Optional[str]  = None
+    fonte             : Optional[str]  = None
+    unidade_federativa: Optional[&#39;Uf&#39;] = None
+    ativo             : Optional[str]  = None     # TODO: Até o dia 01/06/2023, não consta na Documentação
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        uf_dict = kwargs.pop(&#39;unidade_federativa&#39;, {})
+        uf = Uf.from_json(**uf_dict)
+        return cls(unidade_federativa=uf, **kwargs)</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></li>
+</ul>
+<h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.Ibpt.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+<dt id="pysisnoapi.Ibpt.ativo"><code class="name">var <span class="ident">ativo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ibpt.codigo"><code class="name">var <span class="ident">codigo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ibpt.descricao"><code class="name">var <span class="ident">descricao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ibpt.estadual"><code class="name">var <span class="ident">estadual</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ibpt.ex"><code class="name">var <span class="ident">ex</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ibpt.fonte"><code class="name">var <span class="ident">fonte</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ibpt.importados_federal"><code class="name">var <span class="ident">importados_federal</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ibpt.municipal"><code class="name">var <span class="ident">municipal</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ibpt.nacional_federal"><code class="name">var <span class="ident">nacional_federal</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ibpt.tipo"><code class="name">var <span class="ident">tipo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ibpt.unidade_federativa"><code class="name">var <span class="ident">unidade_federativa</span> : Optional[<a title="pysisnoapi.Uf" href="#pysisnoapi.Uf">Uf</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ibpt.versao"><code class="name">var <span class="ident">versao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ibpt.vigencia_fim"><code class="name">var <span class="ident">vigencia_fim</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ibpt.vigencia_inicio"><code class="name">var <span class="ident">vigencia_inicio</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="pysisnoapi.Ibpt.from_json"><code class="name flex">
+<span>def <span class="ident">from_json</span></span>(<span>**kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1301,13 +1504,22 @@ Default is ''</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def asdict(self):
-    dados = self.__dict__
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
+<pre><code class="python">@classmethod
+def from_json(cls, **kwargs):
+    uf_dict = kwargs.pop(&#39;unidade_federativa&#39;, {})
+    uf = Uf.from_json(**uf_dict)
+    return cls(unidade_federativa=uf, **kwargs)</code></pre>
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></b></code>:
+<ul class="hlist">
+<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="pysisnoapi.Icms"><code class="flex name class">
 <span>class <span class="ident">Icms</span></span>
@@ -1465,14 +1677,14 @@ Default is ''</p></div>
 <span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Indicador_exigibilidade_iss
-1: Exigível<br>
-2: Não incidência<br>
-3: Isenção<br>
-4: Exportação<br>
-5: Imunidade<br>
-6: Exigibilidade suspensa por decisão judicial<br>
-7: Exigibilidade suspensa por processo administrativo</p></div>
+<div class="desc"><p>Indicador_exigibilidade_iss<br>
+1. Exigível<br>
+2. Não incidência<br>
+3. Isenção<br>
+4. Exportação<br>
+5. Imunidade<br>
+6. Exigibilidade suspensa por decisão judicial<br>
+7. Exigibilidade suspensa por processo administrativo</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1480,16 +1692,16 @@ Default is ''</p></div>
 <pre><code class="python">class Issqn:
     def __init__(self, **kwargs):
         &#34;&#34;&#34;
-            Indicador_exigibilidade_iss
-                1: Exigível  
-                2: Não incidência  
-                3: Isenção  
-                4: Exportação  
-                5: Imunidade  
-                6: Exigibilidade suspensa por decisão judicial  
-                7: Exigibilidade suspensa por processo administrativo  
+            Indicador_exigibilidade_iss  
+                1. Exigível  
+                2. Não incidência  
+                3. Isenção  
+                4. Exportação  
+                5. Imunidade  
+                6. Exigibilidade suspensa por decisão judicial  
+                7. Exigibilidade suspensa por processo administrativo  
         &#34;&#34;&#34;
-
+        
         self.indicador_exigibilidade_iss     = kwargs.get(&#34;indicador_exigibilidade_iss&#34;, None)   # string [ 1, 2, 3, 4, 5, 6, 7 ]
         self.indicador_incentivo_fiscal      = kwargs.get(&#34;indicador_incentivo_fiscal&#34;, None)    # string (1: Não, 2: Sim)
         self.item_lista_servicos             = kwargs.get(&#34;item_lista_servicos&#34;, None)           # string - Item da lista de serviços no Padrão ABRASF (Formato NN.NN)
@@ -1521,29 +1733,43 @@ Default is ''</p></div>
 </dd>
 <dt id="pysisnoapi.Municipio"><code class="flex name class">
 <span>class <span class="ident">Municipio</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>codigo_ibge: Optional[int] = None, descricao: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Municipio(codigo_ibge: Optional[int] = None, descricao: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Municipio:
-    def __init__(self, **kwargs):
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-        self.codigo_ibge = kwargs.get(&#34;codigo_ibge&#34;, &#39;&#39;) # TODO: 0 ?
-        self.descricao   = kwargs.get(&#34;descricao&#34;, &#39;&#39;)
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
+<pre><code class="python">@dataclass
+class Municipio(BaseClass):
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    codigo_ibge : Optional[int] = None
+    descricao   : Optional[str] = None
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        return cls(**kwargs)</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></li>
+</ul>
+<h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.Municipio.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+<dt id="pysisnoapi.Municipio.codigo_ibge"><code class="name">var <span class="ident">codigo_ibge</span> : Optional[int]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Municipio.descricao"><code class="name">var <span class="ident">descricao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="pysisnoapi.Municipio.from_json"><code class="name flex">
+<span>def <span class="ident">from_json</span></span>(<span>**kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1551,58 +1777,165 @@ Default is ''</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def asdict(self):
-    dados = self.__dict__
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
+<pre><code class="python">@classmethod
+def from_json(cls, **kwargs):
+    return cls(**kwargs)</code></pre>
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></b></code>:
+<ul class="hlist">
+<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="pysisnoapi.NotaFiscal"><code class="flex name class">
 <span>class <span class="ident">NotaFiscal</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>id: Optional[int] = None, empresa: Optional[ForwardRef('<a title="pysisnoapi.Empresa" href="#pysisnoapi.Empresa">Empresa</a>')] = None, tipo: Optional[str] = None, serie: Optional[str] = None, numero_nota: Optional[str] = None, chave_acesso: Optional[str] = None, protocolo: Optional[str] = None, nome_destinatario: Optional[str] = None, uf_destinatario: Optional[str] = None, cpf_cnpj_destinatario: Optional[str] = None, valor_total: Optional[str] = None, status: Optional[str] = None, motivo: Optional[str] = None, data_emissao: Optional[datetime.datetime] = None, data_autorizacao: Optional[datetime.datetime] = None, modelo: Optional[str] = None, ambiente: Optional[str] = None, xml: Optional[str] = None, json_objeto_nfe: Optional[str] = None, tipo_emissao: Optional[str] = None, numero_lote: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>NotaFiscal(id: Optional[int] = None, empresa: Optional[ForwardRef('Empresa')] = None, tipo: Optional[str] = None, serie: Optional[str] = None, numero_nota: Optional[str] = None, chave_acesso: Optional[str] = None, protocolo: Optional[str] = None, nome_destinatario: Optional[str] = None, uf_destinatario: Optional[str] = None, cpf_cnpj_destinatario: Optional[str] = None, valor_total: Optional[str] = None, status: Optional[str] = None, motivo: Optional[str] = None, data_emissao: Optional[datetime.datetime] = None, data_autorizacao: Optional[datetime.datetime] = None, modelo: Optional[str] = None, ambiente: Optional[str] = None, xml: Optional[str] = None, json_objeto_nfe: Optional[str] = None, tipo_emissao: Optional[str] = None, numero_lote: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class NotaFiscal:
-    def __init__(self, **kwargs):
-        self.empresa                 = kwargs.get(&#34;empresa&#34;, None)              # string
-        self.serie                   = kwargs.get(&#34;serie&#34;, None)                # string
-        self.operacao                = kwargs.get(&#34;operacao&#34;, None)             # string (0: Entrada, 1: Saída)
-        self.natureza_operacao       = kwargs.get(&#34;natureza_operacao&#34;, None)    # string
-        self.modelo                  = kwargs.get(&#34;modelo&#34;, None)               # string (55: NF-e, 65: NFC-e)
-        self.finalidade              = kwargs.get(&#34;finalidade&#34;, None)           # string (1: Normal, 2: Complementar, 3: Ajuste, 4: Devolução ou Retorno)
-        self.ambiente                = kwargs.get(&#34;ambiente&#34;, None)             # string (1: Produção, 2: Homologação)
-        self.cliente                 = kwargs.get(&#34;cliente&#34;, None)              # Objeto CLIENTE
-        self.produtos                = kwargs.get(&#34;produtos&#34;, None)             # list[PRODUTO]
-        self.pedido                  = kwargs.get(&#34;pedido&#34;, None)               # Objeto PEDIDO
-        self.data_entrada_saida      = kwargs.get(&#34;data_entrada_saida&#34;, None)   # string (dd/MM/yyyy HH:mm:ss)
-        self.data_emissao            = kwargs.get(&#34;data_emissao&#34;, None)         # string (dd/MM/yyyy HH:mm:ss)
-
-    def asdict(self):
-        return {
-            &#34;serie&#34;             : self.serie,
-            &#34;operacao&#34;          : self.operacao,
-            &#34;natureza_operacao&#34; : self.natureza_operacao,
-            &#34;modelo&#34;            : self.modelo,
-            &#34;finalidade&#34;        : self.finalidade,
-            &#34;ambiente&#34;          : self.ambiente,
-            &#34;cliente&#34;           : self.cliente.asdict(),
-            &#34;produtos&#34;          : [p.asdict() for p in self.produtos],
-            &#34;pedido&#34;            : self.pedido.asdict(),
-            &#34;data_entrada_saida&#34;: self.data_entrada_saida,
-            &#34;data_emissao&#34;      : self.data_emissao,
-        }</code></pre>
+<pre><code class="python">@dataclass
+class NotaFiscal:
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    id                      : Optional[int]         = None
+    empresa                 : Optional[&#39;Empresa&#39;]   = None
+    tipo                    : Optional[str]         = None
+    serie                   : Optional[str]         = None
+    numero_nota             : Optional[str]         = None
+    chave_acesso            : Optional[str]         = None
+    protocolo               : Optional[str]         = None
+    nome_destinatario       : Optional[str]         = None
+    uf_destinatario         : Optional[str]         = None
+    cpf_cnpj_destinatario   : Optional[str]         = None
+    valor_total             : Optional[str]         = None
+    status                  : Optional[str]         = None
+    motivo                  : Optional[str]         = None
+    data_emissao            : Optional[datetime]    = None
+    data_autorizacao        : Optional[datetime]    = None
+    modelo                  : Optional[str]         = None
+    ambiente                : Optional[str]         = None
+    xml                     : Optional[str]         = None
+    json_objeto_nfe         : Optional[str]         = None
+    tipo_emissao            : Optional[str]         = None
+    numero_lote             : Optional[str]         = None
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        empresa_dict = kwargs.pop(&#39;empresa&#39;, {})
+        empresa = Empresa.from_json(**empresa_dict)
+        
+        if data_emissao := kwargs.pop(&#39;data_emissao&#39;, None):
+            data_emissao = parser.parse(data_emissao, dayfirst=True)
+        
+        if data_autorizacao := kwargs.pop(&#39;data_autorizacao&#39;, None):
+            data_autorizacao = parser.parse(data_autorizacao, dayfirst=True)
+        
+        return cls(
+            empresa=empresa,
+            data_emissao=data_emissao, 
+            data_autorizacao=data_autorizacao, 
+            **kwargs
+        )</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.NotaFiscal.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+<dt id="pysisnoapi.NotaFiscal.ambiente"><code class="name">var <span class="ident">ambiente</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.chave_acesso"><code class="name">var <span class="ident">chave_acesso</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.cpf_cnpj_destinatario"><code class="name">var <span class="ident">cpf_cnpj_destinatario</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.data_autorizacao"><code class="name">var <span class="ident">data_autorizacao</span> : Optional[datetime.datetime]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.data_emissao"><code class="name">var <span class="ident">data_emissao</span> : Optional[datetime.datetime]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.empresa"><code class="name">var <span class="ident">empresa</span> : Optional[<a title="pysisnoapi.Empresa" href="#pysisnoapi.Empresa">Empresa</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.id"><code class="name">var <span class="ident">id</span> : Optional[int]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.json_objeto_nfe"><code class="name">var <span class="ident">json_objeto_nfe</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.modelo"><code class="name">var <span class="ident">modelo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.motivo"><code class="name">var <span class="ident">motivo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.nome_destinatario"><code class="name">var <span class="ident">nome_destinatario</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.numero_lote"><code class="name">var <span class="ident">numero_lote</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.numero_nota"><code class="name">var <span class="ident">numero_nota</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.protocolo"><code class="name">var <span class="ident">protocolo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.serie"><code class="name">var <span class="ident">serie</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.status"><code class="name">var <span class="ident">status</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.tipo"><code class="name">var <span class="ident">tipo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.tipo_emissao"><code class="name">var <span class="ident">tipo_emissao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.uf_destinatario"><code class="name">var <span class="ident">uf_destinatario</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.valor_total"><code class="name">var <span class="ident">valor_total</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.xml"><code class="name">var <span class="ident">xml</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="pysisnoapi.NotaFiscal.from_json"><code class="name flex">
+<span>def <span class="ident">from_json</span></span>(<span>**kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1610,20 +1943,23 @@ Default is ''</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def asdict(self):
-    return {
-        &#34;serie&#34;             : self.serie,
-        &#34;operacao&#34;          : self.operacao,
-        &#34;natureza_operacao&#34; : self.natureza_operacao,
-        &#34;modelo&#34;            : self.modelo,
-        &#34;finalidade&#34;        : self.finalidade,
-        &#34;ambiente&#34;          : self.ambiente,
-        &#34;cliente&#34;           : self.cliente.asdict(),
-        &#34;produtos&#34;          : [p.asdict() for p in self.produtos],
-        &#34;pedido&#34;            : self.pedido.asdict(),
-        &#34;data_entrada_saida&#34;: self.data_entrada_saida,
-        &#34;data_emissao&#34;      : self.data_emissao,
-    }</code></pre>
+<pre><code class="python">@classmethod
+def from_json(cls, **kwargs):
+    empresa_dict = kwargs.pop(&#39;empresa&#39;, {})
+    empresa = Empresa.from_json(**empresa_dict)
+    
+    if data_emissao := kwargs.pop(&#39;data_emissao&#39;, None):
+        data_emissao = parser.parse(data_emissao, dayfirst=True)
+    
+    if data_autorizacao := kwargs.pop(&#39;data_autorizacao&#39;, None):
+        data_autorizacao = parser.parse(data_autorizacao, dayfirst=True)
+    
+    return cls(
+        empresa=empresa,
+        data_emissao=data_emissao, 
+        data_autorizacao=data_autorizacao, 
+        **kwargs
+    )</code></pre>
 </details>
 </dd>
 </dl>
@@ -1990,32 +2326,49 @@ Passar percentual quando tributado pela alíquota ou em reais quando tributado p
 </dd>
 <dt id="pysisnoapi.Uf"><code class="flex name class">
 <span>class <span class="ident">Uf</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>codigo_ibge: Optional[str] = None, sigla: Optional[str] = None, descricao: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Uf(codigo_ibge: Optional[str] = None, sigla: Optional[str] = None, descricao: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Uf:
-    # TODO: Até o dia 10/05/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
-    
-    def __init__(self, **kwargs):
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-        self.codigo_ibge = kwargs.get(&#34;codigo_ibge&#34;, &#39;&#39;)   # TODO: 0 ?
-        self.sigla       = kwargs.get(&#34;sigla&#34;, &#39;&#39;)
-        self.descricao   = kwargs.get(&#34;descricao&#34;, &#39;&#39;)
+<pre><code class="python">@dataclass
+class Uf(BaseClass):
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    # TODO: Até o dia 01/06/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
+    codigo_ibge: Optional[str]  = None
+    sigla      : Optional[str]  = None
+    descricao  : Optional[str]  = None
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
+    @classmethod
+    def from_json(cls, **kwargs):
+        return cls(**kwargs)</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></li>
+</ul>
+<h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.Uf.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+<dt id="pysisnoapi.Uf.codigo_ibge"><code class="name">var <span class="ident">codigo_ibge</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Uf.descricao"><code class="name">var <span class="ident">descricao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Uf.sigla"><code class="name">var <span class="ident">sigla</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="pysisnoapi.Uf.from_json"><code class="name flex">
+<span>def <span class="ident">from_json</span></span>(<span>**kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2023,13 +2376,20 @@ Passar percentual quando tributado pela alíquota ou em reais quando tributado p
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def asdict(self):
-    dados = self.__dict__
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
+<pre><code class="python">@classmethod
+def from_json(cls, **kwargs):
+    return cls(**kwargs)</code></pre>
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></b></code>:
+<ul class="hlist">
+<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -2049,16 +2409,26 @@ Passar percentual quando tributado pela alíquota ou em reais quando tributado p
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="pysisnoapi.alterar_emissor" href="#pysisnoapi.alterar_emissor">alterar_emissor</a></code></li>
-<li><code><a title="pysisnoapi.requires_keys" href="#pysisnoapi.requires_keys">requires_keys</a></code></li>
+<li><code><a title="pysisnoapi.alterar_empresa" href="#pysisnoapi.alterar_empresa">alterar_empresa</a></code></li>
+<li><code><a title="pysisnoapi.dict_factory" href="#pysisnoapi.dict_factory">dict_factory</a></code></li>
+<li><code><a title="pysisnoapi.requires_emissor" href="#pysisnoapi.requires_emissor">requires_emissor</a></code></li>
+<li><code><a title="pysisnoapi.requires_empresa" href="#pysisnoapi.requires_empresa">requires_empresa</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
+<h4><code><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="pysisnoapi.Cfop" href="#pysisnoapi.Cfop">Cfop</a></code></h4>
 <ul class="">
-<li><code><a title="pysisnoapi.Cfop.asdict" href="#pysisnoapi.Cfop.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Cfop.aplicacao" href="#pysisnoapi.Cfop.aplicacao">aplicacao</a></code></li>
+<li><code><a title="pysisnoapi.Cfop.codigo" href="#pysisnoapi.Cfop.codigo">codigo</a></code></li>
+<li><code><a title="pysisnoapi.Cfop.descricao" href="#pysisnoapi.Cfop.descricao">descricao</a></code></li>
 </ul>
 </li>
 <li>
@@ -2082,19 +2452,67 @@ Passar percentual quando tributado pela alíquota ou em reais quando tributado p
 <li>
 <h4><code><a title="pysisnoapi.Empresa" href="#pysisnoapi.Empresa">Empresa</a></code></h4>
 <ul class="">
-<li><code><a title="pysisnoapi.Empresa.asdict" href="#pysisnoapi.Empresa.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.ambiente" href="#pysisnoapi.Empresa.ambiente">ambiente</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.classificacao_nacional_atividades_economicas" href="#pysisnoapi.Empresa.classificacao_nacional_atividades_economicas">classificacao_nacional_atividades_economicas</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.cnpj" href="#pysisnoapi.Empresa.cnpj">cnpj</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.codigo_regime_especial_tributacao" href="#pysisnoapi.Empresa.codigo_regime_especial_tributacao">codigo_regime_especial_tributacao</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.csc" href="#pysisnoapi.Empresa.csc">csc</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.email" href="#pysisnoapi.Empresa.email">email</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.endereco" href="#pysisnoapi.Empresa.endereco">endereco</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.from_json" href="#pysisnoapi.Empresa.from_json">from_json</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.id" href="#pysisnoapi.Empresa.id">id</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.id_csc" href="#pysisnoapi.Empresa.id_csc">id_csc</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.informacoes_complementares" href="#pysisnoapi.Empresa.informacoes_complementares">informacoes_complementares</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.inscricao_estadual" href="#pysisnoapi.Empresa.inscricao_estadual">inscricao_estadual</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.inscricao_estadual_substituicao_tributaria" href="#pysisnoapi.Empresa.inscricao_estadual_substituicao_tributaria">inscricao_estadual_substituicao_tributaria</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.inscricao_municipal" href="#pysisnoapi.Empresa.inscricao_municipal">inscricao_municipal</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.nome_fantasia" href="#pysisnoapi.Empresa.nome_fantasia">nome_fantasia</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.porcentagem_icms_aproveitado" href="#pysisnoapi.Empresa.porcentagem_icms_aproveitado">porcentagem_icms_aproveitado</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.razao_social" href="#pysisnoapi.Empresa.razao_social">razao_social</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.regime_tributario" href="#pysisnoapi.Empresa.regime_tributario">regime_tributario</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.senha_portal_prefeitura" href="#pysisnoapi.Empresa.senha_portal_prefeitura">senha_portal_prefeitura</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.site" href="#pysisnoapi.Empresa.site">site</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.telefone" href="#pysisnoapi.Empresa.telefone">telefone</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.token" href="#pysisnoapi.Empresa.token">token</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.token_secret" href="#pysisnoapi.Empresa.token_secret">token_secret</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.utiliza_tributos_aproximados" href="#pysisnoapi.Empresa.utiliza_tributos_aproximados">utiliza_tributos_aproximados</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Endereco" href="#pysisnoapi.Endereco">Endereco</a></code></h4>
-<ul class="">
-<li><code><a title="pysisnoapi.Endereco.asdict" href="#pysisnoapi.Endereco.asdict">asdict</a></code></li>
+<ul class="two-column">
+<li><code><a title="pysisnoapi.Endereco.bairro" href="#pysisnoapi.Endereco.bairro">bairro</a></code></li>
+<li><code><a title="pysisnoapi.Endereco.cep" href="#pysisnoapi.Endereco.cep">cep</a></code></li>
+<li><code><a title="pysisnoapi.Endereco.codigo_municipio" href="#pysisnoapi.Endereco.codigo_municipio">codigo_municipio</a></code></li>
+<li><code><a title="pysisnoapi.Endereco.codigo_pais" href="#pysisnoapi.Endereco.codigo_pais">codigo_pais</a></code></li>
+<li><code><a title="pysisnoapi.Endereco.complemento" href="#pysisnoapi.Endereco.complemento">complemento</a></code></li>
+<li><code><a title="pysisnoapi.Endereco.descricao_municipio" href="#pysisnoapi.Endereco.descricao_municipio">descricao_municipio</a></code></li>
+<li><code><a title="pysisnoapi.Endereco.descricao_pais" href="#pysisnoapi.Endereco.descricao_pais">descricao_pais</a></code></li>
+<li><code><a title="pysisnoapi.Endereco.from_json" href="#pysisnoapi.Endereco.from_json">from_json</a></code></li>
+<li><code><a title="pysisnoapi.Endereco.id" href="#pysisnoapi.Endereco.id">id</a></code></li>
+<li><code><a title="pysisnoapi.Endereco.logradouro" href="#pysisnoapi.Endereco.logradouro">logradouro</a></code></li>
+<li><code><a title="pysisnoapi.Endereco.numero" href="#pysisnoapi.Endereco.numero">numero</a></code></li>
+<li><code><a title="pysisnoapi.Endereco.uf" href="#pysisnoapi.Endereco.uf">uf</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Ibpt" href="#pysisnoapi.Ibpt">Ibpt</a></code></h4>
-<ul class="">
-<li><code><a title="pysisnoapi.Ibpt.asdict" href="#pysisnoapi.Ibpt.asdict">asdict</a></code></li>
+<ul class="two-column">
+<li><code><a title="pysisnoapi.Ibpt.ativo" href="#pysisnoapi.Ibpt.ativo">ativo</a></code></li>
+<li><code><a title="pysisnoapi.Ibpt.codigo" href="#pysisnoapi.Ibpt.codigo">codigo</a></code></li>
+<li><code><a title="pysisnoapi.Ibpt.descricao" href="#pysisnoapi.Ibpt.descricao">descricao</a></code></li>
+<li><code><a title="pysisnoapi.Ibpt.estadual" href="#pysisnoapi.Ibpt.estadual">estadual</a></code></li>
+<li><code><a title="pysisnoapi.Ibpt.ex" href="#pysisnoapi.Ibpt.ex">ex</a></code></li>
+<li><code><a title="pysisnoapi.Ibpt.fonte" href="#pysisnoapi.Ibpt.fonte">fonte</a></code></li>
+<li><code><a title="pysisnoapi.Ibpt.from_json" href="#pysisnoapi.Ibpt.from_json">from_json</a></code></li>
+<li><code><a title="pysisnoapi.Ibpt.importados_federal" href="#pysisnoapi.Ibpt.importados_federal">importados_federal</a></code></li>
+<li><code><a title="pysisnoapi.Ibpt.municipal" href="#pysisnoapi.Ibpt.municipal">municipal</a></code></li>
+<li><code><a title="pysisnoapi.Ibpt.nacional_federal" href="#pysisnoapi.Ibpt.nacional_federal">nacional_federal</a></code></li>
+<li><code><a title="pysisnoapi.Ibpt.tipo" href="#pysisnoapi.Ibpt.tipo">tipo</a></code></li>
+<li><code><a title="pysisnoapi.Ibpt.unidade_federativa" href="#pysisnoapi.Ibpt.unidade_federativa">unidade_federativa</a></code></li>
+<li><code><a title="pysisnoapi.Ibpt.versao" href="#pysisnoapi.Ibpt.versao">versao</a></code></li>
+<li><code><a title="pysisnoapi.Ibpt.vigencia_fim" href="#pysisnoapi.Ibpt.vigencia_fim">vigencia_fim</a></code></li>
+<li><code><a title="pysisnoapi.Ibpt.vigencia_inicio" href="#pysisnoapi.Ibpt.vigencia_inicio">vigencia_inicio</a></code></li>
 </ul>
 </li>
 <li>
@@ -2124,13 +2542,36 @@ Passar percentual quando tributado pela alíquota ou em reais quando tributado p
 <li>
 <h4><code><a title="pysisnoapi.Municipio" href="#pysisnoapi.Municipio">Municipio</a></code></h4>
 <ul class="">
-<li><code><a title="pysisnoapi.Municipio.asdict" href="#pysisnoapi.Municipio.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Municipio.codigo_ibge" href="#pysisnoapi.Municipio.codigo_ibge">codigo_ibge</a></code></li>
+<li><code><a title="pysisnoapi.Municipio.descricao" href="#pysisnoapi.Municipio.descricao">descricao</a></code></li>
+<li><code><a title="pysisnoapi.Municipio.from_json" href="#pysisnoapi.Municipio.from_json">from_json</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.NotaFiscal" href="#pysisnoapi.NotaFiscal">NotaFiscal</a></code></h4>
 <ul class="">
-<li><code><a title="pysisnoapi.NotaFiscal.asdict" href="#pysisnoapi.NotaFiscal.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.ambiente" href="#pysisnoapi.NotaFiscal.ambiente">ambiente</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.chave_acesso" href="#pysisnoapi.NotaFiscal.chave_acesso">chave_acesso</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.cpf_cnpj_destinatario" href="#pysisnoapi.NotaFiscal.cpf_cnpj_destinatario">cpf_cnpj_destinatario</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.data_autorizacao" href="#pysisnoapi.NotaFiscal.data_autorizacao">data_autorizacao</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.data_emissao" href="#pysisnoapi.NotaFiscal.data_emissao">data_emissao</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.empresa" href="#pysisnoapi.NotaFiscal.empresa">empresa</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.from_json" href="#pysisnoapi.NotaFiscal.from_json">from_json</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.id" href="#pysisnoapi.NotaFiscal.id">id</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.json_objeto_nfe" href="#pysisnoapi.NotaFiscal.json_objeto_nfe">json_objeto_nfe</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.modelo" href="#pysisnoapi.NotaFiscal.modelo">modelo</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.motivo" href="#pysisnoapi.NotaFiscal.motivo">motivo</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.nome_destinatario" href="#pysisnoapi.NotaFiscal.nome_destinatario">nome_destinatario</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.numero_lote" href="#pysisnoapi.NotaFiscal.numero_lote">numero_lote</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.numero_nota" href="#pysisnoapi.NotaFiscal.numero_nota">numero_nota</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.protocolo" href="#pysisnoapi.NotaFiscal.protocolo">protocolo</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.serie" href="#pysisnoapi.NotaFiscal.serie">serie</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.status" href="#pysisnoapi.NotaFiscal.status">status</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.tipo" href="#pysisnoapi.NotaFiscal.tipo">tipo</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.tipo_emissao" href="#pysisnoapi.NotaFiscal.tipo_emissao">tipo_emissao</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.uf_destinatario" href="#pysisnoapi.NotaFiscal.uf_destinatario">uf_destinatario</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.valor_total" href="#pysisnoapi.NotaFiscal.valor_total">valor_total</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.xml" href="#pysisnoapi.NotaFiscal.xml">xml</a></code></li>
 </ul>
 </li>
 <li>
@@ -2172,7 +2613,10 @@ Passar percentual quando tributado pela alíquota ou em reais quando tributado p
 <li>
 <h4><code><a title="pysisnoapi.Uf" href="#pysisnoapi.Uf">Uf</a></code></h4>
 <ul class="">
-<li><code><a title="pysisnoapi.Uf.asdict" href="#pysisnoapi.Uf.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Uf.codigo_ibge" href="#pysisnoapi.Uf.codigo_ibge">codigo_ibge</a></code></li>
+<li><code><a title="pysisnoapi.Uf.descricao" href="#pysisnoapi.Uf.descricao">descricao</a></code></li>
+<li><code><a title="pysisnoapi.Uf.from_json" href="#pysisnoapi.Uf.from_json">from_json</a></code></li>
+<li><code><a title="pysisnoapi.Uf.sigla" href="#pysisnoapi.Uf.sigla">sigla</a></code></li>
 </ul>
 </li>
 </ul>
