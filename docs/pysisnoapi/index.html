@@ -378,7 +378,7 @@ class Issqn:
 @dataclass
 class Municipio(BaseClass):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
-    codigo_ibge : Optional[str] = None
+    codigo_ibge : Optional[int] = None
     descricao   : Optional[str] = None
     
     @classmethod
@@ -1733,10 +1733,10 @@ def from_json(cls, **kwargs):
 </dd>
 <dt id="pysisnoapi.Municipio"><code class="flex name class">
 <span>class <span class="ident">Municipio</span></span>
-<span>(</span><span>codigo_ibge: Optional[str] = None, descricao: Optional[str] = None)</span>
+<span>(</span><span>codigo_ibge: Optional[int] = None, descricao: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Municipio(codigo_ibge: Optional[str] = None, descricao: Optional[str] = None)</p></div>
+<div class="desc"><p>Municipio(codigo_ibge: Optional[int] = None, descricao: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1744,7 +1744,7 @@ def from_json(cls, **kwargs):
 <pre><code class="python">@dataclass
 class Municipio(BaseClass):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
-    codigo_ibge : Optional[str] = None
+    codigo_ibge : Optional[int] = None
     descricao   : Optional[str] = None
     
     @classmethod
@@ -1757,7 +1757,7 @@ class Municipio(BaseClass):
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.Municipio.codigo_ibge"><code class="name">var <span class="ident">codigo_ibge</span> : Optional[str]</code></dt>
+<dt id="pysisnoapi.Municipio.codigo_ibge"><code class="name">var <span class="ident">codigo_ibge</span> : Optional[int]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
