@@ -109,31 +109,43 @@ class ObjetoEmissaoNFSe:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
         return dados if len(dados) > 0 else None
 
-class NotaFiscalServico:
-    def __init__(self, *args, **kwargs):
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-        self.id                     = kwargs.get("id", 0)
-        self.empresa                = kwargs.get("empresa", None)
-        self.uuid                   = kwargs.get("uuid", '')
-        self.modelo                 = kwargs.get("modelo", '')
-        self.status                 = kwargs.get("status", '')
-        self.motivo                 = kwargs.get("motivo", '')
-        self.numero_nota            = kwargs.get("numero_nota", '')
-        self.codigo_verificacao     = kwargs.get("codigo_verificacao", '')
-        self.protocolo              = kwargs.get("protocolo", '')
-        self.nome_destinatario      = kwargs.get("nome_destinatario", '')
-        self.uf_destinatario        = kwargs.get("uf_destinatario", '')
-        self.cpf_cnpj_destinatario  = kwargs.get("cpf_cnpj_destinatario", '')
-        self.valor_total            = kwargs.get("valor_total", '')
-        self.data_emissao           = kwargs.get("data_emissao", '')
-        self.data_competencia       = kwargs.get("data_competencia", '')
-        self.uf_prestacao           = kwargs.get("uf_prestacao", None)
-        self.municipio_prestacao    = kwargs.get("municipio_prestacao", None)
-        self.ambiente               = kwargs.get("ambiente", '')
+@dataclass
+class NotaFiscalServico(BaseClass):
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     
-    def asdict(self,):
-        return self.__dict__
+    id                   : Optional[int]        = None
+    empresa              : Optional[Empresa]    = None
+    uuid                 : Optional[str]        = None
+    modelo               : Optional[str]        = None
+    status               : Optional[str]        = None
+    motivo               : Optional[str]        = None
+    numero_nota          : Optional[str]        = None
+    codigo_verificacao   : Optional[str]        = None
+    protocolo            : Optional[str]        = None
+    nome_destinatario    : Optional[str]        = None
+    uf_destinatario      : Optional[str]        = None
+    cpf_cnpj_destinatario: Optional[str]        = None
+    valor_total          : Optional[str]        = None
+    data_emissao         : Optional[str]        = None
+    data_competencia     : Optional[str]        = None
+    uf_prestacao         : Optional[Uf]         = None
+    municipio_prestacao  : Optional[Municipio]  = None
+    ambiente             : Optional[str]        = None
+    json_objeto_nfse     : Optional[str]        = None  # TODO: Não consta na documentação da API
     
+    @classmethod
+    def from_json(cls, **kwargs):
+        empresa_dict = kwargs.pop('empresa', {})
+        empresa = Empresa.from_json(**empresa_dict)
+        
+        uf_dict = kwargs.pop('uf_prestacao', {})
+        uf      = Uf.from_json(**uf_dict)
+        
+        municipio_dict = kwargs.pop('municipio_prestacao', {})
+        municipio = Municipio.from_json(**municipio_dict)
+        
+        return cls(empresa=empresa, uf_prestacao=uf, municipio_prestacao=municipio, **kwargs)
+        
 class PaginaNotaServico:
     def __init__(self, *args, **kwargs):
         # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
@@ -177,59 +189,82 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
             return response.text
 
 @requires_emissor
-def buscar_notas(cnpj:str, data_inicio:datetime, data_fim:datetime, ambiente:str='1', status:str='aprovado', texto:str='', pagina:str='1', qtd_por_pagina:str='10', ordencao:str="numero_nota", tipo_ordenacao:str="desc", *args, **kwargs) -> list:
-    """Recupera as notas de uma determinada empresa.
+def buscar_notas(cnpj:str=None, data_inicio:datetime=None, data_fim:datetime=None, ambiente:str=None, status:str=None, texto:str=None, pagina:str=None, qtd_por_pagina:str=None, ordencao:str=None, tipo_ordenacao:str=None, *args, **kwargs) -> List[NotaFiscalServico]:
+    """Recupera as notas fiscais de serviço.
 
     Args:
-        cnpj (str): CNPJ Empresa apenas números
-        data_inicio (datetime): Início intervalo de datas (dd/MM/yyyy HH:mm:ss)
-        data_fim (datetime): Fim intervalo de datas (dd/MM/yyyy HH:mm:ss)
+        cnpj (str): CNPJ Empresa (apenas números).
+        
+        data_inicio (datetime): Início intervalo de datas (dd/MM/yyyy HH:mm:ss).
+        
+        data_fim (datetime): Fim intervalo de datas (dd/MM/yyyy HH:mm:ss).
+        
         ambiente (str, optional):  
             1: Produção  
             2: Homologação
-        status (str, optional): Status da NFSe. Defaults to 'aprovado'.  
-            aprovado  
-            reprovado  
-            contingencia  
-            cancelado  
-            Em digitação
-        texto (str, optional): Texto de busca livre. Defaults to ''.
-        pagina (int, optional): Número da página. Defaults to 1.
-        qtd_por_pagina (int, optional): Quantidade de notas por página. Defaults to 10.
-        ordencao (str, optional): Campo para ordenação das notas. Defaults to "numero_nota".  
-            empresa  
-            ambiente  
-            numero_nota  
-            status  
-            data_emissao  
-            nome_destinatario  
-            uf_destinatario  
-            valor_total
-        tipo_ordenacao (str, optional): Tipo de Ordenação. Defaults to "desc".  
-            desc  
-            asc  
+            
+        status (str, optional): Status da NFSe.
+            - aprovado  
+            - reprovado  
+            - contingencia    
+            - cancelado  
+            - Em digitação
+            
+        texto (str, optional): Texto de busca livre.
+        
+        pagina (int, optional): Número da página.
+        
+        qtd_por_pagina (int, optional): Quantidade de notas por página.
+        
+        ordencao (str, optional): Campo para ordenação das notas.
+            - empresa  
+            - ambiente  
+            - numero_nota  
+            - status  
+            - data_emissao  
+            - nome_destinatario  
+            - uf_destinatario  
+            - valor_total
+            
+        tipo_ordenacao (str, optional): Tipo de Ordenação.
+            - desc  
+            - asc  
+    
     Returns:
-        list: Lista com todas as NFSe
+        List[NotaFiscalServico]: Lista com todas as NFSe
     """
+    
     headers = HEADERS
-    headers['CNPJ Empresa']  = cnpj
-    headers['dataInicio']    = data_inicio.strftime("%d/%m/%Y %H:%M:%S")
-    headers['dataFim']       = data_fim.strftime("%d/%m/%Y %H:%M:%S")
-    headers['ambiente']      = ambiente
-    headers['status']        = status
-    headers['textoBusca']    = texto
-    headers['pagina']        = pagina           # Na documentação diz que deve ser inteiro, mas "Header part (1) from ('pagina', 1) must be of type str or bytes, not <class 'int'>"
-    headers['qtdPorPagina']  = qtd_por_pagina   # Na documentação diz que deve ser inteiro, mas "Header part (10) from ('qtdPorPagina', 10) must be of type str or bytes, not <class 'int'>"
-    headers['ordenacao']     = ordencao
-    headers['tipoOrdenacao'] = tipo_ordenacao
+    
+    if cnpj:
+        headers['CNPJ Empresa'] = cnpj
+    if data_inicio:
+        headers['dataInicio'] = data_inicio.strftime("%d/%m/%Y %H:%M:%S")
+    if data_fim:
+        headers['dataFim'] = data_fim.strftime("%d/%m/%Y %H:%M:%S")
+    if ambiente:
+        headers['ambiente'] = ambiente
+    if status:
+        headers['status'] = status
+    if texto:
+        headers['textoBusca'] = texto
+    if pagina:
+        headers['pagina'] = pagina                  # TODO: Na documentação diz que deve ser inteiro, mas "Header part (1) from ('pagina', 1) must be of type str or bytes, not <class 'int'>"
+    if qtd_por_pagina:
+        headers['qtdPorPagina'] = qtd_por_pagina    # TODO: Na documentação diz que deve ser inteiro, mas "Header part (10) from ('qtdPorPagina', 10) must be of type str or bytes, not <class 'int'>"
+    if ordencao:
+        headers['ordenacao'] = ordencao
+    if tipo_ordenacao:
+        headers['tipoOrdenacao'] = tipo_ordenacao
 
     url = f'{URL}/nfse'
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
         case 200:
-            # TODO: Retornar uma lista de objetos "NFSe"
-            return response.json().get('dados')
+            json_data = response.json().get('dados')
+            nfses = [NotaFiscalServico.from_json(**d) for d in json_data['itens']]
+            return nfses
         case _:
             return response.text
 
