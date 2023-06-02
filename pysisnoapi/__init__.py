@@ -155,154 +155,91 @@ class DeclaracaoImportacaoAdicao:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
         return dados if len(dados) > 0 else None
 
-class Empresa:
+@dataclass
+class Empresa(BaseClass):
     """
         Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
         Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
         Em resumo: não há necessidade de se preocupar com os campos, caso não saiba algum deles, pois, eles serão preenchidos automaticamente com aquilo que vier do endpoint.
     """
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    id                                          : Optional[str]         = None
+    token                                       : Optional[str]         = None
+    token_secret                                : Optional[str]         = None
+    cnpj                                        : Optional[str]         = None
+    nome_fantasia                               : Optional[str]         = None
+    razao_social                                : Optional[str]         = None
+    endereco                                    : Optional['Endereco']  = None
+    telefone                                    : Optional[str]         = None
+    inscricao_estadual                          : Optional[str]         = None
+    inscricao_municipal                         : Optional[str]         = None
+    inscricao_estadual_substituicao_tributaria  : Optional[str]         = None
+    regime_tributario                           : Optional[str]         = None
+    classificacao_nacional_atividades_economicas: Optional[str]         = None
+    ambiente                                    : Optional[str]         = None
+    id_csc                                      : Optional[str]         = None
+    csc                                         : Optional[str]         = None
+    codigo_regime_especial_tributacao           : Optional[str]         = None
+    porcentagem_icms_aproveitado                : Optional[str]         = None
+    site                                        : Optional[str]         = None
+    email                                       : Optional[str]         = None
+    utiliza_tributos_aproximados                : Optional[bool]        = None  # TODO: Não consta na documentação da API
+    informacoes_complementares                  : Optional[str]         = None  # TODO: Não consta na documentação da API
+    senha_portal_prefeitura                     : Optional[str]         = None  # TODO: Não consta na documentação da API
     
-    def __init__(self, id, **kwargs):
-        """
-        Construtor da Classe.
-
-        Args:
-            id (int): ID da empresa registrada na plataforma SISNO.  
-                Default is 0
-            token (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API.  
-                Default is ''  
-            token_secret (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".
-                Default is ''
-            cnpj (str): CNPJ da Empresa.
-                Default is ''
-            nome_fantasia (str): Nome Fantasia da Empresa.
-                Default is ''
-            razao_social (str): Razão Social da Empresa.
-                Default is ''
-            endereco (str): Endereço da Empresa.
-                Default is, None
-            telefone (str): Telefone da Empresa.
-                Default is ''
-            inscricao_estadual (str): Inscrição Estadual da Empresa.
-                Default is ''
-            inscricao_municipal (str): Inscrição Municipal da Empresa.
-                Default is ''
-            inscricao_estadual_substituicao_tributaria (str): .
-                Default is ''
-            regime_tributario (str): Regime Tributário da Empresa (Lucro Real, Lucro Presumido, Simples Nacional, ...).
-                Default is ''
-            classificacao_nacional_atividades_economicas (str): CNAE.
-                Default is ''
-            ambiente (str): Produção ou Homologação.
-                Default is ''
-            id_csc (str): ID do Código de Segurança do Contribuinte.
-                Default is ''
-            csc (str): Código de Segurança do Contribuinte.
-                Default is ''
-            codigo_regime_especial_tributacao (str): Código do Regime Especial de Tributação (Microempresa municipal, Estimativa, Sociedade Profissional, Cooperativa, Microempresario individual MEI, Microempresário e empresa de pequeno porte).
-                Default is ''
-            porcentagem_icms_aproveitado (float): % ICMS Aproveitado.
-                Default is 0.00
-            site (str): Site da Empresa.
-                Default is ''
-            email (str): E-mail da Empresa.
-                Default is ''
-        """
-
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-
-        self.id                                             = kwargs.get("id", 0)
-        self.token                                          = kwargs.get("token", '')
-        self.token_secret                                   = kwargs.get("token_secret", '')
-        self.cnpj                                           = kwargs.get("cnpj", '')
-        self.nome_fantasia                                  = kwargs.get("nome_fantasia", '')
-        self.razao_social                                   = kwargs.get("razao_social", '')
-        self.endereco                                       = kwargs.get("endereco	", None)
-        self.telefone                                       = kwargs.get("telefone", '')
-        self.inscricao_estadual                             = kwargs.get("inscricao_estadual", '')
-        self.inscricao_municipal                            = kwargs.get("inscricao_municipal", '')
-        self.inscricao_estadual_substituicao_tributaria     = kwargs.get("inscricao_estadual_substituicao_tributaria", '')
-        self.regime_tributario                              = kwargs.get("regime_tributario", '')
-        self.classificacao_nacional_atividades_economicas   = kwargs.get("classificacao_nacional_atividades_economicas", '')
-        self.ambiente                                       = kwargs.get("ambiente", '')
-        self.id_csc                                         = kwargs.get("id_csc", '')
-        self.csc                                            = kwargs.get("csc", '')
-        self.codigo_regime_especial_tributacao              = kwargs.get("codigo_regime_especial_tributacao", '')
-        self.porcentagem_icms_aproveitado                   = kwargs.get("porcentagem_icms_aproveitado", 0)
-        self.site                                           = kwargs.get("site", '')
-        self.email                                          = kwargs.get("email", '')
-    
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
-
-class Endereco:
-    def __init__(self, codigo_pais, descricao_pais, bairro, logradouro, numero, **kwargs):
-        """
-        Construtor da Classe.
-
-        Args:
-            codigo_pais (str): Código do Pais (55 para Brasil).
-            
-            descricao_pais (str): Nome do País.
-
-            bairro (str): Bairro do Endereço.
-            
-            logradouro (str): Endereço em si (sugestão: utilize exatamente aquilo que informado ao consultar o CEP nos correios).
-            
-            numero (str): Número do Endereço (apenas números).
-
-            uf (str): Default is ''
-            
-            codigo_municipio (str): Default is ''
-            
-            descricao_municipio (str): Default is ''
-            
-            cep (str): Default is ''
-            
-            complemento (str): Default is ''
-        """
-
-        self.codigo_pais            = codigo_pais
-        self.descricao_pais         = descricao_pais
-        self.uf                     = kwargs.get("uf", '')
-        self.codigo_municipio       = kwargs.get("codigo_municipio", '')
-        self.descricao_municipio    = kwargs.get("descricao_municipio", '')
-        self.cep                    = kwargs.get("cep", '')                     # TODO: Apenas números
-        self.bairro                 = bairro
-        self.logradouro             = logradouro
-        self.numero                 = numero                                    # TODO: Apenas números
-        self.complemento            = kwargs.get("complemento", '')
-
-    def asdict(self):
-        # Quando o país não for Brasil, ignorar os campos [uf, codigo_municipio, descricao_municipio, cep]
-
-        if self.codigo_pais == "55":
-            dados = {
-                "codigo_pais"        : self.codigo_pais,
-                "descricao_pais"     : self.descricao_pais,
-                "uf"                 : self.uf,
-                "codigo_municipio"   : self.codigo_municipio,
-                "descricao_municipio": self.descricao_municipio,
-                "cep"                : self.cep,
-                "bairro"             : self.bairro,
-                "logradouro"         : self.logradouro,
-                "numero"             : self.numero,
-                "complemento"        : self.complemento
-            }
-        else:
-            dados = {
-                "codigo_pais"        : self.codigo_pais,
-                "descricao_pais"     : self.descricao_pais,
-                "bairro"             : self.bairro,
-                "logradouro"         : self.logradouro,
-                "numero"             : self.numero,
-                "complemento"        : self.complemento
-            }
+    @classmethod
+    def from_json(cls, **kwargs):
+        endereco_dict = kwargs.pop('endereco', {})
+        endereco = Endereco.from_json(**endereco_dict)
         
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+        return cls(endereco=endereco, **kwargs)
+
+@dataclass
+class Endereco(BaseClass):
+    id                 : int
+    codigo_pais        : str
+    descricao_pais     : str
+    bairro             : str
+    logradouro         : str
+    numero             : str
+    uf                 : Optional[str] = None
+    codigo_municipio   : Optional[str] = None
+    descricao_municipio: Optional[str] = None
+    cep                : Optional[str] = None
+    complemento        : Optional[str] = None
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        return cls(**kwargs)
+    
+    # def asdict(self):
+    #     # Quando o país não for Brasil, ignorar os campos [uf, codigo_municipio, descricao_municipio, cep]
+
+    #     if self.codigo_pais == "55":
+    #         dados = {
+    #             "codigo_pais"        : self.codigo_pais,
+    #             "descricao_pais"     : self.descricao_pais,
+    #             "uf"                 : self.uf,
+    #             "codigo_municipio"   : self.codigo_municipio,
+    #             "descricao_municipio": self.descricao_municipio,
+    #             "cep"                : self.cep,
+    #             "bairro"             : self.bairro,
+    #             "logradouro"         : self.logradouro,
+    #             "numero"             : self.numero,
+    #             "complemento"        : self.complemento
+    #         }
+    #     else:
+    #         dados = {
+    #             "codigo_pais"        : self.codigo_pais,
+    #             "descricao_pais"     : self.descricao_pais,
+    #             "bairro"             : self.bairro,
+    #             "logradouro"         : self.logradouro,
+    #             "numero"             : self.numero,
+    #             "complemento"        : self.complemento
+    #         }
+        
+    #     dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
+    #     return dados if len(dados) > 0 else None
 
 @dataclass
 class Ibpt(BaseClass):
@@ -407,6 +344,10 @@ class Municipio(BaseClass):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo_ibge : Optional[str] = None
     descricao   : Optional[str] = None
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        return cls(**kwargs)
 
 class NotaFiscal:
     def __init__(self, **kwargs):
