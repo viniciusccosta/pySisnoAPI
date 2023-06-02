@@ -15,7 +15,6 @@
 
 # ======================================================================================================================
 # Imports:
-import json
 import os
 import functools
 from dotenv import load_dotenv
@@ -26,7 +25,7 @@ from typing import Optional, List, Tuple
 # Globals:
 load_dotenv()
 
-URL     = "https://homolog.sisno.com.br/nfe-service"
+URL     = "https://homolog.arkaonline.com.br/nfe-service"
 HEADERS = {
     "token-emissor"         : os.getenv("token-emissor", ""),
     "token-secret-emissor"  : os.getenv("token-secret-emissor", ""),
@@ -52,13 +51,12 @@ def requires_keys(func):
     return wrapper
 
 # ======================================================================================================================
+# Classes:
 @dataclass
 class BaseClass:
     def as_filtered_dict(self):
         return asdict(self, dict_factory=dict_factory)
-
-# ======================================================================================================================
-# Classes:
+    
 @dataclass
 class Cfop(BaseClass):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios

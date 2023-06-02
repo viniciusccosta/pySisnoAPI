@@ -83,7 +83,6 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> List[Ibpt]:
     Returns:
         list[dict]: Uma lista de objetos Ibpt representando os IBPTs.
     """
-    # TODO: Retonar uma lista de objetos "Ibpt"s
 
     if len(cod_desc) < 4:
         raise Exception("Código ou Descrição precisa ter no mínimo 4 caracteres")
@@ -104,9 +103,5 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> List[Ibpt]:
             return []
         case _:
             return
-
-# ======================================================================================================================
-if __name__ == "__main__":
-    pass
 
 # ======================================================================================================================
