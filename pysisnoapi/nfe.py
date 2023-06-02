@@ -165,8 +165,36 @@ def validar(*args, **kwargs):
     raise NotImplementedError
 
 @requires_emissor
-def listar(*args, **kwargs):
-    raise NotImplementedError
+def listar(qtd:str = None, pagina:str = None, *args, **kwargs) -> List[NotaFiscal]:
+    """Recupera as notas fiscais.
+    
+    No Distrito Federal (DF), antes de 01/2023, as notas fiscais de serviço eram emitidas como NFe.
+
+    Args:
+        qtd (str, optional): Quantidade de notas por página.
+        pagina (str, optional): Página a ser retornada.
+
+    Returns:
+        List[NotaFiscal]: Lista contendo as notas fiscais.
+    """
+    headers = HEADERS.copy()
+    params   = {}
+    
+    if qtd:
+        params["qtd"] = qtd
+    if pagina:
+        params["pagina"] = pagina
+    
+    url = f'{URL}/nfe/lista-notas'
+    response = requests.get(url, params, headers=headers)
+    
+    match (response.status_code):
+        case 200:
+            json_data = response.json().get('dados')
+            nfes = [NotaFiscal.from_json(**d) for d in json_data['itens']]
+            return nfes
+        case _:
+            return response.text
 
 @requires_emissor
 def buscar_notas(*args, **kwargs):
