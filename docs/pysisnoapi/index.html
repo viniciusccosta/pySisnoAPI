@@ -49,6 +49,8 @@ import functools
 from dotenv import load_dotenv
 from dataclasses import dataclass, asdict
 from typing import Optional, List, Tuple, Dict
+from datetime import datetime
+from dateutil import parser
 
 # ======================================================================================================================
 # Globals:
@@ -383,35 +385,48 @@ class Municipio(BaseClass):
     def from_json(cls, **kwargs):
         return cls(**kwargs)
 
+@dataclass
 class NotaFiscal:
-    def __init__(self, **kwargs):
-        self.empresa                 = kwargs.get(&#34;empresa&#34;, None)              # string
-        self.serie                   = kwargs.get(&#34;serie&#34;, None)                # string
-        self.operacao                = kwargs.get(&#34;operacao&#34;, None)             # string (0: Entrada, 1: Saída)
-        self.natureza_operacao       = kwargs.get(&#34;natureza_operacao&#34;, None)    # string
-        self.modelo                  = kwargs.get(&#34;modelo&#34;, None)               # string (55: NF-e, 65: NFC-e)
-        self.finalidade              = kwargs.get(&#34;finalidade&#34;, None)           # string (1: Normal, 2: Complementar, 3: Ajuste, 4: Devolução ou Retorno)
-        self.ambiente                = kwargs.get(&#34;ambiente&#34;, None)             # string (1: Produção, 2: Homologação)
-        self.cliente                 = kwargs.get(&#34;cliente&#34;, None)              # Objeto CLIENTE
-        self.produtos                = kwargs.get(&#34;produtos&#34;, None)             # list[PRODUTO]
-        self.pedido                  = kwargs.get(&#34;pedido&#34;, None)               # Objeto PEDIDO
-        self.data_entrada_saida      = kwargs.get(&#34;data_entrada_saida&#34;, None)   # string (dd/MM/yyyy HH:mm:ss)
-        self.data_emissao            = kwargs.get(&#34;data_emissao&#34;, None)         # string (dd/MM/yyyy HH:mm:ss)
-
-    def asdict(self):
-        return {
-            &#34;serie&#34;             : self.serie,
-            &#34;operacao&#34;          : self.operacao,
-            &#34;natureza_operacao&#34; : self.natureza_operacao,
-            &#34;modelo&#34;            : self.modelo,
-            &#34;finalidade&#34;        : self.finalidade,
-            &#34;ambiente&#34;          : self.ambiente,
-            &#34;cliente&#34;           : self.cliente.asdict(),
-            &#34;produtos&#34;          : [p.asdict() for p in self.produtos],
-            &#34;pedido&#34;            : self.pedido.asdict(),
-            &#34;data_entrada_saida&#34;: self.data_entrada_saida,
-            &#34;data_emissao&#34;      : self.data_emissao,
-        }
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    id                      : Optional[int]         = None
+    empresa                 : Optional[&#39;Empresa&#39;]   = None
+    tipo                    : Optional[str]         = None
+    serie                   : Optional[str]         = None
+    numero_nota             : Optional[str]         = None
+    chave_acesso            : Optional[str]         = None
+    protocolo               : Optional[str]         = None
+    nome_destinatario       : Optional[str]         = None
+    uf_destinatario         : Optional[str]         = None
+    cpf_cnpj_destinatario   : Optional[str]         = None
+    valor_total             : Optional[str]         = None
+    status                  : Optional[str]         = None
+    motivo                  : Optional[str]         = None
+    data_emissao            : Optional[datetime]    = None
+    data_autorizacao        : Optional[datetime]    = None
+    modelo                  : Optional[str]         = None
+    ambiente                : Optional[str]         = None
+    xml                     : Optional[str]         = None
+    json_objeto_nfe         : Optional[str]         = None
+    tipo_emissao            : Optional[str]         = None
+    numero_lote             : Optional[str]         = None
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        empresa_dict = kwargs.pop(&#39;empresa&#39;, {})
+        empresa = Empresa.from_json(**empresa_dict)
+        
+        if data_emissao := kwargs.pop(&#39;data_emissao&#39;, None):
+            data_emissao = parser.parse(data_emissao, dayfirst=True)
+        
+        if data_autorizacao := kwargs.pop(&#39;data_autorizacao&#39;, None):
+            data_autorizacao = parser.parse(data_autorizacao, dayfirst=True)
+        
+        return cls(
+            empresa=empresa,
+            data_emissao=data_emissao, 
+            data_autorizacao=data_autorizacao, 
+            **kwargs
+        )
 
 class Observacao:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
@@ -1779,48 +1794,148 @@ def from_json(cls, **kwargs):
 </dd>
 <dt id="pysisnoapi.NotaFiscal"><code class="flex name class">
 <span>class <span class="ident">NotaFiscal</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>id: Optional[int] = None, empresa: Optional[ForwardRef('<a title="pysisnoapi.Empresa" href="#pysisnoapi.Empresa">Empresa</a>')] = None, tipo: Optional[str] = None, serie: Optional[str] = None, numero_nota: Optional[str] = None, chave_acesso: Optional[str] = None, protocolo: Optional[str] = None, nome_destinatario: Optional[str] = None, uf_destinatario: Optional[str] = None, cpf_cnpj_destinatario: Optional[str] = None, valor_total: Optional[str] = None, status: Optional[str] = None, motivo: Optional[str] = None, data_emissao: Optional[datetime.datetime] = None, data_autorizacao: Optional[datetime.datetime] = None, modelo: Optional[str] = None, ambiente: Optional[str] = None, xml: Optional[str] = None, json_objeto_nfe: Optional[str] = None, tipo_emissao: Optional[str] = None, numero_lote: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>NotaFiscal(id: Optional[int] = None, empresa: Optional[ForwardRef('Empresa')] = None, tipo: Optional[str] = None, serie: Optional[str] = None, numero_nota: Optional[str] = None, chave_acesso: Optional[str] = None, protocolo: Optional[str] = None, nome_destinatario: Optional[str] = None, uf_destinatario: Optional[str] = None, cpf_cnpj_destinatario: Optional[str] = None, valor_total: Optional[str] = None, status: Optional[str] = None, motivo: Optional[str] = None, data_emissao: Optional[datetime.datetime] = None, data_autorizacao: Optional[datetime.datetime] = None, modelo: Optional[str] = None, ambiente: Optional[str] = None, xml: Optional[str] = None, json_objeto_nfe: Optional[str] = None, tipo_emissao: Optional[str] = None, numero_lote: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class NotaFiscal:
-    def __init__(self, **kwargs):
-        self.empresa                 = kwargs.get(&#34;empresa&#34;, None)              # string
-        self.serie                   = kwargs.get(&#34;serie&#34;, None)                # string
-        self.operacao                = kwargs.get(&#34;operacao&#34;, None)             # string (0: Entrada, 1: Saída)
-        self.natureza_operacao       = kwargs.get(&#34;natureza_operacao&#34;, None)    # string
-        self.modelo                  = kwargs.get(&#34;modelo&#34;, None)               # string (55: NF-e, 65: NFC-e)
-        self.finalidade              = kwargs.get(&#34;finalidade&#34;, None)           # string (1: Normal, 2: Complementar, 3: Ajuste, 4: Devolução ou Retorno)
-        self.ambiente                = kwargs.get(&#34;ambiente&#34;, None)             # string (1: Produção, 2: Homologação)
-        self.cliente                 = kwargs.get(&#34;cliente&#34;, None)              # Objeto CLIENTE
-        self.produtos                = kwargs.get(&#34;produtos&#34;, None)             # list[PRODUTO]
-        self.pedido                  = kwargs.get(&#34;pedido&#34;, None)               # Objeto PEDIDO
-        self.data_entrada_saida      = kwargs.get(&#34;data_entrada_saida&#34;, None)   # string (dd/MM/yyyy HH:mm:ss)
-        self.data_emissao            = kwargs.get(&#34;data_emissao&#34;, None)         # string (dd/MM/yyyy HH:mm:ss)
-
-    def asdict(self):
-        return {
-            &#34;serie&#34;             : self.serie,
-            &#34;operacao&#34;          : self.operacao,
-            &#34;natureza_operacao&#34; : self.natureza_operacao,
-            &#34;modelo&#34;            : self.modelo,
-            &#34;finalidade&#34;        : self.finalidade,
-            &#34;ambiente&#34;          : self.ambiente,
-            &#34;cliente&#34;           : self.cliente.asdict(),
-            &#34;produtos&#34;          : [p.asdict() for p in self.produtos],
-            &#34;pedido&#34;            : self.pedido.asdict(),
-            &#34;data_entrada_saida&#34;: self.data_entrada_saida,
-            &#34;data_emissao&#34;      : self.data_emissao,
-        }</code></pre>
+<pre><code class="python">@dataclass
+class NotaFiscal:
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
+    id                      : Optional[int]         = None
+    empresa                 : Optional[&#39;Empresa&#39;]   = None
+    tipo                    : Optional[str]         = None
+    serie                   : Optional[str]         = None
+    numero_nota             : Optional[str]         = None
+    chave_acesso            : Optional[str]         = None
+    protocolo               : Optional[str]         = None
+    nome_destinatario       : Optional[str]         = None
+    uf_destinatario         : Optional[str]         = None
+    cpf_cnpj_destinatario   : Optional[str]         = None
+    valor_total             : Optional[str]         = None
+    status                  : Optional[str]         = None
+    motivo                  : Optional[str]         = None
+    data_emissao            : Optional[datetime]    = None
+    data_autorizacao        : Optional[datetime]    = None
+    modelo                  : Optional[str]         = None
+    ambiente                : Optional[str]         = None
+    xml                     : Optional[str]         = None
+    json_objeto_nfe         : Optional[str]         = None
+    tipo_emissao            : Optional[str]         = None
+    numero_lote             : Optional[str]         = None
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        empresa_dict = kwargs.pop(&#39;empresa&#39;, {})
+        empresa = Empresa.from_json(**empresa_dict)
+        
+        if data_emissao := kwargs.pop(&#39;data_emissao&#39;, None):
+            data_emissao = parser.parse(data_emissao, dayfirst=True)
+        
+        if data_autorizacao := kwargs.pop(&#39;data_autorizacao&#39;, None):
+            data_autorizacao = parser.parse(data_autorizacao, dayfirst=True)
+        
+        return cls(
+            empresa=empresa,
+            data_emissao=data_emissao, 
+            data_autorizacao=data_autorizacao, 
+            **kwargs
+        )</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.NotaFiscal.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+<dt id="pysisnoapi.NotaFiscal.ambiente"><code class="name">var <span class="ident">ambiente</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.chave_acesso"><code class="name">var <span class="ident">chave_acesso</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.cpf_cnpj_destinatario"><code class="name">var <span class="ident">cpf_cnpj_destinatario</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.data_autorizacao"><code class="name">var <span class="ident">data_autorizacao</span> : Optional[datetime.datetime]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.data_emissao"><code class="name">var <span class="ident">data_emissao</span> : Optional[datetime.datetime]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.empresa"><code class="name">var <span class="ident">empresa</span> : Optional[<a title="pysisnoapi.Empresa" href="#pysisnoapi.Empresa">Empresa</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.id"><code class="name">var <span class="ident">id</span> : Optional[int]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.json_objeto_nfe"><code class="name">var <span class="ident">json_objeto_nfe</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.modelo"><code class="name">var <span class="ident">modelo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.motivo"><code class="name">var <span class="ident">motivo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.nome_destinatario"><code class="name">var <span class="ident">nome_destinatario</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.numero_lote"><code class="name">var <span class="ident">numero_lote</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.numero_nota"><code class="name">var <span class="ident">numero_nota</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.protocolo"><code class="name">var <span class="ident">protocolo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.serie"><code class="name">var <span class="ident">serie</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.status"><code class="name">var <span class="ident">status</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.tipo"><code class="name">var <span class="ident">tipo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.tipo_emissao"><code class="name">var <span class="ident">tipo_emissao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.uf_destinatario"><code class="name">var <span class="ident">uf_destinatario</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.valor_total"><code class="name">var <span class="ident">valor_total</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.xml"><code class="name">var <span class="ident">xml</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="pysisnoapi.NotaFiscal.from_json"><code class="name flex">
+<span>def <span class="ident">from_json</span></span>(<span>**kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1828,20 +1943,23 @@ def from_json(cls, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def asdict(self):
-    return {
-        &#34;serie&#34;             : self.serie,
-        &#34;operacao&#34;          : self.operacao,
-        &#34;natureza_operacao&#34; : self.natureza_operacao,
-        &#34;modelo&#34;            : self.modelo,
-        &#34;finalidade&#34;        : self.finalidade,
-        &#34;ambiente&#34;          : self.ambiente,
-        &#34;cliente&#34;           : self.cliente.asdict(),
-        &#34;produtos&#34;          : [p.asdict() for p in self.produtos],
-        &#34;pedido&#34;            : self.pedido.asdict(),
-        &#34;data_entrada_saida&#34;: self.data_entrada_saida,
-        &#34;data_emissao&#34;      : self.data_emissao,
-    }</code></pre>
+<pre><code class="python">@classmethod
+def from_json(cls, **kwargs):
+    empresa_dict = kwargs.pop(&#39;empresa&#39;, {})
+    empresa = Empresa.from_json(**empresa_dict)
+    
+    if data_emissao := kwargs.pop(&#39;data_emissao&#39;, None):
+        data_emissao = parser.parse(data_emissao, dayfirst=True)
+    
+    if data_autorizacao := kwargs.pop(&#39;data_autorizacao&#39;, None):
+        data_autorizacao = parser.parse(data_autorizacao, dayfirst=True)
+    
+    return cls(
+        empresa=empresa,
+        data_emissao=data_emissao, 
+        data_autorizacao=data_autorizacao, 
+        **kwargs
+    )</code></pre>
 </details>
 </dd>
 </dl>
@@ -2432,7 +2550,28 @@ def from_json(cls, **kwargs):
 <li>
 <h4><code><a title="pysisnoapi.NotaFiscal" href="#pysisnoapi.NotaFiscal">NotaFiscal</a></code></h4>
 <ul class="">
-<li><code><a title="pysisnoapi.NotaFiscal.asdict" href="#pysisnoapi.NotaFiscal.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.ambiente" href="#pysisnoapi.NotaFiscal.ambiente">ambiente</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.chave_acesso" href="#pysisnoapi.NotaFiscal.chave_acesso">chave_acesso</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.cpf_cnpj_destinatario" href="#pysisnoapi.NotaFiscal.cpf_cnpj_destinatario">cpf_cnpj_destinatario</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.data_autorizacao" href="#pysisnoapi.NotaFiscal.data_autorizacao">data_autorizacao</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.data_emissao" href="#pysisnoapi.NotaFiscal.data_emissao">data_emissao</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.empresa" href="#pysisnoapi.NotaFiscal.empresa">empresa</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.from_json" href="#pysisnoapi.NotaFiscal.from_json">from_json</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.id" href="#pysisnoapi.NotaFiscal.id">id</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.json_objeto_nfe" href="#pysisnoapi.NotaFiscal.json_objeto_nfe">json_objeto_nfe</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.modelo" href="#pysisnoapi.NotaFiscal.modelo">modelo</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.motivo" href="#pysisnoapi.NotaFiscal.motivo">motivo</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.nome_destinatario" href="#pysisnoapi.NotaFiscal.nome_destinatario">nome_destinatario</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.numero_lote" href="#pysisnoapi.NotaFiscal.numero_lote">numero_lote</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.numero_nota" href="#pysisnoapi.NotaFiscal.numero_nota">numero_nota</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.protocolo" href="#pysisnoapi.NotaFiscal.protocolo">protocolo</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.serie" href="#pysisnoapi.NotaFiscal.serie">serie</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.status" href="#pysisnoapi.NotaFiscal.status">status</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.tipo" href="#pysisnoapi.NotaFiscal.tipo">tipo</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.tipo_emissao" href="#pysisnoapi.NotaFiscal.tipo_emissao">tipo_emissao</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.uf_destinatario" href="#pysisnoapi.NotaFiscal.uf_destinatario">uf_destinatario</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.valor_total" href="#pysisnoapi.NotaFiscal.valor_total">valor_total</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.xml" href="#pysisnoapi.NotaFiscal.xml">xml</a></code></li>
 </ul>
 </li>
 <li>

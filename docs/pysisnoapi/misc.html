@@ -62,7 +62,7 @@ def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
         List[Municipio]: Uma lista de objetos Municipio, representando os municípios do estado consultado.
     &#34;&#34;&#34;
 
-    headers  = HEADERS
+    headers  = HEADERS.copy()
     url      = f&#39;{URL}/unidades-federativas/{uf}/municipios&#39;
     response = requests.get(url, headers=headers)
 
@@ -86,7 +86,7 @@ def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
         List[Cfop]: Uma lista de objetos Cfop, representando os CFOPs disponíveis.
     &#34;&#34;&#34;
 
-    headers  = HEADERS
+    headers  = HEADERS.copy()
     url      = f&#39;{URL}/cfops&#39;
     response = requests.get(url, headers=headers)
 
@@ -121,7 +121,7 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -&gt; List[Ibpt]:
     if len(cod_desc) &lt; 4:
         raise Exception(&#34;Código ou Descrição precisa ter no mínimo 4 caracteres&#34;)
     
-    headers  = HEADERS
+    headers  = HEADERS.copy()
     headers[&#34;codigo-ou-descricao&#34;] = cod_desc
     headers[&#34;uf&#34;] = uf
 
@@ -173,7 +173,7 @@ def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
         List[Cfop]: Uma lista de objetos Cfop, representando os CFOPs disponíveis.
     &#34;&#34;&#34;
 
-    headers  = HEADERS
+    headers  = HEADERS.copy()
     url      = f&#39;{URL}/cfops&#39;
     response = requests.get(url, headers=headers)
 
@@ -236,7 +236,7 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -&gt; List[Ibpt]:
     if len(cod_desc) &lt; 4:
         raise Exception(&#34;Código ou Descrição precisa ter no mínimo 4 caracteres&#34;)
     
-    headers  = HEADERS
+    headers  = HEADERS.copy()
     headers[&#34;codigo-ou-descricao&#34;] = cod_desc
     headers[&#34;uf&#34;] = uf
 
@@ -289,7 +289,7 @@ def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
         List[Municipio]: Uma lista de objetos Municipio, representando os municípios do estado consultado.
     &#34;&#34;&#34;
 
-    headers  = HEADERS
+    headers  = HEADERS.copy()
     url      = f&#39;{URL}/unidades-federativas/{uf}/municipios&#39;
     response = requests.get(url, headers=headers)
 

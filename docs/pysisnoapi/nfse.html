@@ -208,7 +208,7 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
 
     json_obj = json.dumps(obj_emissao_nfse, default=lambda o: o.asdict())
     
-    headers = HEADERS
+    headers = HEADERS.copy()
     url     = f&#39;{URL}/nfse&#39;
     response = requests.post(url, data=json_obj, headers=headers)
 
@@ -264,7 +264,7 @@ def buscar_notas(cnpj:str=None, data_inicio:datetime=None, data_fim:datetime=Non
         List[NotaFiscalServico]: Lista com todas as NFSe
     &#34;&#34;&#34;
     
-    headers = HEADERS
+    headers = HEADERS.copy()
     
     if cnpj:
         headers[&#39;CNPJ Empresa&#39;] = cnpj
@@ -312,7 +312,7 @@ def recuperar_dados(id_nfse:int, *args, **kwargs):
     if not isinstance(id_nfse, int):
         raise ValueError(&#34;Necessário informar um ID de NFSe válido.&#34;)
     
-    headers  = HEADERS
+    headers  = HEADERS.copy()
     url      = f&#39;{URL}/nfse/{id_nfse}&#39;
     response = requests.get(url, headers=headers)
 
@@ -440,7 +440,7 @@ def buscar_notas(cnpj:str=None, data_inicio:datetime=None, data_fim:datetime=Non
         List[NotaFiscalServico]: Lista com todas as NFSe
     &#34;&#34;&#34;
     
-    headers = HEADERS
+    headers = HEADERS.copy()
     
     if cnpj:
         headers[&#39;CNPJ Empresa&#39;] = cnpj
@@ -526,7 +526,7 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
 
     json_obj = json.dumps(obj_emissao_nfse, default=lambda o: o.asdict())
     
-    headers = HEADERS
+    headers = HEADERS.copy()
     url     = f&#39;{URL}/nfse&#39;
     response = requests.post(url, data=json_obj, headers=headers)
 
@@ -555,7 +555,7 @@ def recuperar_dados(id_nfse:int, *args, **kwargs):
     if not isinstance(id_nfse, int):
         raise ValueError(&#34;Necessário informar um ID de NFSe válido.&#34;)
     
-    headers  = HEADERS
+    headers  = HEADERS.copy()
     url      = f&#39;{URL}/nfse/{id_nfse}&#39;
     response = requests.get(url, headers=headers)
 
