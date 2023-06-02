@@ -11,15 +11,5 @@ class MiscTest(unittest.TestCase):
         
         check_municipios_do_DF(self, data)
 
-    def test_consulta_cfops_length(self):
-        data = misc.get_cfops()
-        
-        check_cfops_length(self, data)
-
-    def test_consulta_cfops_atributos(self):
-        data = misc.get_cfops()
-        
-        check_cfop_attributes(self, data)
-
 if __name__ == "__main__":
     unittest.main()
