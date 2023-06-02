@@ -326,7 +326,7 @@ class Ibpt(BaseClass):
     
     @classmethod
     def from_json(cls, **kwargs):
-        uf_dict = kwargs.pop('unidade_federativa', None)
+        uf_dict = kwargs.pop('unidade_federativa', {})
         uf = Uf.from_json(**uf_dict)
         return cls(unidade_federativa=uf, **kwargs)
 
