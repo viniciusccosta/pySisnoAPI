@@ -344,7 +344,7 @@ class Issqn:
 @dataclass
 class Municipio(BaseClass):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
-    codigo_ibge : Optional[str] = None
+    codigo_ibge : Optional[int] = None
     descricao   : Optional[str] = None
     
     @classmethod
