@@ -146,7 +146,8 @@ class PaginaNotaServico:
         return self.__dict__
 
 # =====================================================================
-@requires_keys
+@requires_emissor
+@requires_empresa
 def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
     """Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
 
@@ -175,7 +176,7 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
         case _:
             return response.text
 
-@requires_keys
+@requires_emissor
 def buscar_notas(cnpj:str, data_inicio:datetime, data_fim:datetime, ambiente:str='1', status:str='aprovado', texto:str='', pagina:str='1', qtd_por_pagina:str='10', ordencao:str="numero_nota", tipo_ordenacao:str="desc", *args, **kwargs) -> list:
     """Recupera as notas de uma determinada empresa.
 
@@ -232,11 +233,13 @@ def buscar_notas(cnpj:str, data_inicio:datetime, data_fim:datetime, ambiente:str
         case _:
             return response.text
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def retransmitir(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def recuperar_dados(id_nfse:int, *args, **kwargs):
     # TODO: Cada NFSe possui um ID mesmo que de empresas diferentes ?
     # TODO: Essa função deveria estar atrelada as chaves de API, uma vez que será através delas que emitiremos as notas por uma empresa ou por outra ?
@@ -256,7 +259,8 @@ def recuperar_dados(id_nfse:int, *args, **kwargs):
         case _:
             return
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def cancelar(*args, **kwargs):
     raise NotImplementedError
 

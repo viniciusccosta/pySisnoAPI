@@ -144,48 +144,55 @@ class PaginaNotas:
         raise NotImplementedError
 
 # =====================================================================
-@requires_keys
+@requires_emissor
+@requires_empresa
 def emitir(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def corrigir(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def cancelar(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def validar(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
 def listar(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
 def buscar_notas(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
 def get_nota(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def inutilizar_numeracao(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def get_pre_visualizacao(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def get_danfe(*args, **kwargs):
     raise NotImplementedError
 
 # =====================================================================
-@requires_keys
+@requires_emissor
 def __emitir_nota_teste(*args, **kwargs):
     agora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 

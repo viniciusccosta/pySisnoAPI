@@ -20,7 +20,7 @@ from typing import Optional, List, Tuple, Dict
 # Globals:
 load_dotenv()
 
-URL     = "https://homolog.arkaonline.com.br/nfe-service"
+URL     = "http://homolog.arkaonline.com.br/nfe-service/"               # TODO: Provisório, em breve voltará para 'https://homolog.sisno.com.br/nfe-service/'
 HEADERS = {
     "token-emissor"         : os.getenv("token-emissor", ""),
     "token-secret-emissor"  : os.getenv("token-secret-emissor", ""),
@@ -29,16 +29,27 @@ HEADERS = {
     "accept"                : "application/json",
     "Content-Type"          : "application/json",
 }
-REQUIRED_KEYS = [ "token-emissor", "token-secret-emissor", "token-empresa", "token-secret-empresa", ]
 
 # ======================================================================================================================
 # Decorators:
-def requires_keys(func):
-    """Esse decorador é utilizado para garantir que as chaves de API estão presentes no HEADERS antes da função ser executada."""
+def requires_emissor(func):
+    """Esse decorador é utilizado para garantir que as chaves de API do emissor estão presentes no HEADERS antes da função ser executada."""
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        for key in REQUIRED_KEYS:
+        for key in ["token-emissor", "token-secret-emissor"]:
+            if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
+                return func(*args, **kwargs)
+            else:
+                raise ValueError(f"Chave '{key}' não configurada.")
+    return wrapper
+
+def requires_empresa(func):
+    """Esse decorador é utilizado para garantir que as chaves de API da empresa estão presentes no HEADERS antes da função ser executada."""
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        for key in ["token-empresa", "token-secret-empresa"]:
             if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
                 return func(*args, **kwargs)
             else:
@@ -568,36 +579,28 @@ class Uf(BaseClass):
         return cls(**kwargs)
 
 # ======================================================================================================================
-def alterar_emissor(token_emissor:str, token_secret_emissor:str, token_empresa:str, token_secret_empresa:str):
+def alterar_empresa(token_empresa:str, token_secret_empresa:str):
     """
-    Método responsável por alterar as chaves de API.
-    A alteração das chaves de API é necessária para consultar/emitir notas fiscais de diferente empresas.
-    É através das chaves que a plataforma de SISNO irá identificar quem é o emissor e irá listar (ou emitir) as notas para essa empresa em específico.
+    Altera as chaves de API utilizadas para a emissão de notas fiscais na plataforma SISNO.
+
+    Esse método é responsável por modificar as chaves de API, necessárias para a emissão de notas fiscais em empresas distintas.
+    As chaves de API são utilizadas pela plataforma SISNO para identificar a empresa na qual a nota fiscal será emitida.
 
     Args:
-        token_emissor (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API
-        token_secret_emissor (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".
-        token_empresa (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API
+        token_empresa (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API.
         token_secret_empresa (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".
 
     Raises:
-        Exception: Caso alguma das chaves seja inválida
+        Exception: Lançada caso alguma das chaves seja inválida.
     """
-    global HEADERS
-
-    # TODO: Validar outros parâmetros, como tipos de caracters e etc.
-
-    if not isinstance(token_emissor, str) or len(token_emissor) != 775:
-        raise Exception('Token Emissor inválido')
-    if not isinstance(token_secret_emissor, str) or len(token_secret_emissor) != 166:
-        raise Exception('Token Secret Emissor inválido')
+    
+    # TODO: Realizar melhores validações
+    
     if not isinstance(token_empresa, str) or len(token_empresa) != 775:
         raise Exception('Token Empresa inválido')
     if not isinstance(token_secret_empresa, str) or len(token_secret_empresa) != 166:
         raise Exception('Token Secret Empresa inválido')
     
-    HEADERS["token-emissor"]        = token_emissor
-    HEADERS["token-secret-emissor"] = token_secret_emissor
     HEADERS["token-empresa"]        = token_empresa
     HEADERS["token-secret-empresa"] = token_secret_empresa
 

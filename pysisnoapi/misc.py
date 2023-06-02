@@ -15,7 +15,7 @@ import requests
 from typing import List
 
 # ======================================================================================================================
-@requires_keys
+@requires_emissor
 def get_municipios(uf: str, *args, **kwargs) -> List[Municipio]:
     """Consulta os municípios de um determinado estado através de uma requisição à API.
 
@@ -43,7 +43,7 @@ def get_municipios(uf: str, *args, **kwargs) -> List[Municipio]:
         case _:
             return
 
-@requires_keys
+@requires_emissor
 def get_cfops(*args, **kwargs) -> List[Cfop]:
     """Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
 
@@ -67,7 +67,7 @@ def get_cfops(*args, **kwargs) -> List[Cfop]:
         case _:
             return
 
-@requires_keys
+@requires_emissor
 def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> List[Ibpt]:
     """
     Obtém os IBPTs através de uma requisição à API.
