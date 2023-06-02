@@ -48,7 +48,7 @@ import requests
 from typing import List
 
 # ======================================================================================================================
-@requires_keys
+@requires_emissor
 def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
     &#34;&#34;&#34;Consulta os municípios de um determinado estado através de uma requisição à API.
 
@@ -76,7 +76,7 @@ def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
         case _:
             return
 
-@requires_keys
+@requires_emissor
 def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
     &#34;&#34;&#34;Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
 
@@ -100,7 +100,7 @@ def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
         case _:
             return
 
-@requires_keys
+@requires_emissor
 def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -&gt; List[Ibpt]:
     &#34;&#34;&#34;
     Obtém os IBPTs através de uma requisição à API.
@@ -163,7 +163,7 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -&gt; List[Ibpt]:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
 def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
     &#34;&#34;&#34;Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
 
@@ -215,7 +215,7 @@ def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
 def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -&gt; List[Ibpt]:
     &#34;&#34;&#34;
     Obtém os IBPTs através de uma requisição à API.
@@ -275,7 +275,7 @@ Ela retorna uma lista de objetos Municipio contendo informações sobre cada mun
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
 def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
     &#34;&#34;&#34;Consulta os municípios de um determinado estado através de uma requisição à API.
 

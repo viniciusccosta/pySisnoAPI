@@ -40,32 +40,36 @@ class Servico:
 
         Args:
             valor_servicos (str): Valor do Serviço no formato $0.00
+            
             discriminacao (str): Descrição do Serviço
+            
             impostos (Imposto): Instância da classe "Imposto"
-
-        Keyword Args:
-            intermediario (Cliente): Intermediário do Serviço
-                Default: None
-            iss_retido (int): 1-Sim, 2-Não
-                Default: 2
-            responsavel_retencao_iss (int): 1-Tomador, 2-Intermediário
-                Default: 1
-            deducoes (str): Soma total das deduções/descontos gerais
-                Default: ''
-            desconto_incondicionado (str): Soma total dos descontos incondicionados
-                Default: ''
-            desconto_condicionado (str): Soma total dos descontos condicionados
-                Default: ''
-            outras_retencoes (str): Soma total de outras retenções
-                Default: ''
-            informacoes_complementares (str): Informações complementares
-                Default: '' 
-            data_competencia (str): Data da competência do serviço
-                Default: datetime.now()
-            uf_local_prestacao (Uf): UF do local da prestação do serviço
-                Default: ''
-            municipio_local_prestacao (Municipio): Município do local da prestação do serviço
-                Default: ''
+            
+            **intermediario (Cliente): Intermediário do Serviço
+            
+            **iss_retido (int):  
+                1. Sim  
+                2. Não
+                
+            **responsavel_retencao_iss (int):  
+                1. Tomador  
+                2. Intermediário
+                
+            **deducoes (str): Soma total das deduções/descontos gerais
+            
+            **desconto_incondicionado (str): Soma total dos descontos incondicionados
+            
+            **desconto_condicionado (str): Soma total dos descontos condicionados
+            
+            **outras_retencoes (str): Soma total de outras retenções
+            
+            **informacoes_complementares (str): Informações complementares
+            
+            **data_competencia (str): Data da competência do serviço
+            
+            **uf_local_prestacao (Uf): UF do local da prestação do serviço
+            
+            **municipio_local_prestacao (Municipio): Município do local da prestação do serviço
         """
         self.valor_servicos             = valor_servicos
         self.discriminacao              = discriminacao
@@ -162,12 +166,7 @@ class PaginaNotaServico:
 @requires_empresa
 def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
     """Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
-
-    Atenção:
-        Esse método é diretamente vinculado as chaves de API.
-        Isso quer dizer que é através das chaves que a plataforma da SISNO irá decidir quem será o emissor dessa nota.
-        Para alterar o emissor, basta chamar a função "sisno.alterar_emissor()" e passar as novas chaves.
-
+    
     Args:
         obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe "ObjetoEmissaoNFSe" que contém todos os dados necessários
 
@@ -199,24 +198,24 @@ def buscar_notas(cnpj:str=None, data_inicio:datetime=None, data_fim:datetime=Non
         
         data_fim (datetime): Fim intervalo de datas (dd/MM/yyyy HH:mm:ss).
         
-        ambiente (str, optional):  
+        ambiente (str):  
             1: Produção  
             2: Homologação
             
-        status (str, optional): Status da NFSe.
+        status (str): Status da NFSe.
             - aprovado  
             - reprovado  
             - contingencia    
             - cancelado  
             - Em digitação
             
-        texto (str, optional): Texto de busca livre.
+        texto (str): Texto de busca livre.
         
-        pagina (int, optional): Número da página.
+        pagina (int): Número da página.
         
-        qtd_por_pagina (int, optional): Quantidade de notas por página.
+        qtd_por_pagina (int): Quantidade de notas por página.
         
-        ordencao (str, optional): Campo para ordenação das notas.
+        ordencao (str): Campo para ordenação das notas.  
             - empresa  
             - ambiente  
             - numero_nota  
@@ -226,7 +225,7 @@ def buscar_notas(cnpj:str=None, data_inicio:datetime=None, data_fim:datetime=Non
             - uf_destinatario  
             - valor_total
             
-        tipo_ordenacao (str, optional): Tipo de Ordenação.
+        tipo_ordenacao (str): Tipo de Ordenação.
             - desc  
             - asc  
     

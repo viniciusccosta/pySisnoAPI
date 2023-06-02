@@ -175,48 +175,55 @@ class PaginaNotas:
         raise NotImplementedError
 
 # =====================================================================
-@requires_keys
+@requires_emissor
+@requires_empresa
 def emitir(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def corrigir(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def cancelar(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def validar(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
 def listar(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
 def buscar_notas(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
 def get_nota(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def inutilizar_numeracao(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def get_pre_visualizacao(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def get_danfe(*args, **kwargs):
     raise NotImplementedError
 
 # =====================================================================
-@requires_keys
+@requires_emissor
 def __emitir_nota_teste(*args, **kwargs):
     agora = datetime.datetime.now().strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
 
@@ -267,7 +274,7 @@ if __name__ == &#34;__main__&#34;:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
 def buscar_notas(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -281,7 +288,8 @@ def buscar_notas(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def cancelar(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -295,7 +303,8 @@ def cancelar(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def corrigir(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -309,7 +318,8 @@ def corrigir(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def emitir(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -323,7 +333,8 @@ def emitir(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def get_danfe(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -337,7 +348,7 @@ def get_danfe(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
 def get_nota(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -351,7 +362,8 @@ def get_nota(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def get_pre_visualizacao(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -365,7 +377,8 @@ def get_pre_visualizacao(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def inutilizar_numeracao(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -379,7 +392,7 @@ def inutilizar_numeracao(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
 def listar(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -393,7 +406,8 @@ def listar(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def validar(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>

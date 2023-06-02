@@ -71,32 +71,36 @@ class Servico:
 
         Args:
             valor_servicos (str): Valor do Serviço no formato $0.00
+            
             discriminacao (str): Descrição do Serviço
+            
             impostos (Imposto): Instância da classe &#34;Imposto&#34;
-
-        Keyword Args:
-            intermediario (Cliente): Intermediário do Serviço
-                Default: None
-            iss_retido (int): 1-Sim, 2-Não
-                Default: 2
-            responsavel_retencao_iss (int): 1-Tomador, 2-Intermediário
-                Default: 1
-            deducoes (str): Soma total das deduções/descontos gerais
-                Default: &#39;&#39;
-            desconto_incondicionado (str): Soma total dos descontos incondicionados
-                Default: &#39;&#39;
-            desconto_condicionado (str): Soma total dos descontos condicionados
-                Default: &#39;&#39;
-            outras_retencoes (str): Soma total de outras retenções
-                Default: &#39;&#39;
-            informacoes_complementares (str): Informações complementares
-                Default: &#39;&#39; 
-            data_competencia (str): Data da competência do serviço
-                Default: datetime.now()
-            uf_local_prestacao (Uf): UF do local da prestação do serviço
-                Default: &#39;&#39;
-            municipio_local_prestacao (Municipio): Município do local da prestação do serviço
-                Default: &#39;&#39;
+            
+            **intermediario (Cliente): Intermediário do Serviço
+            
+            **iss_retido (int):  
+                1. Sim  
+                2. Não
+                
+            **responsavel_retencao_iss (int):  
+                1. Tomador  
+                2. Intermediário
+                
+            **deducoes (str): Soma total das deduções/descontos gerais
+            
+            **desconto_incondicionado (str): Soma total dos descontos incondicionados
+            
+            **desconto_condicionado (str): Soma total dos descontos condicionados
+            
+            **outras_retencoes (str): Soma total de outras retenções
+            
+            **informacoes_complementares (str): Informações complementares
+            
+            **data_competencia (str): Data da competência do serviço
+            
+            **uf_local_prestacao (Uf): UF do local da prestação do serviço
+            
+            **municipio_local_prestacao (Municipio): Município do local da prestação do serviço
         &#34;&#34;&#34;
         self.valor_servicos             = valor_servicos
         self.discriminacao              = discriminacao
@@ -140,31 +144,43 @@ class ObjetoEmissaoNFSe:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
         return dados if len(dados) &gt; 0 else None
 
-class NotaFiscalServico:
-    def __init__(self, *args, **kwargs):
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-        self.id                     = kwargs.get(&#34;id&#34;, 0)
-        self.empresa                = kwargs.get(&#34;empresa&#34;, None)
-        self.uuid                   = kwargs.get(&#34;uuid&#34;, &#39;&#39;)
-        self.modelo                 = kwargs.get(&#34;modelo&#34;, &#39;&#39;)
-        self.status                 = kwargs.get(&#34;status&#34;, &#39;&#39;)
-        self.motivo                 = kwargs.get(&#34;motivo&#34;, &#39;&#39;)
-        self.numero_nota            = kwargs.get(&#34;numero_nota&#34;, &#39;&#39;)
-        self.codigo_verificacao     = kwargs.get(&#34;codigo_verificacao&#34;, &#39;&#39;)
-        self.protocolo              = kwargs.get(&#34;protocolo&#34;, &#39;&#39;)
-        self.nome_destinatario      = kwargs.get(&#34;nome_destinatario&#34;, &#39;&#39;)
-        self.uf_destinatario        = kwargs.get(&#34;uf_destinatario&#34;, &#39;&#39;)
-        self.cpf_cnpj_destinatario  = kwargs.get(&#34;cpf_cnpj_destinatario&#34;, &#39;&#39;)
-        self.valor_total            = kwargs.get(&#34;valor_total&#34;, &#39;&#39;)
-        self.data_emissao           = kwargs.get(&#34;data_emissao&#34;, &#39;&#39;)
-        self.data_competencia       = kwargs.get(&#34;data_competencia&#34;, &#39;&#39;)
-        self.uf_prestacao           = kwargs.get(&#34;uf_prestacao&#34;, None)
-        self.municipio_prestacao    = kwargs.get(&#34;municipio_prestacao&#34;, None)
-        self.ambiente               = kwargs.get(&#34;ambiente&#34;, &#39;&#39;)
+@dataclass
+class NotaFiscalServico(BaseClass):
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     
-    def asdict(self,):
-        return self.__dict__
+    id                   : Optional[int]        = None
+    empresa              : Optional[Empresa]    = None
+    uuid                 : Optional[str]        = None
+    modelo               : Optional[str]        = None
+    status               : Optional[str]        = None
+    motivo               : Optional[str]        = None
+    numero_nota          : Optional[str]        = None
+    codigo_verificacao   : Optional[str]        = None
+    protocolo            : Optional[str]        = None
+    nome_destinatario    : Optional[str]        = None
+    uf_destinatario      : Optional[str]        = None
+    cpf_cnpj_destinatario: Optional[str]        = None
+    valor_total          : Optional[str]        = None
+    data_emissao         : Optional[str]        = None
+    data_competencia     : Optional[str]        = None
+    uf_prestacao         : Optional[Uf]         = None
+    municipio_prestacao  : Optional[Municipio]  = None
+    ambiente             : Optional[str]        = None
+    json_objeto_nfse     : Optional[str]        = None  # TODO: Não consta na documentação da API
     
+    @classmethod
+    def from_json(cls, **kwargs):
+        empresa_dict = kwargs.pop(&#39;empresa&#39;, {})
+        empresa = Empresa.from_json(**empresa_dict)
+        
+        uf_dict = kwargs.pop(&#39;uf_prestacao&#39;, {})
+        uf      = Uf.from_json(**uf_dict)
+        
+        municipio_dict = kwargs.pop(&#39;municipio_prestacao&#39;, {})
+        municipio = Municipio.from_json(**municipio_dict)
+        
+        return cls(empresa=empresa, uf_prestacao=uf, municipio_prestacao=municipio, **kwargs)
+        
 class PaginaNotaServico:
     def __init__(self, *args, **kwargs):
         # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
@@ -177,15 +193,11 @@ class PaginaNotaServico:
         return self.__dict__
 
 # =====================================================================
-@requires_keys
+@requires_emissor
+@requires_empresa
 def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
     &#34;&#34;&#34;Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
-
-    Atenção:
-        Esse método é diretamente vinculado as chaves de API.
-        Isso quer dizer que é através das chaves que a plataforma da SISNO irá decidir quem será o emissor dessa nota.
-        Para alterar o emissor, basta chamar a função &#34;sisno.alterar_emissor()&#34; e passar as novas chaves.
-
+    
     Args:
         obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe &#34;ObjetoEmissaoNFSe&#34; que contém todos os dados necessários
 
@@ -206,68 +218,93 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
         case _:
             return response.text
 
-@requires_keys
-def buscar_notas(cnpj:str, data_inicio:datetime, data_fim:datetime, ambiente:str=&#39;1&#39;, status:str=&#39;aprovado&#39;, texto:str=&#39;&#39;, pagina:str=&#39;1&#39;, qtd_por_pagina:str=&#39;10&#39;, ordencao:str=&#34;numero_nota&#34;, tipo_ordenacao:str=&#34;desc&#34;, *args, **kwargs) -&gt; list:
-    &#34;&#34;&#34;Recupera as notas de uma determinada empresa.
+@requires_emissor
+def buscar_notas(cnpj:str=None, data_inicio:datetime=None, data_fim:datetime=None, ambiente:str=None, status:str=None, texto:str=None, pagina:str=None, qtd_por_pagina:str=None, ordencao:str=None, tipo_ordenacao:str=None, *args, **kwargs) -&gt; List[NotaFiscalServico]:
+    &#34;&#34;&#34;Recupera as notas fiscais de serviço.
 
     Args:
-        cnpj (str): CNPJ Empresa apenas números
-        data_inicio (datetime): Início intervalo de datas (dd/MM/yyyy HH:mm:ss)
-        data_fim (datetime): Fim intervalo de datas (dd/MM/yyyy HH:mm:ss)
-        ambiente (str, optional):  
+        cnpj (str): CNPJ Empresa (apenas números).
+        
+        data_inicio (datetime): Início intervalo de datas (dd/MM/yyyy HH:mm:ss).
+        
+        data_fim (datetime): Fim intervalo de datas (dd/MM/yyyy HH:mm:ss).
+        
+        ambiente (str):  
             1: Produção  
             2: Homologação
-        status (str, optional): Status da NFSe. Defaults to &#39;aprovado&#39;.  
-            aprovado  
-            reprovado  
-            contingencia  
-            cancelado  
-            Em digitação
-        texto (str, optional): Texto de busca livre. Defaults to &#39;&#39;.
-        pagina (int, optional): Número da página. Defaults to 1.
-        qtd_por_pagina (int, optional): Quantidade de notas por página. Defaults to 10.
-        ordencao (str, optional): Campo para ordenação das notas. Defaults to &#34;numero_nota&#34;.  
-            empresa  
-            ambiente  
-            numero_nota  
-            status  
-            data_emissao  
-            nome_destinatario  
-            uf_destinatario  
-            valor_total
-        tipo_ordenacao (str, optional): Tipo de Ordenação. Defaults to &#34;desc&#34;.  
-            desc  
-            asc  
+            
+        status (str): Status da NFSe.
+            - aprovado  
+            - reprovado  
+            - contingencia    
+            - cancelado  
+            - Em digitação
+            
+        texto (str): Texto de busca livre.
+        
+        pagina (int): Número da página.
+        
+        qtd_por_pagina (int): Quantidade de notas por página.
+        
+        ordencao (str): Campo para ordenação das notas.  
+            - empresa  
+            - ambiente  
+            - numero_nota  
+            - status  
+            - data_emissao  
+            - nome_destinatario  
+            - uf_destinatario  
+            - valor_total
+            
+        tipo_ordenacao (str): Tipo de Ordenação.
+            - desc  
+            - asc  
+    
     Returns:
-        list: Lista com todas as NFSe
+        List[NotaFiscalServico]: Lista com todas as NFSe
     &#34;&#34;&#34;
+    
     headers = HEADERS
-    headers[&#39;CNPJ Empresa&#39;]  = cnpj
-    headers[&#39;dataInicio&#39;]    = data_inicio.strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
-    headers[&#39;dataFim&#39;]       = data_fim.strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
-    headers[&#39;ambiente&#39;]      = ambiente
-    headers[&#39;status&#39;]        = status
-    headers[&#39;textoBusca&#39;]    = texto
-    headers[&#39;pagina&#39;]        = pagina           # Na documentação diz que deve ser inteiro, mas &#34;Header part (1) from (&#39;pagina&#39;, 1) must be of type str or bytes, not &lt;class &#39;int&#39;&gt;&#34;
-    headers[&#39;qtdPorPagina&#39;]  = qtd_por_pagina   # Na documentação diz que deve ser inteiro, mas &#34;Header part (10) from (&#39;qtdPorPagina&#39;, 10) must be of type str or bytes, not &lt;class &#39;int&#39;&gt;&#34;
-    headers[&#39;ordenacao&#39;]     = ordencao
-    headers[&#39;tipoOrdenacao&#39;] = tipo_ordenacao
+    
+    if cnpj:
+        headers[&#39;CNPJ Empresa&#39;] = cnpj
+    if data_inicio:
+        headers[&#39;dataInicio&#39;] = data_inicio.strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
+    if data_fim:
+        headers[&#39;dataFim&#39;] = data_fim.strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
+    if ambiente:
+        headers[&#39;ambiente&#39;] = ambiente
+    if status:
+        headers[&#39;status&#39;] = status
+    if texto:
+        headers[&#39;textoBusca&#39;] = texto
+    if pagina:
+        headers[&#39;pagina&#39;] = pagina                  # TODO: Na documentação diz que deve ser inteiro, mas &#34;Header part (1) from (&#39;pagina&#39;, 1) must be of type str or bytes, not &lt;class &#39;int&#39;&gt;&#34;
+    if qtd_por_pagina:
+        headers[&#39;qtdPorPagina&#39;] = qtd_por_pagina    # TODO: Na documentação diz que deve ser inteiro, mas &#34;Header part (10) from (&#39;qtdPorPagina&#39;, 10) must be of type str or bytes, not &lt;class &#39;int&#39;&gt;&#34;
+    if ordencao:
+        headers[&#39;ordenacao&#39;] = ordencao
+    if tipo_ordenacao:
+        headers[&#39;tipoOrdenacao&#39;] = tipo_ordenacao
 
     url = f&#39;{URL}/nfse&#39;
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
         case 200:
-            # TODO: Retornar uma lista de objetos &#34;NFSe&#34;
-            return response.json().get(&#39;dados&#39;)
+            json_data = response.json().get(&#39;dados&#39;)
+            nfses = [NotaFiscalServico.from_json(**d) for d in json_data[&#39;itens&#39;]]
+            return nfses
         case _:
             return response.text
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def retransmitir(*args, **kwargs):
     raise NotImplementedError
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def recuperar_dados(id_nfse:int, *args, **kwargs):
     # TODO: Cada NFSe possui um ID mesmo que de empresas diferentes ?
     # TODO: Essa função deveria estar atrelada as chaves de API, uma vez que será através delas que emitiremos as notas por uma empresa ou por outra ?
@@ -287,7 +324,8 @@ def recuperar_dados(id_nfse:int, *args, **kwargs):
         case _:
             return
 
-@requires_keys
+@requires_emissor
+@requires_empresa
 def cancelar(*args, **kwargs):
     raise NotImplementedError
 
@@ -302,113 +340,137 @@ def cancelar(*args, **kwargs):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="pysisnoapi.nfse.buscar_notas"><code class="name flex">
-<span>def <span class="ident">buscar_notas</span></span>(<span>cnpj: str, data_inicio: datetime.datetime, data_fim: datetime.datetime, ambiente: str = '1', status: str = 'aprovado', texto: str = '', pagina: str = '1', qtd_por_pagina: str = '10', ordencao: str = 'numero_nota', tipo_ordenacao: str = 'desc', *args, **kwargs) ‑> list</span>
+<span>def <span class="ident">buscar_notas</span></span>(<span>cnpj: str = None, data_inicio: datetime.datetime = None, data_fim: datetime.datetime = None, ambiente: str = None, status: str = None, texto: str = None, pagina: str = None, qtd_por_pagina: str = None, ordencao: str = None, tipo_ordenacao: str = None, *args, **kwargs) ‑> List[<a title="pysisnoapi.nfse.NotaFiscalServico" href="#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a>]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Recupera as notas de uma determinada empresa.</p>
+<div class="desc"><p>Recupera as notas fiscais de serviço.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>cnpj</code></strong> :&ensp;<code>str</code></dt>
-<dd>CNPJ Empresa apenas números</dd>
+<dd>CNPJ Empresa (apenas números).</dd>
 <dt><strong><code>data_inicio</code></strong> :&ensp;<code>datetime</code></dt>
-<dd>Início intervalo de datas (dd/MM/yyyy HH:mm:ss)</dd>
+<dd>Início intervalo de datas (dd/MM/yyyy HH:mm:ss).</dd>
 <dt><strong><code>data_fim</code></strong> :&ensp;<code>datetime</code></dt>
-<dd>Fim intervalo de datas (dd/MM/yyyy HH:mm:ss)</dd>
-<dt><strong><code>ambiente</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Fim intervalo de datas (dd/MM/yyyy HH:mm:ss).</dd>
+<dt><strong><code>ambiente</code></strong> :&ensp;<code>str</code></dt>
 <dd>1: Produção<br>
 2: Homologação</dd>
-<dt><strong><code>status</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>Status da NFSe. Defaults to 'aprovado'.<br>
-aprovado<br>
-reprovado<br>
-contingencia<br>
-cancelado<br>
-Em digitação</dd>
-<dt><strong><code>texto</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>Texto de busca livre. Defaults to ''.</dd>
-<dt><strong><code>pagina</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Número da página. Defaults to 1.</dd>
-<dt><strong><code>qtd_por_pagina</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Quantidade de notas por página. Defaults to 10.</dd>
-<dt><strong><code>ordencao</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>Campo para ordenação das notas. Defaults to "numero_nota".<br>
-empresa<br>
-ambiente<br>
-numero_nota<br>
-status<br>
-data_emissao<br>
-nome_destinatario<br>
-uf_destinatario<br>
-valor_total</dd>
-<dt><strong><code>tipo_ordenacao</code></strong> :&ensp;<code>str</code>, optional</dt>
-<dd>Tipo de Ordenação. Defaults to "desc".<br>
-desc<br>
-asc
+<dt><strong><code>status</code></strong> :&ensp;<code>str</code></dt>
+<dd>Status da NFSe.
+- aprovado<br>
+- reprovado<br>
+- contingencia
+<br>
+- cancelado<br>
+- Em digitação</dd>
+<dt><strong><code>texto</code></strong> :&ensp;<code>str</code></dt>
+<dd>Texto de busca livre.</dd>
+<dt><strong><code>pagina</code></strong> :&ensp;<code>int</code></dt>
+<dd>Número da página.</dd>
+<dt><strong><code>qtd_por_pagina</code></strong> :&ensp;<code>int</code></dt>
+<dd>Quantidade de notas por página.</dd>
+<dt><strong><code>ordencao</code></strong> :&ensp;<code>str</code></dt>
+<dd>Campo para ordenação das notas.<br>
+- empresa<br>
+- ambiente<br>
+- numero_nota<br>
+- status<br>
+- data_emissao<br>
+- nome_destinatario<br>
+- uf_destinatario<br>
+- valor_total</dd>
+<dt><strong><code>tipo_ordenacao</code></strong> :&ensp;<code>str</code></dt>
+<dd>Tipo de Ordenação.
+- desc<br>
+- asc
 </dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code>list</code></dt>
+<dt><code>List[<a title="pysisnoapi.nfse.NotaFiscalServico" href="#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a>]</code></dt>
 <dd>Lista com todas as NFSe</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
-def buscar_notas(cnpj:str, data_inicio:datetime, data_fim:datetime, ambiente:str=&#39;1&#39;, status:str=&#39;aprovado&#39;, texto:str=&#39;&#39;, pagina:str=&#39;1&#39;, qtd_por_pagina:str=&#39;10&#39;, ordencao:str=&#34;numero_nota&#34;, tipo_ordenacao:str=&#34;desc&#34;, *args, **kwargs) -&gt; list:
-    &#34;&#34;&#34;Recupera as notas de uma determinada empresa.
+<pre><code class="python">@requires_emissor
+def buscar_notas(cnpj:str=None, data_inicio:datetime=None, data_fim:datetime=None, ambiente:str=None, status:str=None, texto:str=None, pagina:str=None, qtd_por_pagina:str=None, ordencao:str=None, tipo_ordenacao:str=None, *args, **kwargs) -&gt; List[NotaFiscalServico]:
+    &#34;&#34;&#34;Recupera as notas fiscais de serviço.
 
     Args:
-        cnpj (str): CNPJ Empresa apenas números
-        data_inicio (datetime): Início intervalo de datas (dd/MM/yyyy HH:mm:ss)
-        data_fim (datetime): Fim intervalo de datas (dd/MM/yyyy HH:mm:ss)
-        ambiente (str, optional):  
+        cnpj (str): CNPJ Empresa (apenas números).
+        
+        data_inicio (datetime): Início intervalo de datas (dd/MM/yyyy HH:mm:ss).
+        
+        data_fim (datetime): Fim intervalo de datas (dd/MM/yyyy HH:mm:ss).
+        
+        ambiente (str):  
             1: Produção  
             2: Homologação
-        status (str, optional): Status da NFSe. Defaults to &#39;aprovado&#39;.  
-            aprovado  
-            reprovado  
-            contingencia  
-            cancelado  
-            Em digitação
-        texto (str, optional): Texto de busca livre. Defaults to &#39;&#39;.
-        pagina (int, optional): Número da página. Defaults to 1.
-        qtd_por_pagina (int, optional): Quantidade de notas por página. Defaults to 10.
-        ordencao (str, optional): Campo para ordenação das notas. Defaults to &#34;numero_nota&#34;.  
-            empresa  
-            ambiente  
-            numero_nota  
-            status  
-            data_emissao  
-            nome_destinatario  
-            uf_destinatario  
-            valor_total
-        tipo_ordenacao (str, optional): Tipo de Ordenação. Defaults to &#34;desc&#34;.  
-            desc  
-            asc  
+            
+        status (str): Status da NFSe.
+            - aprovado  
+            - reprovado  
+            - contingencia    
+            - cancelado  
+            - Em digitação
+            
+        texto (str): Texto de busca livre.
+        
+        pagina (int): Número da página.
+        
+        qtd_por_pagina (int): Quantidade de notas por página.
+        
+        ordencao (str): Campo para ordenação das notas.  
+            - empresa  
+            - ambiente  
+            - numero_nota  
+            - status  
+            - data_emissao  
+            - nome_destinatario  
+            - uf_destinatario  
+            - valor_total
+            
+        tipo_ordenacao (str): Tipo de Ordenação.
+            - desc  
+            - asc  
+    
     Returns:
-        list: Lista com todas as NFSe
+        List[NotaFiscalServico]: Lista com todas as NFSe
     &#34;&#34;&#34;
+    
     headers = HEADERS
-    headers[&#39;CNPJ Empresa&#39;]  = cnpj
-    headers[&#39;dataInicio&#39;]    = data_inicio.strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
-    headers[&#39;dataFim&#39;]       = data_fim.strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
-    headers[&#39;ambiente&#39;]      = ambiente
-    headers[&#39;status&#39;]        = status
-    headers[&#39;textoBusca&#39;]    = texto
-    headers[&#39;pagina&#39;]        = pagina           # Na documentação diz que deve ser inteiro, mas &#34;Header part (1) from (&#39;pagina&#39;, 1) must be of type str or bytes, not &lt;class &#39;int&#39;&gt;&#34;
-    headers[&#39;qtdPorPagina&#39;]  = qtd_por_pagina   # Na documentação diz que deve ser inteiro, mas &#34;Header part (10) from (&#39;qtdPorPagina&#39;, 10) must be of type str or bytes, not &lt;class &#39;int&#39;&gt;&#34;
-    headers[&#39;ordenacao&#39;]     = ordencao
-    headers[&#39;tipoOrdenacao&#39;] = tipo_ordenacao
+    
+    if cnpj:
+        headers[&#39;CNPJ Empresa&#39;] = cnpj
+    if data_inicio:
+        headers[&#39;dataInicio&#39;] = data_inicio.strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
+    if data_fim:
+        headers[&#39;dataFim&#39;] = data_fim.strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
+    if ambiente:
+        headers[&#39;ambiente&#39;] = ambiente
+    if status:
+        headers[&#39;status&#39;] = status
+    if texto:
+        headers[&#39;textoBusca&#39;] = texto
+    if pagina:
+        headers[&#39;pagina&#39;] = pagina                  # TODO: Na documentação diz que deve ser inteiro, mas &#34;Header part (1) from (&#39;pagina&#39;, 1) must be of type str or bytes, not &lt;class &#39;int&#39;&gt;&#34;
+    if qtd_por_pagina:
+        headers[&#39;qtdPorPagina&#39;] = qtd_por_pagina    # TODO: Na documentação diz que deve ser inteiro, mas &#34;Header part (10) from (&#39;qtdPorPagina&#39;, 10) must be of type str or bytes, not &lt;class &#39;int&#39;&gt;&#34;
+    if ordencao:
+        headers[&#39;ordenacao&#39;] = ordencao
+    if tipo_ordenacao:
+        headers[&#39;tipoOrdenacao&#39;] = tipo_ordenacao
 
     url = f&#39;{URL}/nfse&#39;
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
         case 200:
-            # TODO: Retornar uma lista de objetos &#34;NFSe&#34;
-            return response.json().get(&#39;dados&#39;)
+            json_data = response.json().get(&#39;dados&#39;)
+            nfses = [NotaFiscalServico.from_json(**d) for d in json_data[&#39;itens&#39;]]
+            return nfses
         case _:
             return response.text</code></pre>
 </details>
@@ -422,7 +484,8 @@ def buscar_notas(cnpj:str, data_inicio:datetime, data_fim:datetime, ambiente:str
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def cancelar(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -432,10 +495,6 @@ def cancelar(*args, **kwargs):
 </code></dt>
 <dd>
 <div class="desc"><p>Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.</p>
-<h2 id="atencao">Atenção</h2>
-<p>Esse método é diretamente vinculado as chaves de API.
-Isso quer dizer que é através das chaves que a plataforma da SISNO irá decidir quem será o emissor dessa nota.
-Para alterar o emissor, basta chamar a função "sisno.alterar_emissor()" e passar as novas chaves.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>obj_emissao_nfse</code></strong> :&ensp;<code><a title="pysisnoapi.nfse.ObjetoEmissaoNFSe" href="#pysisnoapi.nfse.ObjetoEmissaoNFSe">ObjetoEmissaoNFSe</a></code></dt>
@@ -452,15 +511,11 @@ Para alterar o emissor, basta chamar a função "sisno.alterar_emissor()" e pass
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
     &#34;&#34;&#34;Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
-
-    Atenção:
-        Esse método é diretamente vinculado as chaves de API.
-        Isso quer dizer que é através das chaves que a plataforma da SISNO irá decidir quem será o emissor dessa nota.
-        Para alterar o emissor, basta chamar a função &#34;sisno.alterar_emissor()&#34; e passar as novas chaves.
-
+    
     Args:
         obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe &#34;ObjetoEmissaoNFSe&#34; que contém todos os dados necessários
 
@@ -491,7 +546,8 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def recuperar_dados(id_nfse:int, *args, **kwargs):
     # TODO: Cada NFSe possui um ID mesmo que de empresas diferentes ?
     # TODO: Essa função deveria estar atrelada as chaves de API, uma vez que será através delas que emitiremos as notas por uma empresa ou por outra ?
@@ -521,7 +577,8 @@ def recuperar_dados(id_nfse:int, *args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_keys
+<pre><code class="python">@requires_emissor
+@requires_empresa
 def retransmitir(*args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -573,43 +630,138 @@ def retransmitir(*args, **kwargs):
 </dd>
 <dt id="pysisnoapi.nfse.NotaFiscalServico"><code class="flex name class">
 <span>class <span class="ident">NotaFiscalServico</span></span>
-<span>(</span><span>*args, **kwargs)</span>
+<span>(</span><span>id: Optional[int] = None, empresa: Optional[<a title="pysisnoapi.Empresa" href="index.html#pysisnoapi.Empresa">Empresa</a>] = None, uuid: Optional[str] = None, modelo: Optional[str] = None, status: Optional[str] = None, motivo: Optional[str] = None, numero_nota: Optional[str] = None, codigo_verificacao: Optional[str] = None, protocolo: Optional[str] = None, nome_destinatario: Optional[str] = None, uf_destinatario: Optional[str] = None, cpf_cnpj_destinatario: Optional[str] = None, valor_total: Optional[str] = None, data_emissao: Optional[str] = None, data_competencia: Optional[str] = None, uf_prestacao: Optional[<a title="pysisnoapi.Uf" href="index.html#pysisnoapi.Uf">Uf</a>] = None, municipio_prestacao: Optional[<a title="pysisnoapi.Municipio" href="index.html#pysisnoapi.Municipio">Municipio</a>] = None, ambiente: Optional[str] = None, json_objeto_nfse: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>NotaFiscalServico(id: Optional[int] = None, empresa: Optional[pysisnoapi.Empresa] = None, uuid: Optional[str] = None, modelo: Optional[str] = None, status: Optional[str] = None, motivo: Optional[str] = None, numero_nota: Optional[str] = None, codigo_verificacao: Optional[str] = None, protocolo: Optional[str] = None, nome_destinatario: Optional[str] = None, uf_destinatario: Optional[str] = None, cpf_cnpj_destinatario: Optional[str] = None, valor_total: Optional[str] = None, data_emissao: Optional[str] = None, data_competencia: Optional[str] = None, uf_prestacao: Optional[pysisnoapi.Uf] = None, municipio_prestacao: Optional[pysisnoapi.Municipio] = None, ambiente: Optional[str] = None, json_objeto_nfse: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class NotaFiscalServico:
-    def __init__(self, *args, **kwargs):
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-        self.id                     = kwargs.get(&#34;id&#34;, 0)
-        self.empresa                = kwargs.get(&#34;empresa&#34;, None)
-        self.uuid                   = kwargs.get(&#34;uuid&#34;, &#39;&#39;)
-        self.modelo                 = kwargs.get(&#34;modelo&#34;, &#39;&#39;)
-        self.status                 = kwargs.get(&#34;status&#34;, &#39;&#39;)
-        self.motivo                 = kwargs.get(&#34;motivo&#34;, &#39;&#39;)
-        self.numero_nota            = kwargs.get(&#34;numero_nota&#34;, &#39;&#39;)
-        self.codigo_verificacao     = kwargs.get(&#34;codigo_verificacao&#34;, &#39;&#39;)
-        self.protocolo              = kwargs.get(&#34;protocolo&#34;, &#39;&#39;)
-        self.nome_destinatario      = kwargs.get(&#34;nome_destinatario&#34;, &#39;&#39;)
-        self.uf_destinatario        = kwargs.get(&#34;uf_destinatario&#34;, &#39;&#39;)
-        self.cpf_cnpj_destinatario  = kwargs.get(&#34;cpf_cnpj_destinatario&#34;, &#39;&#39;)
-        self.valor_total            = kwargs.get(&#34;valor_total&#34;, &#39;&#39;)
-        self.data_emissao           = kwargs.get(&#34;data_emissao&#34;, &#39;&#39;)
-        self.data_competencia       = kwargs.get(&#34;data_competencia&#34;, &#39;&#39;)
-        self.uf_prestacao           = kwargs.get(&#34;uf_prestacao&#34;, None)
-        self.municipio_prestacao    = kwargs.get(&#34;municipio_prestacao&#34;, None)
-        self.ambiente               = kwargs.get(&#34;ambiente&#34;, &#39;&#39;)
+<pre><code class="python">@dataclass
+class NotaFiscalServico(BaseClass):
+    # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     
-    def asdict(self,):
-        return self.__dict__</code></pre>
+    id                   : Optional[int]        = None
+    empresa              : Optional[Empresa]    = None
+    uuid                 : Optional[str]        = None
+    modelo               : Optional[str]        = None
+    status               : Optional[str]        = None
+    motivo               : Optional[str]        = None
+    numero_nota          : Optional[str]        = None
+    codigo_verificacao   : Optional[str]        = None
+    protocolo            : Optional[str]        = None
+    nome_destinatario    : Optional[str]        = None
+    uf_destinatario      : Optional[str]        = None
+    cpf_cnpj_destinatario: Optional[str]        = None
+    valor_total          : Optional[str]        = None
+    data_emissao         : Optional[str]        = None
+    data_competencia     : Optional[str]        = None
+    uf_prestacao         : Optional[Uf]         = None
+    municipio_prestacao  : Optional[Municipio]  = None
+    ambiente             : Optional[str]        = None
+    json_objeto_nfse     : Optional[str]        = None  # TODO: Não consta na documentação da API
+    
+    @classmethod
+    def from_json(cls, **kwargs):
+        empresa_dict = kwargs.pop(&#39;empresa&#39;, {})
+        empresa = Empresa.from_json(**empresa_dict)
+        
+        uf_dict = kwargs.pop(&#39;uf_prestacao&#39;, {})
+        uf      = Uf.from_json(**uf_dict)
+        
+        municipio_dict = kwargs.pop(&#39;municipio_prestacao&#39;, {})
+        municipio = Municipio.from_json(**municipio_dict)
+        
+        return cls(empresa=empresa, uf_prestacao=uf, municipio_prestacao=municipio, **kwargs)</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pysisnoapi.BaseClass" href="index.html#pysisnoapi.BaseClass">BaseClass</a></li>
+</ul>
+<h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.nfse.NotaFiscalServico.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.ambiente"><code class="name">var <span class="ident">ambiente</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.codigo_verificacao"><code class="name">var <span class="ident">codigo_verificacao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.cpf_cnpj_destinatario"><code class="name">var <span class="ident">cpf_cnpj_destinatario</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.data_competencia"><code class="name">var <span class="ident">data_competencia</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.data_emissao"><code class="name">var <span class="ident">data_emissao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.empresa"><code class="name">var <span class="ident">empresa</span> : Optional[<a title="pysisnoapi.Empresa" href="index.html#pysisnoapi.Empresa">Empresa</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.id"><code class="name">var <span class="ident">id</span> : Optional[int]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.json_objeto_nfse"><code class="name">var <span class="ident">json_objeto_nfse</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.modelo"><code class="name">var <span class="ident">modelo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.motivo"><code class="name">var <span class="ident">motivo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.municipio_prestacao"><code class="name">var <span class="ident">municipio_prestacao</span> : Optional[<a title="pysisnoapi.Municipio" href="index.html#pysisnoapi.Municipio">Municipio</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.nome_destinatario"><code class="name">var <span class="ident">nome_destinatario</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.numero_nota"><code class="name">var <span class="ident">numero_nota</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.protocolo"><code class="name">var <span class="ident">protocolo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.status"><code class="name">var <span class="ident">status</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.uf_destinatario"><code class="name">var <span class="ident">uf_destinatario</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.uf_prestacao"><code class="name">var <span class="ident">uf_prestacao</span> : Optional[<a title="pysisnoapi.Uf" href="index.html#pysisnoapi.Uf">Uf</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.uuid"><code class="name">var <span class="ident">uuid</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.valor_total"><code class="name">var <span class="ident">valor_total</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.from_json"><code class="name flex">
+<span>def <span class="ident">from_json</span></span>(<span>**kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -617,11 +769,29 @@ def retransmitir(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def asdict(self,):
-    return self.__dict__</code></pre>
+<pre><code class="python">@classmethod
+def from_json(cls, **kwargs):
+    empresa_dict = kwargs.pop(&#39;empresa&#39;, {})
+    empresa = Empresa.from_json(**empresa_dict)
+    
+    uf_dict = kwargs.pop(&#39;uf_prestacao&#39;, {})
+    uf      = Uf.from_json(**uf_dict)
+    
+    municipio_dict = kwargs.pop(&#39;municipio_prestacao&#39;, {})
+    municipio = Municipio.from_json(**municipio_dict)
+    
+    return cls(empresa=empresa, uf_prestacao=uf, municipio_prestacao=municipio, **kwargs)</code></pre>
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="pysisnoapi.BaseClass" href="index.html#pysisnoapi.BaseClass">BaseClass</a></b></code>:
+<ul class="hlist">
+<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="index.html#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="pysisnoapi.nfse.ObjetoEmissaoNFSe"><code class="flex name class">
 <span>class <span class="ident">ObjetoEmissaoNFSe</span></span>
@@ -715,30 +885,31 @@ def retransmitir(*args, **kwargs):
 <dd>Descrição do Serviço</dd>
 <dt><strong><code>impostos</code></strong> :&ensp;<code>Imposto</code></dt>
 <dd>Instância da classe "Imposto"</dd>
-</dl>
-<p>Keyword Args:
-intermediario (Cliente): Intermediário do Serviço
-Default: None
-iss_retido (int): 1-Sim, 2-Não
-Default: 2
-responsavel_retencao_iss (int): 1-Tomador, 2-Intermediário
-Default: 1
-deducoes (str): Soma total das deduções/descontos gerais
-Default: ''
-desconto_incondicionado (str): Soma total dos descontos incondicionados
-Default: ''
-desconto_condicionado (str): Soma total dos descontos condicionados
-Default: ''
-outras_retencoes (str): Soma total de outras retenções
-Default: ''
-informacoes_complementares (str): Informações complementares
-Default: ''
-data_competencia (str): Data da competência do serviço
-Default: datetime.now()
-uf_local_prestacao (Uf): UF do local da prestação do serviço
-Default: ''
-municipio_local_prestacao (Municipio): Município do local da prestação do serviço
-Default: ''</p></div>
+<dt><strong><code>**intermediario</code></strong> :&ensp;<code>Cliente</code></dt>
+<dd>Intermediário do Serviço</dd>
+<dt><strong><code>**iss_retido</code></strong> :&ensp;<code>int</code></dt>
+<dd>1. Sim<br>
+2. Não</dd>
+<dt><strong><code>**responsavel_retencao_iss</code></strong> :&ensp;<code>int</code></dt>
+<dd>1. Tomador<br>
+2. Intermediário</dd>
+<dt><strong><code>**deducoes</code></strong> :&ensp;<code>str</code></dt>
+<dd>Soma total das deduções/descontos gerais</dd>
+<dt><strong><code>**desconto_incondicionado</code></strong> :&ensp;<code>str</code></dt>
+<dd>Soma total dos descontos incondicionados</dd>
+<dt><strong><code>**desconto_condicionado</code></strong> :&ensp;<code>str</code></dt>
+<dd>Soma total dos descontos condicionados</dd>
+<dt><strong><code>**outras_retencoes</code></strong> :&ensp;<code>str</code></dt>
+<dd>Soma total de outras retenções</dd>
+<dt><strong><code>**informacoes_complementares</code></strong> :&ensp;<code>str</code></dt>
+<dd>Informações complementares</dd>
+<dt><strong><code>**data_competencia</code></strong> :&ensp;<code>str</code></dt>
+<dd>Data da competência do serviço</dd>
+<dt><strong><code>**uf_local_prestacao</code></strong> :&ensp;<code>Uf</code></dt>
+<dd>UF do local da prestação do serviço</dd>
+<dt><strong><code>**municipio_local_prestacao</code></strong> :&ensp;<code>Municipio</code></dt>
+<dd>Município do local da prestação do serviço</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -750,32 +921,36 @@ Default: ''</p></div>
 
         Args:
             valor_servicos (str): Valor do Serviço no formato $0.00
+            
             discriminacao (str): Descrição do Serviço
+            
             impostos (Imposto): Instância da classe &#34;Imposto&#34;
-
-        Keyword Args:
-            intermediario (Cliente): Intermediário do Serviço
-                Default: None
-            iss_retido (int): 1-Sim, 2-Não
-                Default: 2
-            responsavel_retencao_iss (int): 1-Tomador, 2-Intermediário
-                Default: 1
-            deducoes (str): Soma total das deduções/descontos gerais
-                Default: &#39;&#39;
-            desconto_incondicionado (str): Soma total dos descontos incondicionados
-                Default: &#39;&#39;
-            desconto_condicionado (str): Soma total dos descontos condicionados
-                Default: &#39;&#39;
-            outras_retencoes (str): Soma total de outras retenções
-                Default: &#39;&#39;
-            informacoes_complementares (str): Informações complementares
-                Default: &#39;&#39; 
-            data_competencia (str): Data da competência do serviço
-                Default: datetime.now()
-            uf_local_prestacao (Uf): UF do local da prestação do serviço
-                Default: &#39;&#39;
-            municipio_local_prestacao (Municipio): Município do local da prestação do serviço
-                Default: &#39;&#39;
+            
+            **intermediario (Cliente): Intermediário do Serviço
+            
+            **iss_retido (int):  
+                1. Sim  
+                2. Não
+                
+            **responsavel_retencao_iss (int):  
+                1. Tomador  
+                2. Intermediário
+                
+            **deducoes (str): Soma total das deduções/descontos gerais
+            
+            **desconto_incondicionado (str): Soma total dos descontos incondicionados
+            
+            **desconto_condicionado (str): Soma total dos descontos condicionados
+            
+            **outras_retencoes (str): Soma total de outras retenções
+            
+            **informacoes_complementares (str): Informações complementares
+            
+            **data_competencia (str): Data da competência do serviço
+            
+            **uf_local_prestacao (Uf): UF do local da prestação do serviço
+            
+            **municipio_local_prestacao (Municipio): Município do local da prestação do serviço
         &#34;&#34;&#34;
         self.valor_servicos             = valor_servicos
         self.discriminacao              = discriminacao
@@ -850,7 +1025,26 @@ Default: ''</p></div>
 <li>
 <h4><code><a title="pysisnoapi.nfse.NotaFiscalServico" href="#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a></code></h4>
 <ul class="">
-<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.asdict" href="#pysisnoapi.nfse.NotaFiscalServico.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.ambiente" href="#pysisnoapi.nfse.NotaFiscalServico.ambiente">ambiente</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.codigo_verificacao" href="#pysisnoapi.nfse.NotaFiscalServico.codigo_verificacao">codigo_verificacao</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.cpf_cnpj_destinatario" href="#pysisnoapi.nfse.NotaFiscalServico.cpf_cnpj_destinatario">cpf_cnpj_destinatario</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.data_competencia" href="#pysisnoapi.nfse.NotaFiscalServico.data_competencia">data_competencia</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.data_emissao" href="#pysisnoapi.nfse.NotaFiscalServico.data_emissao">data_emissao</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.empresa" href="#pysisnoapi.nfse.NotaFiscalServico.empresa">empresa</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.from_json" href="#pysisnoapi.nfse.NotaFiscalServico.from_json">from_json</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.id" href="#pysisnoapi.nfse.NotaFiscalServico.id">id</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.json_objeto_nfse" href="#pysisnoapi.nfse.NotaFiscalServico.json_objeto_nfse">json_objeto_nfse</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.modelo" href="#pysisnoapi.nfse.NotaFiscalServico.modelo">modelo</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.motivo" href="#pysisnoapi.nfse.NotaFiscalServico.motivo">motivo</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.municipio_prestacao" href="#pysisnoapi.nfse.NotaFiscalServico.municipio_prestacao">municipio_prestacao</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.nome_destinatario" href="#pysisnoapi.nfse.NotaFiscalServico.nome_destinatario">nome_destinatario</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.numero_nota" href="#pysisnoapi.nfse.NotaFiscalServico.numero_nota">numero_nota</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.protocolo" href="#pysisnoapi.nfse.NotaFiscalServico.protocolo">protocolo</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.status" href="#pysisnoapi.nfse.NotaFiscalServico.status">status</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.uf_destinatario" href="#pysisnoapi.nfse.NotaFiscalServico.uf_destinatario">uf_destinatario</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.uf_prestacao" href="#pysisnoapi.nfse.NotaFiscalServico.uf_prestacao">uf_prestacao</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.uuid" href="#pysisnoapi.nfse.NotaFiscalServico.uuid">uuid</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.valor_total" href="#pysisnoapi.nfse.NotaFiscalServico.valor_total">valor_total</a></code></li>
 </ul>
 </li>
 <li>
