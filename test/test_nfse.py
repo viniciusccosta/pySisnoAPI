@@ -1,7 +1,6 @@
 import requests_mock
 import unittest
 from pysisnoapi import nfse
-from test.nfse_common import *
 
 class NfseTest(unittest.TestCase):
     def test_buscar_notas_pelo_menos_uma(self):
@@ -69,8 +68,8 @@ class NfseTest(unittest.TestCase):
                 }
             )
 
-            data = nfse.buscar_notas()
-        check_buscar_notas_pelo_menos_uma(self, data)
+            nfses = nfse.buscar_notas()
+        self.assertGreaterEqual(len(nfses), 1)
 
 if __name__ == "__main__":
     unittest.main()

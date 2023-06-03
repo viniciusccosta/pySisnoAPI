@@ -2,8 +2,7 @@
 import unittest
 import requests
 
-from pysisnoapi import misc
-from test.misc_common import *
+from pysisnoapi import misc, Municipio
 from unittest.mock import MagicMock
 from typing import List
 
