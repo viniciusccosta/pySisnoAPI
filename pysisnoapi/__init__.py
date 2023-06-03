@@ -352,7 +352,7 @@ class Municipio(BaseClass):
         return cls(**kwargs)
 
 @dataclass
-class NotaFiscal:
+class NotaFiscal(BaseClass):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                      : Optional[int]         = None
     empresa                 : Optional['Empresa']   = None
