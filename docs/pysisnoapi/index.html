@@ -386,7 +386,7 @@ class Municipio(BaseClass):
         return cls(**kwargs)
 
 @dataclass
-class NotaFiscal:
+class NotaFiscal(BaseClass):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                      : Optional[int]         = None
     empresa                 : Optional[&#39;Empresa&#39;]   = None
@@ -818,6 +818,7 @@ class BaseClass:
 <li><a title="pysisnoapi.Endereco" href="#pysisnoapi.Endereco">Endereco</a></li>
 <li><a title="pysisnoapi.Ibpt" href="#pysisnoapi.Ibpt">Ibpt</a></li>
 <li><a title="pysisnoapi.Municipio" href="#pysisnoapi.Municipio">Municipio</a></li>
+<li><a title="pysisnoapi.NotaFiscal" href="#pysisnoapi.NotaFiscal">NotaFiscal</a></li>
 <li><a title="pysisnoapi.Uf" href="#pysisnoapi.Uf">Uf</a></li>
 <li><a title="pysisnoapi.nfse.NotaFiscalServico" href="nfse.html#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a></li>
 </ul>
@@ -1803,7 +1804,7 @@ def from_json(cls, **kwargs):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
-class NotaFiscal:
+class NotaFiscal(BaseClass):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                      : Optional[int]         = None
     empresa                 : Optional[&#39;Empresa&#39;]   = None
@@ -1845,6 +1846,10 @@ class NotaFiscal:
             **kwargs
         )</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.NotaFiscal.ambiente"><code class="name">var <span class="ident">ambiente</span> : Optional[str]</code></dt>
@@ -1963,6 +1968,14 @@ def from_json(cls, **kwargs):
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></b></code>:
+<ul class="hlist">
+<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="pysisnoapi.Observacao"><code class="flex name class">
 <span>class <span class="ident">Observacao</span></span>
