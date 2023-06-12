@@ -67,7 +67,6 @@ class TestGetMunicipios(unittest.TestCase):
         assert municipios is None
 
 class TesteGetCfops(unittest.TestCase):
-
     def test_get_cfops_success(self):
         # Mocking:
         mock_response = MagicMock()
@@ -76,8 +75,16 @@ class TesteGetCfops(unittest.TestCase):
             "status": "Sucesso",
             "descricao": "Lista de municípios",
             'dados': [
-                {'codigo': '5102', 'descricao': 'Venda de mercadoria adquirida ou recebida de terceiros', 'aplicacao': ''},
-                {'codigo': '5929', 'descricao': 'Outra saída de mercadoria ou prestação de serviço não especificado', 'aplicacao': ''},
+                {
+                    'codigo': '5102', 
+                    'descricao': 'Venda de mercadoria adquirida ou recebida de terceiros', 
+                    'aplicacao': ''
+                },
+                {
+                    'codigo': '5929', 
+                    'descricao': 'Outra saída de mercadoria ou prestação de serviço não especificado', 
+                    'aplicacao': ''
+                },
             ]
         }
         requests.get = MagicMock(return_value=mock_response)
