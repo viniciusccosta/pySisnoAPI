@@ -1,7 +1,6 @@
 import requests_mock
 import unittest
 from pysisnoapi import nfe
-from test.nfe_common import *
 
 class NfeTest(unittest.TestCase):
     def test_buscar_notas_pelo_menos_uma(self):
@@ -78,7 +77,7 @@ class NfeTest(unittest.TestCase):
             )
 
             nfes = nfe.listar()
-        check_buscar_notas_pelo_menos_uma(self, nfes)
+        self.assertGreaterEqual(len(nfes), 1)
         
 if __name__ == "__main__":
     unittest.main()
