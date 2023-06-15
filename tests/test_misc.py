@@ -66,7 +66,7 @@ class TestGetMunicipios(unittest.TestCase):
         # Checando resultado:
         assert municipios is None
 
-class TesteGetCfops(unittest.TestCase):
+class TestGetCfops(unittest.TestCase):
     def test_get_cfops_success(self):
         # Mocking:
         mock_response = MagicMock()

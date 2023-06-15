@@ -17,12 +17,13 @@ from dataclasses import dataclass, asdict
 from typing import Optional, List, Tuple, Dict
 from datetime import datetime
 from dateutil import parser
+# from pydantic import BaseModel, validator
 
 # ======================================================================================================================
 # Globals:
 load_dotenv()
 
-URL     = "http://homolog.arkaonline.com.br/nfe-service/"               # TODO: Provisório, em breve voltará para 'https://homolog.sisno.com.br/nfe-service/'
+URL     = "https://homolog.arkaonline.com.br/nfe-service"               # TODO: Provisório, em breve voltará para 'https://homolog.sisno.com.br/nfe-service/'
 HEADERS = {
     "token-emissor"         : os.getenv("token-emissor", ""),
     "token-secret-emissor"  : os.getenv("token-secret-emissor", ""),
@@ -80,9 +81,9 @@ class BaseClass:
             dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
         """
         return asdict(self, dict_factory=dict_factory)
-    
+
 @dataclass
-class Cfop(BaseClass):
+class Cfop:
     """CFOP (Código Fiscal de Operações e Prestações)
     """
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
@@ -90,62 +91,100 @@ class Cfop(BaseClass):
     descricao: Optional[str] = None
     aplicacao: Optional[str] = None
 
+@dataclass
 class Cliente:
-    def __init__(self, consumidor_final, contribuinte, endereco, **kwargs):
-        # Deve ser informado apenas um dos campos [pessoa_fisica, pessoa_juridica]
-        if "pessoa_fisica" not in kwargs and "pessoa_juridica" not in kwargs:
-            raise Exception("Necessário conter pelo menos um dos campos 'pessoa_fisica' ou 'pessoa_jurica'")
-        elif "pessoa_fisica" in kwargs and "pessoa_juridica" in kwargs:
-            raise Exception("Informar apenas um dos campos 'pessoa_fisica' ou 'pessoa_jurica'")
+    """Geralmente é o destinatário da NFe.
+    """
+    consumidor_final: str
+    contribuinte    : str
+    endereco        : "Endereco"
+    
+    pessoa_fisica   : Optional["PessoaFisica"] = None
+    pessoa_juridica : Optional["PessoaJuridica"] = None
+    
+    id              : Optional[int] = None
+    ie              : Optional[str] = None
+    telefone        : Optional[str] = None
+    email           : Optional[str] = None
+    faz_retencao    : Optional[str] = None
+    
+    # @validator('pessoa_juridica')
+    # def validate_pessoa_juridica(cls, value, values):
+    #     if not isinstance(value, PessoaJuridica):
+    #         raise TypeError("Pessoa Juridica deve ser um objeto da classe PessoaJuridica")
+    #     if value and values.get('pessoa_fisica'):
+    #         raise ValueError("Informe apenas um dos campos PessoaFisica ou PessoaJuridica")
+    #     if not value and not values.get('pessoa_fisica'):
+    #         raise ValueError("Informe pelo menos um dos campos PessoaFisica ou PessoaJuridica")
+    #     return value
+    
+    # @validator('consumidor_final')
+    # def validate_consumidor_final(cls, consumidor_final):
+    #     if not isinstance(consumidor_final, str):
+    #         raise TypeError("Consumidor Final tem que ser uma string")
+    #     if consumidor_final not in ['1', '2',]:
+    #         raise ValueError(f"Consumidor Final {consumidor_final} inválido")
+    #     return consumidor_final
+    
+    # @validator('contribuinte')
+    # def validate_contribuinte(cls, contribuinte):
+    #     if not isinstance(contribuinte, str):
+    #         raise TypeError("Contribuinte tem que ser uma string")
+    #     if contribuinte not in ['1', '2', '9']:
+    #         raise ValueError(f"Contribuinte {contribuinte} inválido")
+    #     return contribuinte
 
-        self.pessoa_fisica      = kwargs.get("pessoa_fisica", None)         # Objeto PessoaFisica
-        self.pessoa_juridica    = kwargs.get("pessoa_juridica", None)       # Objeto PessoaJuridica
-
-        self.ie                 = kwargs.get("ie", '')
-        self.consumidor_final   = consumidor_final                          # string (0: Não, 1: Sim)
-        self.contribuinte       = contribuinte                              # string (1: Contribuinte ICMS, 2: Contribuinte isento, 9: Não contribuinte)
-        self.endereco           = endereco                                  # Objeto Endereco
-        self.telefone           = kwargs.get("telefone", '')
-        self.email              = kwargs.get("email", '')
-        self.faz_retencao       = kwargs.get("faz_retencao", None)          # boolean
-
-    def asdict(self):
-        # Deve ser informado apenas um dos campos [pessoa_fisica, pessoa_juridica]
-
-        if self.pessoa_juridica:
-            dados = {
-                "ie"                : self.ie,
-                "pessoa_juridica"   : self.pessoa_juridica,
-                "consumidor_final"  : self.consumidor_final,
-                "contribuinte"      : self.contribuinte,
-                "endereco"          : self.endereco,
-                "telefone"          : self.telefone,
-                "email"             : self.email,
-                "faz_retencao"      : self.faz_retencao,
-            }
-        else:
-            dados = {
-                "ie"                : self.ie,
-                "pessoa_fisica"     : self.pessoa_fisica,
-                "consumidor_final"  : self.consumidor_final,
-                "contribuinte"      : self.contribuinte,
-                "endereco"          : self.endereco,
-                "telefone"          : self.telefone,
-                "email"             : self.email,
-                "faz_retencao"      : self.faz_retencao,
-            }
-        
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
-
+@dataclass
 class Cofins:
-    def __init__(self, **kwargs):
-        self.situacao_tributaria     = kwargs.get("situacao_tributaria", None)  # string [ 01, 02, 03, 04, 05, 06, 07, 08, 09, 49, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 70, 71, 72, 73, 74, 75, 98, 99 ]
+    """Contribuição para Financiamento da Seguridade Social.
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+    situacao_tributaria:
+        01: Operação Tributável com Alíquota Básica
+        02: Operação Tributável com Alíquota por Unidade de Medida de Produto
+        03: Operação Tributável com Alíquota por Unidade de Medida de Produto
+        04: Operação Tributável Monofásica - Revenda a Alíquota Zero
+        05: Operação Tributável por Substituição Tributária
+        06: Operação Tributável a Alíquota Zero
+        07: Operação Isenta da Contribuição
+        08: Operação sem Incidência da Contribuição
+        09: Operação com Suspensão da Contribuição
+        49: Outras Operações de Saída
+        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno
+        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno
+        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação
+        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno
+        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação
+        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação
+        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação
+        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno
+        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno
+        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação
+        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno
+        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação
+        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação
+        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação
+        67: Crédito Presumido - Outras Operações
+        70: Operação de Aquisição sem Direito a Crédito
+        71: Operação de Aquisição com Isenção
+        72: Operação de Aquisição com Suspensão
+        73: Operação de Aquisição a Alíquota Zero
+        74: Operação de Aquisição sem Incidência da Contribuição
+        75: Operação de Aquisição por Substituição Tributária
+        98: Outras Operações de Entrada
+        99: Outras Operações
+        
+    aliquota (str): $0.0000 
+        Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
+    
+    aliquota_st	(str): $0.0000
+    
+    aliquota_retencao (str): $0.0000
+    """
+    situacao_tributaria : str
+    
+    aliquota            : Optional[str] = None
+    aliquota_st         : Optional[str] = None
+    aliquota_retencao   : Optional[str] = None
 
 class DeclaracaoImportacaoAdicao:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
@@ -158,7 +197,7 @@ class DeclaracaoImportacaoAdicao:
         return dados if len(dados) > 0 else None
 
 @dataclass
-class Empresa(BaseClass):
+class Empresa:
     """
         Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
         Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
@@ -197,13 +236,14 @@ class Empresa(BaseClass):
         return cls(endereco=endereco, **kwargs)
 
 @dataclass
-class Endereco(BaseClass):
-    id                 : int
+class Endereco:
     codigo_pais        : str
     descricao_pais     : str
     bairro             : str
     logradouro         : str
     numero             : str
+    
+    id                 : Optional[int] = None
     uf                 : Optional[str] = None
     codigo_municipio   : Optional[str] = None
     descricao_municipio: Optional[str] = None
@@ -214,37 +254,8 @@ class Endereco(BaseClass):
     def from_json(cls, **kwargs):
         return cls(**kwargs)
     
-    # def asdict(self):
-    #     # Quando o país não for Brasil, ignorar os campos [uf, codigo_municipio, descricao_municipio, cep]
-
-    #     if self.codigo_pais == "55":
-    #         dados = {
-    #             "codigo_pais"        : self.codigo_pais,
-    #             "descricao_pais"     : self.descricao_pais,
-    #             "uf"                 : self.uf,
-    #             "codigo_municipio"   : self.codigo_municipio,
-    #             "descricao_municipio": self.descricao_municipio,
-    #             "cep"                : self.cep,
-    #             "bairro"             : self.bairro,
-    #             "logradouro"         : self.logradouro,
-    #             "numero"             : self.numero,
-    #             "complemento"        : self.complemento
-    #         }
-    #     else:
-    #         dados = {
-    #             "codigo_pais"        : self.codigo_pais,
-    #             "descricao_pais"     : self.descricao_pais,
-    #             "bairro"             : self.bairro,
-    #             "logradouro"         : self.logradouro,
-    #             "numero"             : self.numero,
-    #             "complemento"        : self.complemento
-    #         }
-        
-    #     dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-    #     return dados if len(dados) > 0 else None
-
 @dataclass
-class Ibpt(BaseClass):
+class Ibpt:
     """Classe `IBPT` (Impostos sobre Produtos e Serviços)
     """
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
@@ -269,54 +280,61 @@ class Ibpt(BaseClass):
         uf = Uf.from_json(**uf_dict)
         return cls(unidade_federativa=uf, **kwargs)
 
+@dataclass
 class Icms:
-    def __init__(self, **kwargs):
-        self.situacao_tributaria     = kwargs.get("situacao_tributaria", None)  # string [ 00, 10, 20, 30, 40, 41, 50, 51, 60, 70, 90, 101, 102, 103, 201, 202, 203, 300, 400, 500, 900 ]
+    """Imposto sobre Circulação de Mercadorias e Serviços
+    """
+    situacao_tributaria                       : str
+    
+    codigo_cfop                               : Optional[str] = None
+    aliquota_icms                             : Optional[str] = None
+    percentual_reducao_bc_icms                : Optional[str] = None
+    aliquota_fcp                              : Optional[str] = None
+    percentual_reducao_bc_icms_st             : Optional[str] = None
+    aliquota_aplicavel_calculo_credito        : Optional[str] = None
+    aliquota_icms_st                          : Optional[str] = None
+    aliquota_fcp_st                           : Optional[str] = None
+    percentual_margem_valor_agregado_icms_st  : Optional[str] = None
+    percentual_diferimento                    : Optional[str] = None
+    percentual_desonerado                     : Optional[str] = None
+    motivo_desoneracao                        : Optional[str] = None
+    percentual_icms_st_retido                 : Optional[str] = None
+    utilizar_tabela_aliquotas_interestaduais  : Optional[str] = None
+    utilizar_aliquota_interestadual_importacao: Optional[str] = None
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
-
+@dataclass
 class Impostos:
-    def __init__(self, tipo, pis, cofins, **kwargs):
-        # Quando produto, não informar o campo issqn. Quando serviço, não informar os campos icms e ipi.
-        self.tipo                    = tipo                         # 0: Produto, 1: Serviço
+    """Classe Base para as Classes de Impostos de Produtos e Serviços.
+    """
+    pis   : "Pis"
+    cofins: "Cofins"
 
-        self.icms                    = kwargs.get("icms", None)     # Objeto ICMS
-        self.ipi                     = kwargs.get("ipi", None)      # Objeto IPI
-        self.pis                     = pis
-        self.cofins                  = cofins
-        self.issqn                   = kwargs.get("issqn", None)    # Objeto ISSQN
-
-    def asdict(self):
-        # 0: Produto, 1: Serviço
-
-        if self.tipo == "0":
-            dados = {
-                "icms"  : self.icms,
-                "ipi"   : self.ipi,
-                "pis"   : self.pis,
-                "cofins": self.cofins,
-            }
-        elif self.tipo == "1":
-            dados = {
-                "pis"   : self.pis,
-                "cofins": self.cofins,
-                "issqn" : self.issqn,
-            }
-        
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
-
+@dataclass
 class Ipi:
-    def __init__(self, **kwargs):
-        self.situacao_tributaria     = kwargs.get("situacao_tributaria", None)  # string [ 00, 01, 02, 03, 04, 05, 49, 50, 51, 52, 53, 54, 55, 99 ]
+    """Imposto Sobre Produtos Industrializados
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+    situacao_tributaria:  
+        00: Entrada com Recuperação de Crédito  
+        01: Entrada Tributada com Alíquota Zero  
+        02: Entrada Isenta  
+        03: Entrada Não Tributada  
+        04: Entrada Imune  
+        05: Entrada com Suspensão  
+        49: Outras Entradas  
+        50: Saída Tributada  
+        51: Saída Tributável com Alíquota Zero  
+        52: Saída Isenta  
+        53: Saída Não Tributada  
+        54: Saída Imune  
+        55: Saída com Suspensão  
+        99: Outras Saídas  
+    """
+    situacao_tributaria : str
+    
+    aliquota            : Optional[str] = None
+    codigo_enquadramento: Optional[str] = None
+    codigo_selo         : Optional[str] = None
+    qtd_selo            : Optional[str] = None
 
 class Issqn:
     def __init__(self, **kwargs):
@@ -342,7 +360,9 @@ class Issqn:
         return dados if len(dados) > 0 else None
 
 @dataclass
-class Municipio(BaseClass):
+class Municipio:
+    """Classe Município
+    """
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo_ibge : Optional[int] = None
     descricao   : Optional[str] = None
@@ -352,7 +372,7 @@ class Municipio(BaseClass):
         return cls(**kwargs)
 
 @dataclass
-class NotaFiscal(BaseClass):
+class NotaFiscal:
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                      : Optional[int]         = None
     empresa                 : Optional['Empresa']   = None
@@ -406,102 +426,82 @@ class Observacao:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
         return dados if len(dados) > 0 else None
 
+@dataclass
 class PessoaFisica:
-    def __init__(self, nome_completo, **kwargs):
-        # Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
-        if "cpf" not in kwargs and "id_estrangeiro" not in kwargs:
-            raise Exception("Necessário conter pelo menos um dos campos 'cpf' ou 'id_estrangeiro'")
-        elif "cpf" in kwargs and "id_estrangeiro" in kwargs:
-            raise Exception("Informar apenas um dos campos 'cpf' ou 'id_estrangeiro'")
+    """Classe Pessoa Física
+    
+    Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
+    """
+    nome_completo: str
+    
+    cpf           : Optional[str] = None
+    id_estrangeiro: Optional[str] = None
+    
+    # TODO: Só pode passar um dos dois: "cpf" ou "id_estrangeiro"
 
-        self.cpf            = kwargs.get("cpf", '')                 # string
-        self.id_estrangeiro = kwargs.get("id_estrangeiro", '')      # string
-        self.nome_completo  = nome_completo                         # string
-
-    def asdict(self):
-        # TODO: Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
-
-        if self.id_estrangeiro:
-            dados = {
-                "id_estrangeiro"    : self.id_estrangeiro,
-                "nome_completo"     : self.nome_completo,
-            }
-        else:
-            dados = {
-                "cpf"               : self.cpf,
-                "nome_completo"     : self.nome_completo,
-            }
-        
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
-
+@dataclass
 class PessoaJuridica:
-    def __init__(self, **kwargs):
-        self.cnpj                    = kwargs.get("cnpj", None)                 # string
-        self.razao_social            = kwargs.get("razao_social", None)         # string
+    """Classe Pessoa Jurídica
+    """
+    cnpj        : str
+    razao_social: str
+    
+    im          : Optional[str]
+    suframa     : Optional[str]
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
-
+@dataclass
 class Pis:
-    def __init__(self, situacao_tributaria, **kwargs):
-        """
-        Args:
-            situacao_tributaria (str): Situação Tributária  
-                01: Operação Tributável com Alíquota Básica  
-                02: Operação Tributável com Alíquota por Unidade de Medida de Produto  
-                03: Operação Tributável com Alíquota por Unidade de Medida de Produto  
-                04: Operação Tributável Monofásica - Revenda a Alíquota Zero  
-                05: Operação Tributável por Substituição Tributária  
-                06: Operação Tributável a Alíquota Zero  
-                07: Operação Isenta da Contribuição  
-                08: Operação sem Incidência da Contribuição  
-                09: Operação com Suspensão da Contribuição  
-                49: Outras Operações de Saída  
-                50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno  
-                51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno  
-                52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação  
-                53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno  
-                54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação  
-                55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação  
-                56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação  
-                60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno  
-                61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno  
-                62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação  
-                63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno  
-                64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação  
-                65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação  
-                66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação  
-                67: Crédito Presumido - Outras Operações  
-                70: Operação de Aquisição sem Direito a Crédito  
-                71: Operação de Aquisição com Isenção  
-                72: Operação de Aquisição com Suspensão  
-                73: Operação de Aquisição a Alíquota Zero  
-                74: Operação de Aquisição sem Incidência da Contribuição  
-                75: Operação de Aquisição por Substituição Tributária  
-                98: Outras Operações de Entrada  
-                99: Outras Operações  
-            
-            aliquota (str): $0.0000 
-                Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
-            
-            aliquota_st	(str): $0.0000
-            
-            aliquota_retencao (str): $0.0000
-        """
+    """Programas de Integração Social e de Formação do Patrimônio do Servidor Público (PIS/PASEP)
 
-        self.situacao_tributaria = situacao_tributaria
-        self.aliquota            = kwargs.get("aliquota", None)
-        self.aliquota_st         = kwargs.get("aliquota_st", None)
-        self.aliquota_retencao   = kwargs.get("aliquota_retencao", None)
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
-
+    situacao_tributaria (str): Situação Tributária  
+        01: Operação Tributável com Alíquota Básica  
+        02: Operação Tributável com Alíquota por Unidade de Medida de Produto  
+        03: Operação Tributável com Alíquota por Unidade de Medida de Produto  
+        04: Operação Tributável Monofásica - Revenda a Alíquota Zero  
+        05: Operação Tributável por Substituição Tributária  
+        06: Operação Tributável a Alíquota Zero  
+        07: Operação Isenta da Contribuição  
+        08: Operação sem Incidência da Contribuição  
+        09: Operação com Suspensão da Contribuição  
+        49: Outras Operações de Saída  
+        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno  
+        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno  
+        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação  
+        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno  
+        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação  
+        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação  
+        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação  
+        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno  
+        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno  
+        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação  
+        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno  
+        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação  
+        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação  
+        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação  
+        67: Crédito Presumido - Outras Operações  
+        70: Operação de Aquisição sem Direito a Crédito  
+        71: Operação de Aquisição com Isenção  
+        72: Operação de Aquisição com Suspensão  
+        73: Operação de Aquisição a Alíquota Zero  
+        74: Operação de Aquisição sem Incidência da Contribuição  
+        75: Operação de Aquisição por Substituição Tributária  
+        98: Outras Operações de Entrada  
+        99: Outras Operações  
+    
+    aliquota (str): $0.0000 
+        Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
+    
+    aliquota_st	(str): $0.0000
+    
+    aliquota_retencao (str): $0.0000
+    
+    """
+    situacao_tributaria: str
+    
+    aliquota           : Optional[str] = None
+    aliquota_st        : Optional[str] = None
+    aliquota_retencao  : Optional[str] = None
+    
 class RetencaoIcmsTransporte:
     # TODO: Até o dia 10/05/2023 essa classe só está sendo usada na classe "Transporte", que não está sendo usada
     def __init__(self, **kwargs):
@@ -523,7 +523,7 @@ class Transporte:
         return dados if len(dados) > 0 else None
 
 @dataclass
-class Uf(BaseClass):
+class Uf:
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     # TODO: Até o dia 01/06/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
     codigo_ibge: Optional[str]  = None

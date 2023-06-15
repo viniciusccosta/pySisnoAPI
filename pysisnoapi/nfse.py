@@ -114,7 +114,7 @@ class ObjetoEmissaoNFSe:
         return dados if len(dados) > 0 else None
 
 @dataclass
-class NotaFiscalServico(BaseClass):
+class NotaFiscalServico:
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     
     id                   : Optional[int]        = None
@@ -160,6 +160,10 @@ class PaginaNotaServico:
     
     def asdict(self,):
         return self.__dict__
+
+@dataclass
+class ImpostosServico(Impostos):
+    issqn: "Issqn"
 
 # =====================================================================
 @requires_emissor

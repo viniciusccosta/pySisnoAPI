@@ -9,7 +9,10 @@
 from . import *
 
 from datetime import datetime
+# from pydantic import BaseModel, validator
 import requests
+import json
+import jsonpickle
 
 # =====================================================================
 CSV_HEADERS = [
@@ -36,73 +39,147 @@ CSV_HEADERS = [
 ]
 
 # =====================================================================
-class ObjetoEmissaoNFe:
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError
+@dataclass
+class ObjetoEmissaoNFe(BaseClass):
+    numero_nota_sequencial  : str
+    serie                   : str
+    operacao                : str
+    natureza_operacao       : str
+    modelo                  : str
+    finalidade              : str
+    ambiente                : str
+    cliente                 : Cliente
+    produtos                : List["Produto"]
+    pedido                  : "Pedido"
+    data_entrada_saida      : datetime
+    data_emissao            : datetime
+    
+    numero_pedido           : Optional[str]                       = None
+    transporte              : Optional["Transporte"]              = None
+    fatura                  : Optional["Fatura"]                  = None
+    parcelas                : Optional[List["Parcela"]]           = None
+    exportacao              : Optional["Exportacao"]              = None
+    nfe_referenciada        : Optional[List[str]]                 = None
+    retirada                : Optional["Local"]                   = None
+    entrega                 : Optional["Local"]                   = None
+    compra                  : Optional["Compra"]                  = None
+    indicador_intermediador : Optional[str]                       = None
+    informacao_intermediador: Optional["InformacaoIntermediador"] = None
+    
+    # @validator('operacao')
+    # def validate_operacao(cls, operacao):
+    #     if not isinstance(operacao, str):
+    #         raise TypeError("Operação tem que ser uma string")
+    #     if operacao not in ['0', '1']:
+    #         raise ValueError(f"Operação {operacao} inválida")
+    #     return operacao
+    
+    # @validator('modelo')
+    # def validate_modelo(cls, modelo):
+    #     if not isinstance(modelo, str):
+    #         raise TypeError("Modelo tem que ser uma string")
+    #     if modelo not in ['55', '65']:
+    #         raise ValueError(f"Modelo {modelo} inválido")
+    #     return modelo
+    
+    # @validator('finalidade')
+    # def validate_finalidade(cls, finalidade):
+    #     if not isinstance(finalidade, str):
+    #         raise TypeError("Finalidade tem que ser uma string")
+    #     if finalidade not in ['1', '2', '3', '4']:
+    #         raise ValueError(f"Finalidade {finalidade} inválida")
+    #     return finalidade
+    
+    # @validator('ambiente')
+    # def validate_ambiente(cls, ambiente):
+    #     if not isinstance(ambiente, str):
+    #         raise TypeError("Ambiente tem que ser uma string")
+    #     if ambiente not in ['1', '2',]:
+    #         raise ValueError(f"Ambiente {ambiente} inválido")
+    #     return ambiente
 
+@dataclass
 class Pagamento:
-    def __init__(self, *args):
-        self.formas_pagamento        = [f for f in args]                                        # list[FORMAPAGAMENTO]
+    formas_pagamento: List["FormaPagamento"]
 
-    def asdict(self):
-        return {
-            "formas_pagamento": [f.asdict() for f in self.formas_pagamento]
-        }
-
+@dataclass
 class FormaPagamento:
-    def __init__(self, **kwargs):
-        self.forma_pagamento         = kwargs.get("forma_pagamento", None)                      # string (0: À Vista, 1: À Prazo)
-        self.meio_pagamento          = kwargs.get("meio_pagamento", None)                       # string [01, 02, 03, 04, 05, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 90, 99 ]
-        self.valor_pagamento         = kwargs.get("valor_pagamento", None)                      # string ($0.00)
+    forma_pagamento         : str
+    meio_pagamento          : str
+    valor_pagamento         : str
+    
+    cnpj_credenciadora      : Optional[str] = None
+    bandeira                : Optional[str] = None
+    autorizacao             : Optional[str] = None
+    data_vencimento         : Optional[str] = None
+    descricao_meio_pagamento: Optional[str] = None
 
-    def asdict(self):
-        return self.__dict__
-
+@dataclass
 class Produto:
-    def __init__(self, tipo, **kwargs):
-        self.tipo                   = tipo                                      # TODO: 0: Produto, 1: Serviço
+    cfop                            : str
+    item                            : str
+    nome                            : str
+    codigo                          : str
+    ncm                             : str
+    quantidade                      : str
+    unidade                         : str
+    subtotal                        : str
+    total                           : str
+    impostos                        : str
+    
+    numero_pedido                   : Optional[str]                    = None
+    excessao_ibpt                   : Optional[str]                    = None
+    peso_liquido                    : Optional[str]                    = None
+    peso_bruto                      : Optional[str]                    = None
+    origem                          : Optional[str]                    = None
+    veiculo_usado                   : Optional[str]                    = None
+    ind_escala                      : Optional[str]                    = None
+    cnpj_fabricante                 : Optional[str]                    = None
+    beneficio_fiscal                : Optional[str]                    = None
+    gtin                            : Optional[str]                    = None
+    gtin_tributavel                 : Optional[str]                    = None
+    cest                            : Optional[str]                    = None
+    nve                             : Optional[str]                    = None
+    informacoes_adicionais          : Optional[str]                    = None
+    veiculo_novo                    : Optional['VeiculoNovo']          = None
+    exportacao                      : Optional['ExportacaoIndividual'] = None
+    importacao                      : Optional['ImportacaoIndividual'] = None
+    rastro                          : Optional['Rastreamento']         = None
+    ex_tipi                         : Optional[str]                    = None
+    valor_frete                     : Optional[str]                    = None
+    valor_seguro                    : Optional[str]                    = None
+    valor_desconto                  : Optional[str]                    = None
+    valor_outras_despesas_acessorias: Optional[str]                    = None
+    
+    # @validator('unidade')
+    # def validate_unidade(cls, unidade):
+    #     if not isinstance(str, unidade):
+    #         return TypeError("Unidade precisa ser uma string")
+    #     if unidade not in ['AMPOLA', 'BALDE', 'BANDEJ', 'BARRA', 'BISNAG', 'BLOCO', 'BOBINA', 'BOMB', 'CAPS', 'CART', 'CENTO', 'CJ', 'CM', 'CM2', 'CX', 'CX2', 'CX3', 'CX5', 'CX10', 'CX15', 'CX20', 'CX25', 'CX50', 'CX100', 'DISP', 'DUZIA', 'EMBAL', 'FARDO', 'FOLHA', 'FRASCO', 'GALAO', 'JOGO', 'KG', 'KIT', 'LATA', 'LITRO', 'M', 'M2', 'M3', 'MILHEI', 'ML', 'MWH', 'PACOTE', 'PALETE', 'PARES', 'PC', 'POTE', 'K', 'RESMA', 'ROLO', 'SACO', 'SACOLA', 'TAMBOR', 'TANQUE', 'TON', 'TUBO', 'UNID', 'VASIL', 'VIDRO',]:
+    #         return ValueError(f"Unidade {unidade} inválida")
+    #     return unidade
 
-        self.cfop                   = kwargs.get("cfop", None)                  # string
-        self.item                   = kwargs.get("item", None)                  # string (Número incremental na lista de produtos)
-        self.nome                   = kwargs.get("nome", None)                  # string
-        self.ncm                    = kwargs.get("ncm", None)                   # string
-        self.quantidade             = kwargs.get("quantidade", None)            # string
-        self.unidade                = kwargs.get("unidade", None)               # string (AMPOLA, BALDE, BANDEJ, BARRA, BISNAG, BLOCO, BOBINA, BOMB, CAPS, CART, CENTO, CJ, CM, CM2, CX, CX2, CX3, CX5, CX10, CX15, CX20, CX25, CX50, CX100, DISP, DUZIA, EMBAL, FARDO, FOLHA, FRASCO, GALAO, JOGO, KG, KIT, LATA, LITRO, M, M2, M3, MILHEI, ML, MWH, PACOTE, PALETE, PARES, PC, POTE, K, RESMA, ROLO, SACO, SACOLA, TAMBOR, TANQUE, TON, TUBO, UNID, VASIL, VIDRO)
-        self.subtotal               = kwargs.get("subtotal", None)              # string ($0.0000000000) - VALOR UNITÁRIO
-        self.total                  = kwargs.get("total", None)                 # string ($0.00) (Quantidade * Valor Unitário)
-        self.impostos               = kwargs.get("impostos", None)              # Objeto IMPOSTOS
+@dataclass
+class ImpostosProduto(Impostos):
+    icms: "Icms"
+    ipi : "Ipi"
 
-    def asdict(self):
-        return {
-            "cfop"          : self.cfop,
-            "item"          : self.item,
-            "nome"          : self.nome,
-            "ncm"           : self.ncm,
-            "quantidade"    : self.quantidade,
-            "unidade"       : self.unidade,
-            "subtotal"      : self.subtotal,
-            "total"         : self.total,
-            "impostos"      : self.impostos.asdict(),
-        }
-
+@dataclass
 class Pedido:
-    def __init__(self, **kwargs):
-        self.presenca                        = kwargs.get("presenca", None)                     # string [ 0, 1, 2, 3, 4, 5, 9 ]
-        self.pagamento                       = kwargs.get("pagamento", None)                    # Objeto PAGAMENTO
-
-        self.informacoes_complementares      = kwargs.get("informacoes_complementares", None)   # string
-        self.informacoes_fisco               = kwargs.get("informacoes_fisco", None)            # string
-        self.observacoes_fisco               = kwargs.get("observacoes_fisco", None)            # list[OBSERVACAO]
-        self.observacoes_contribuinte        = kwargs.get("observacoes_contribuinte", None)     # list[OBSERVACAO]
-
-    def asdict(self):
-        # TODO: Adicionar o restante dos atributos ao dicionário
-
-        return {
-            "presenca"                      : self.presenca,
-            "pagamento"                     : self.pagamento.asdict(),
-        }
-
+    presenca                  : str
+    pagamento                 : "Pagamento"
+    
+    modalidade_frete          : Optional[str] = None
+    frete                     : Optional[str] = None
+    desconto                  : Optional[str] = None
+    total                     : Optional[str] = None
+    despesas_acessorias       : Optional[str] = None
+    despesas_aduaneiras       : Optional[str] = None
+    informacoes_complementares: Optional[str] = None
+    informacoes_fisco         : Optional[str] = None
+    observacoes_fisco         : Optional[str] = None
+    observacoes_contribuinte  : Optional[str] = None
+    
 class VeiculoNovo:
     def __init__(self, **kwargs):
         raise NotImplementedError
@@ -111,7 +188,7 @@ class ExportacaoIndividual:
     def __init__(self, **kwargs):
         raise NotImplementedError
 
-class ImportacaoInvididual:
+class ImportacaoIndividual:
     def __init__(self, **kwargs):
         raise NotImplementedError
 
@@ -120,6 +197,10 @@ class Rastreamento:
         raise NotImplementedError
 
 class Fatura:
+    def __init__(self, **kwargs):
+        raise NotImplementedError
+
+class Parcela:
     def __init__(self, **kwargs):
         raise NotImplementedError
 
@@ -161,8 +242,29 @@ def cancelar(*args, **kwargs):
 
 @requires_emissor
 @requires_empresa
-def validar(*args, **kwargs):
-    raise NotImplementedError
+def validar(objetoNfe:ObjetoEmissaoNFe, tipo_emissao:str, *args, **kwargs) -> None:
+    """Endpoint utilizado para validar a nota fiscal eletrônica antes de emitir.
+
+    Args:
+        nfe (ObjetoEmissaoNFe): Nota Fiscal a ser validada.
+        
+        tipo_emissao (str): Tipo de Emissão  
+            1: Normal  
+            6: Contigência SNC-AN  
+            7: Contigência SVC-RS  
+    """
+    headers = HEADERS.copy()
+    headers['tipo-emissao'] = tipo_emissao    # TODO: Validar antes
+    json_str = jsonpickle.encode(objetoNfe.as_filtered_dict(), unpicklable=False)
+    
+    url = f'{URL}/nfe/validacao-nota'
+    response = requests.post(url, headers=headers, json=json.loads(json_str))
+    
+    match response.status_code:
+        case 200:
+            return response.json()
+        case _:
+            return response.text
 
 @requires_emissor
 def listar(qtd:str = None, pagina:str = None, *args, **kwargs) -> List[NotaFiscal]:
@@ -197,7 +299,7 @@ def listar(qtd:str = None, pagina:str = None, *args, **kwargs) -> List[NotaFisca
             return response.text
 
 @requires_emissor
-def buscar_notas(*args, **kwargs):
+def buscar(*args, **kwargs):
     raise NotImplementedError
 
 @requires_emissor
@@ -218,38 +320,5 @@ def get_pre_visualizacao(*args, **kwargs):
 @requires_empresa
 def get_danfe(*args, **kwargs):
     raise NotImplementedError
-
-# =====================================================================
-@requires_emissor
-def __emitir_nota_teste(*args, **kwargs):
-    agora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-
-    # TODO: Os impostos, os produtos (e até mesmo os clientes) já deverão estar cadastrados em algum banco de dados
-
-    # Grupos de Impostos:
-    pis             = Pis(situacao_tributaria="99")                                                                                                                     #
-    cofins          = Cofins(situacao_tributaria="99")                                                                                                                  #
-    issqn           = Issqn(indicador_exigibilidade_iss="1", indicador_incentivo_fiscal="1", item_lista_servicos="08.01", aliquota="0.0000")                            # Exigível, Não, 08.01, 0.0000%
-    impostos        = Impostos(tipo="1", pis=pis, cofins=cofins, issqn=issqn)                                                                                           # Serviço
-
-    # Produtos e Serviços:
-    produto         = Produto(tipo="1", cfop="5933", item="2", nome="MENSALIDADE DE ENSINO REGULAR, PRÉ-ESCOLAR, E FUNDAMENTAL", ncm="00000000", quantidade="1.0000", unidade="UNID", subtotal="1.0000000000", total="1.00", impostos=impostos)  # TODO: O total deveria ser calculado e não informado
-
-    # Destinatários:
-    endereco        = Endereco(codigo_pais="55", descricao_pais="Brasil", bairro="Nome do Bairro", logradouro="Rua Ciclano da Silva Júnior", numero="0")                #
-    pessoa_fisica   = PessoaFisica(cpf="65386056808", nome_completo="Nome do Cliente")                                                                                  # CPF gerado randomicamente pelo site https://www.geradordecpf.org/
-    cliente         = Cliente(pessoa_fisica=pessoa_fisica, consumidor_final="1", contribuinte="9", endereco=endereco)                                                   # Consumidor Final e Não Contribuinte
-
-    # Pedido:
-    forma_pagamento = FormaPagamento(forma_pagamento="0", meio_pagamento="01", valor_pagamento="1.00")                                                                  # À vista, dinheiro, R$ 1,00
-    pagamento       = Pagamento(forma_pagamento)                                                                                                                        # TODO: Supostamente podemos passar mais de uma forma de pagamento, mas será que ele irá validar o "valor_pagamento" com o total dos produtos/serviços ?
-    pedido          = Pedido(presenca="0", pagamento=pagamento)                                                                                                         # Não se aplica
-
-    # Nota Fiscal:
-    nota_fiscal     = NotaFiscal(serie="1", operacao="1", natureza_operacao="Prestação de Serviço", modelo="55", finalidade="1", ambiente="2", cliente=cliente, produtos=[produto], pedido=pedido, data_entrada_saida=agora, data_emissao=agora)  # TODO: Como saber qual a série?
-
-# =====================================================================
-if __name__ == "__main__":
-    __emitir_nota_teste()
 
 # =====================================================================
