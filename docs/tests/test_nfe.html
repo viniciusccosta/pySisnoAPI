@@ -1,0 +1,1128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>tests.test_nfe API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>tests.test_nfe</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from unittest.mock import MagicMock
+import requests
+import unittest
+from pysisnoapi import nfe
+from pysisnoapi import *
+from datetime import datetime
+
+class TestNfe(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        endereco = Endereco (
+            codigo_pais         = &#39;1058&#39;,
+            descricao_pais      = &#39;Brasil&#39;,
+            uf                  = &#39;DF&#39;,
+            codigo_municipio    = &#39;5300108&#39;,
+            descricao_municipio = &#39;Brasilia&#39;,
+            cep                 = &#39;70634300&#39;,
+            bairro              = &#39;Zona Industrial&#39;,
+            logradouro          = &#39;Quadra SOFN Quadra 3&#39;,
+            numero              = &#39;484&#39;,
+            complemento         = &#39;Gerado por 4devs&#39;,
+        )
+        
+        cliente  = Cliente(
+            consumidor_final = &#39;1&#39;,
+            contribuinte     = &#39;9&#39;,
+            pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
+            endereco         = endereco,
+        )
+        
+        impostos = nfe.ImpostosProduto(
+            Pis (
+                situacao_tributaria=&#39;99&#39;,
+                aliquota=&#39;0.0000&#39;,
+            ),
+            Cofins(
+                situacao_tributaria=&#39;99&#39;,
+                aliquota=&#39;0.0000&#39;,
+            ),
+            Icms (
+                situacao_tributaria=&#39;102&#39;,
+                aliquota_icms=&#39;0.0000&#39;,
+                aliquota_icms_st=&#39;0.0000&#39;,
+            ),
+            Ipi(
+                situacao_tributaria=&#39;99&#39;,
+                aliquota=&#39;0.0000&#39;,
+            ),
+        )
+        
+        produtos = [
+            nfe.Produto(
+                cfop                   = &#39;5102&#39;,
+                item                   = &#34;1&#34;,
+                nome                   = &#34;UNIFORMES&#34;,
+                codigo                 = &#34;123456&#34;,
+                ncm                    = &#34;62069000&#34;,
+                quantidade             = &#34;2.0&#34;,
+                unidade                = &#34;UNID&#34;,
+                subtotal               = &#34;2.0&#34;,
+                total                  = &#34;2.0&#34;,
+                impostos               = impostos,
+                informacoes_adicionais = &#34;Emitido pelo pySisnoAPI&#34;,
+            ),
+        ]
+        
+        pagamento = nfe.Pagamento(
+            formas_pagamento = [
+                nfe.FormaPagamento(
+                    forma_pagamento=&#39;0&#39;,
+                    meio_pagamento=&#39;01&#39;,
+                    valor_pagamento=&#39;1.0&#39;
+                )
+            ]
+        )
+        
+        pedido   = nfe.Pedido(
+            presenca=&#39;0&#39;,
+            pagamento=pagamento,
+            # informacoes_complementares=&#39;Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200nEMPRESA ENQUADRADA NO SIMPLES NACIONAL LC 123/2006n&#39;,
+        )
+        
+        data = datetime(2023, 5, 19, 17, 25, 57).strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
+        
+        self.objeto = nfe.ObjetoEmissaoNFe(
+            numero_nota_sequencial= &#39;123456&#39;,
+            serie                 = &#39;1&#39;,
+            operacao              = &#39;1&#39;,
+            natureza_operacao     = &#39;NATUREZA&#39;,
+            modelo                = &#39;55&#39;,
+            finalidade            = &#39;1&#39;,
+            ambiente              = &#39;2&#39;,
+            cliente               = cliente,
+            produtos              = produtos,
+            pedido                = pedido,
+            data_entrada_saida    = data,
+            data_emissao          = data,
+        )
+    
+    def test_listar_pelo_menos_uma_nfe(self):
+        # Mocking:
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        
+        mock_response.json.return_value = {
+            &#39;status&#39;: &#39;Sucesso&#39;, 
+            &#39;descricao&#39;: &#39;Página de notas de serviço do emissor&#39;,
+            &#34;dados&#34;: {
+                &#39;total&#39;: 1, 
+                &#39;itens_por_pagina&#39;: 10,
+                &#39;pagina_atual&#39;: 0, 
+                &#39;itens&#39;: [
+                    {
+                        &#34;id&#34;: 31833,
+                        &#34;empresa&#34;: {
+                            &#34;cnpj&#34;: &#34;05397048000107&#34;,                               # https://www.4devs.com.br/gerador_de_cnpj
+                            &#34;nome_fantasia&#34;: &#34;Empresa do Fulano&#34;,
+                            &#34;razao_social&#34;: &#34;Fulanos Inc.&#34;,
+                            &#34;endereco&#34;: {
+                                &#34;id&#34;: 7,
+                                &#34;codigo_pais&#34;: &#34;1058&#34;,
+                                &#34;descricao_pais&#34;: &#34;BRASIL&#34;,
+                                &#34;uf&#34;: &#34;DF&#34;,
+                                &#34;codigo_municipio&#34;: &#34;5300108&#34;,
+                                &#34;descricao_municipio&#34;: &#34;Brasilia&#34;,
+                                &#34;cep&#34;: &#34;70343-520&#34;,                                 # https://www.4devs.com.br/gerador_de_cep
+                                &#34;bairro&#34;: &#34;ASA SUL&#34;,
+                                &#34;logradouro&#34;: &#34;ENDERECO DA EMPRESA&#34;,
+                                &#34;numero&#34;: &#34;7&#34;,
+                                &#34;complemento&#34;: &#34;COMPLEMENTO QUALQUER&#34;
+                            },
+                            &#34;telefone&#34;: &#34;(11) 9999-9999&#34;,
+                            &#34;inscricao_estadual&#34;: &#34;0123456789123&#34;,
+                            &#34;regime_tributario&#34;: &#34;1&#34;,
+                            &#34;classificacao_nacional_atividades_economicas&#34;: &#34;8512100&#34;,
+                            &#34;ambiente&#34;: &#34;2&#34;,
+                            &#34;id_csc&#34;: &#34;1&#34;,
+                            &#34;csc&#34;: &#34;A55B0362-814F-4F93-B652-F3DAAF8697F1&#34;,
+                            &#34;codigo_regime_especial_tributacao&#34;: &#34;6&#34;,
+                            &#34;site&#34;: &#34;https://fulanos.da.silva.junior.inc&#34;,
+                            &#34;utiliza_tributos_aproximados&#34;: True,
+                            &#34;informacoes_complementares&#34;: &#34;Informações Complementares&#34;,
+                            &#34;senha_portal_prefeitura&#34;: &#34;542 caracteres&#34;
+                        },
+                        &#34;tipo&#34;: &#34;NF-e&#34;,
+                        &#34;serie&#34;: &#34;1&#34;,
+                        &#34;numero_nota&#34;: &#34;50&#34;,
+                        &#34;chave_acesso&#34;: &#34;53230500665143000112550010000000777777777777&#34;,
+                        &#34;protocolo&#34;: &#34;353230007777777&#34;,
+                        &#34;nome_destinatario&#34;: &#34;NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL&#34;,
+                        &#34;uf_destinatario&#34;: &#34;DF&#34;,
+                        &#34;cpf_cnpj_destinatario&#34;: &#34;94346387047&#34;,  # https://www.4devs.com.br/gerador_de_cpf
+                        &#34;valor_total&#34;: &#34;4.00&#34;,
+                        &#34;status&#34;: &#34;Autorizada&#34;,
+                        &#34;motivo&#34;: &#34;Autorizado o uso da NF-e&#34;,
+                        &#34;data_emissao&#34;: &#34;02/06/2023 17:25:57&#34;,
+                        &#34;data_autorizacao&#34;: &#34;02/06/2023 21:29:40&#34;,
+                        &#34;modelo&#34;: &#34;55&#34;,
+                        &#34;ambiente&#34;: &#34;2&#34;,
+                        &#34;xml&#34;: &#34;XML&#34;,
+                        &#34;json_objeto_nfe&#34;: &#34;OBJETO JSON&#34;,
+                        &#34;tipo_emissao&#34;: &#34;1&#34;
+                    }
+                ], 
+                &#39;informacoesAdicionais&#39;: {
+                    &#39;totalAutorizadas&#39;: 0.0, 
+                    &#39;totalCanceladas&#39;: 0.0
+                },
+            }
+        }
+
+        requests.get = MagicMock(return_value=mock_response)
+        
+        # Chamando a Função:
+        nfes = nfe.listar()
+        
+        # Checando resultado:
+        self.assertGreaterEqual(len(nfes), 1)
+        
+    def test_validar_nfe_normal(self):
+        # Mocking:
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            &#39;status&#39;: &#39;Sucesso&#39;, 
+            &#39;message&#39;: &#39;Nota validada pela API&#39;,
+        }
+        
+        requests.get = MagicMock(return_value=mock_response)
+        
+        # Chamando a Função:
+        result = nfe.validar(self.objeto, tipo_emissao=&#39;1&#39;)
+        
+        # Checando resultado:
+        self.assertEqual(&#39;Sucesso&#39;, result[&#39;status&#39;])
+        self.assertEqual(&#39;Nota validada pela API&#39;, result[&#39;message&#39;])
+        
+class ObjetoEmissaoNFeTestCase(unittest.TestCase):
+    def test_novo_objeto_apenas_campos_obrigatorios(self):
+        endereco = Endereco (
+            codigo_pais         = &#39;1058&#39;,
+            descricao_pais      = &#39;Brasil&#39;,
+            uf                  = &#39;DF&#39;,
+            codigo_municipio    = &#39;5300108&#39;,
+            descricao_municipio = &#39;Brasilia&#39;,
+            cep                 = &#39;70634300&#39;,
+            bairro              = &#39;Zona Industrial&#39;,
+            logradouro          = &#39;Quadra SOFN Quadra 3&#39;,
+            numero              = &#39;484&#39;,
+            complemento         = &#39;Gerado por 4devs&#39;,
+        )
+        
+        cliente  = Cliente(
+            consumidor_final = &#39;1&#39;,
+            contribuinte     = &#39;9&#39;,
+            pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
+            endereco         = endereco,
+        )
+        
+        impostos = nfe.ImpostosProduto(
+            Pis (
+                situacao_tributaria=&#39;99&#39;,
+                aliquota=&#39;0.0000&#39;,
+            ),
+            Cofins(
+                situacao_tributaria=&#39;99&#39;,
+                aliquota=&#39;0.0000&#39;,
+            ),
+            Icms (
+                situacao_tributaria=&#39;102&#39;,
+                aliquota_icms=&#39;0.0000&#39;,
+                aliquota_icms_st=&#39;0.0000&#39;,
+            ),
+            Ipi(
+                situacao_tributaria=&#39;99&#39;,
+                aliquota=&#39;0.0000&#39;,
+            ),
+        )
+        
+        produtos = [
+            nfe.Produto(
+                cfop                   = &#39;5102&#39;,
+                item                   = &#34;1&#34;,
+                nome                   = &#34;UNIFORMES&#34;,
+                codigo                 = &#34;123456&#34;,
+                ncm                    = &#34;62069000&#34;,
+                quantidade             = &#34;2.0&#34;,
+                unidade                = &#34;UNID&#34;,
+                subtotal               = &#34;2.0&#34;,
+                total                  = &#34;2.0&#34;,
+                impostos               = impostos,
+                informacoes_adicionais = &#34;Emitido pelo pySisnoAPI&#34;,
+            ),
+        ]
+        
+        pagamento = nfe.Pagamento(
+            formas_pagamento = [
+                nfe.FormaPagamento(
+                    forma_pagamento=&#39;0&#39;,
+                    meio_pagamento=&#39;01&#39;,
+                    valor_pagamento=&#39;1.0&#39;
+                )
+            ]
+        )
+        
+        pedido   = nfe.Pedido(
+            presenca=&#39;0&#39;,
+            pagamento=pagamento,
+            informacoes_complementares=&#39;Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200nEMPRESA ENQUADRADA NO SIMPLES NACIONAL LC 123/2006n&#39;,
+        )
+        
+        data = datetime(2023, 5, 19, 17, 25, 57)
+        
+        objeto = nfe.ObjetoEmissaoNFe(
+            numero_nota_sequencial= &#39;123456&#39;,
+            serie                 = &#39;1&#39;,
+            operacao              = &#39;1&#39;,
+            natureza_operacao     = &#39;NATUREZA&#39;,
+            modelo                = &#39;55&#39;,
+            finalidade            = &#39;1&#39;,
+            ambiente              = &#39;2&#39;,
+            cliente               = cliente,
+            produtos              = produtos,
+            pedido                = pedido,
+            data_entrada_saida    = data,
+            data_emissao          = data,
+        )
+        
+        assert objeto.numero_nota_sequencial == &#34;123456&#34;
+        assert objeto.serie == &#34;1&#34;
+        assert objeto.operacao == &#34;1&#34;
+        assert objeto.natureza_operacao == &#34;NATUREZA&#34;
+        assert objeto.modelo == &#34;55&#34;
+        assert objeto.finalidade == &#34;1&#34;
+        assert objeto.ambiente == &#34;2&#34;
+        assert objeto.cliente == cliente
+        assert objeto.produtos == produtos
+        assert objeto.pedido == pedido
+        assert objeto.data_entrada_saida == data
+        assert objeto.data_emissao == data
+        assert objeto.numero_pedido is None
+        assert objeto.transporte is None
+        assert objeto.fatura is None
+        assert objeto.parcelas is None
+        assert objeto.exportacao is None
+        assert objeto.nfe_referenciada is None
+        assert objeto.retirada is None
+        assert objeto.entrega is None
+        assert objeto.compra is None
+        assert objeto.indicador_intermediador is None
+        assert objeto.informacao_intermediador is None
+        
+if __name__ == &#34;__main__&#34;:
+    unittest.main()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="tests.test_nfe.ObjetoEmissaoNFeTestCase"><code class="flex name class">
+<span>class <span class="ident">ObjetoEmissaoNFeTestCase</span></span>
+<span>(</span><span>methodName='runTest')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A class whose instances are single test cases.</p>
+<p>By default, the test code itself should be placed in a method named
+'runTest'.</p>
+<p>If the fixture may be used for many test cases, create as
+many test methods as are needed. When instantiating such a TestCase
+subclass, specify in the constructor arguments the name of the test method
+that the instance is to execute.</p>
+<p>Test authors should subclass TestCase for their own tests. Construction
+and deconstruction of the test's environment ('fixture') can be
+implemented by overriding the 'setUp' and 'tearDown' methods respectively.</p>
+<p>If it is necessary to override the <strong>init</strong> method, the base class
+<strong>init</strong> method must always be called. It is important that subclasses
+should not change the signature of their <strong>init</strong> method, since instances
+of the classes are instantiated automatically by parts of the framework
+in order to be run.</p>
+<p>When subclassing TestCase, you can set these attributes:
+* failureException: determines which exception will be raised when
+the instance's assertion methods fail; test methods raising this
+exception will be deemed to have 'failed' rather than 'errored'.
+* longMessage: determines whether long messages (including repr of
+objects used in assert methods) will be printed on failure in <em>addition</em>
+to any explicit message passed.
+* maxDiff: sets the maximum length of a diff in failure messages
+by assert methods using difflib. It is looked up as an instance
+attribute so can be configured by individual tests if required.</p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ObjetoEmissaoNFeTestCase(unittest.TestCase):
+    def test_novo_objeto_apenas_campos_obrigatorios(self):
+        endereco = Endereco (
+            codigo_pais         = &#39;1058&#39;,
+            descricao_pais      = &#39;Brasil&#39;,
+            uf                  = &#39;DF&#39;,
+            codigo_municipio    = &#39;5300108&#39;,
+            descricao_municipio = &#39;Brasilia&#39;,
+            cep                 = &#39;70634300&#39;,
+            bairro              = &#39;Zona Industrial&#39;,
+            logradouro          = &#39;Quadra SOFN Quadra 3&#39;,
+            numero              = &#39;484&#39;,
+            complemento         = &#39;Gerado por 4devs&#39;,
+        )
+        
+        cliente  = Cliente(
+            consumidor_final = &#39;1&#39;,
+            contribuinte     = &#39;9&#39;,
+            pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
+            endereco         = endereco,
+        )
+        
+        impostos = nfe.ImpostosProduto(
+            Pis (
+                situacao_tributaria=&#39;99&#39;,
+                aliquota=&#39;0.0000&#39;,
+            ),
+            Cofins(
+                situacao_tributaria=&#39;99&#39;,
+                aliquota=&#39;0.0000&#39;,
+            ),
+            Icms (
+                situacao_tributaria=&#39;102&#39;,
+                aliquota_icms=&#39;0.0000&#39;,
+                aliquota_icms_st=&#39;0.0000&#39;,
+            ),
+            Ipi(
+                situacao_tributaria=&#39;99&#39;,
+                aliquota=&#39;0.0000&#39;,
+            ),
+        )
+        
+        produtos = [
+            nfe.Produto(
+                cfop                   = &#39;5102&#39;,
+                item                   = &#34;1&#34;,
+                nome                   = &#34;UNIFORMES&#34;,
+                codigo                 = &#34;123456&#34;,
+                ncm                    = &#34;62069000&#34;,
+                quantidade             = &#34;2.0&#34;,
+                unidade                = &#34;UNID&#34;,
+                subtotal               = &#34;2.0&#34;,
+                total                  = &#34;2.0&#34;,
+                impostos               = impostos,
+                informacoes_adicionais = &#34;Emitido pelo pySisnoAPI&#34;,
+            ),
+        ]
+        
+        pagamento = nfe.Pagamento(
+            formas_pagamento = [
+                nfe.FormaPagamento(
+                    forma_pagamento=&#39;0&#39;,
+                    meio_pagamento=&#39;01&#39;,
+                    valor_pagamento=&#39;1.0&#39;
+                )
+            ]
+        )
+        
+        pedido   = nfe.Pedido(
+            presenca=&#39;0&#39;,
+            pagamento=pagamento,
+            informacoes_complementares=&#39;Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200nEMPRESA ENQUADRADA NO SIMPLES NACIONAL LC 123/2006n&#39;,
+        )
+        
+        data = datetime(2023, 5, 19, 17, 25, 57)
+        
+        objeto = nfe.ObjetoEmissaoNFe(
+            numero_nota_sequencial= &#39;123456&#39;,
+            serie                 = &#39;1&#39;,
+            operacao              = &#39;1&#39;,
+            natureza_operacao     = &#39;NATUREZA&#39;,
+            modelo                = &#39;55&#39;,
+            finalidade            = &#39;1&#39;,
+            ambiente              = &#39;2&#39;,
+            cliente               = cliente,
+            produtos              = produtos,
+            pedido                = pedido,
+            data_entrada_saida    = data,
+            data_emissao          = data,
+        )
+        
+        assert objeto.numero_nota_sequencial == &#34;123456&#34;
+        assert objeto.serie == &#34;1&#34;
+        assert objeto.operacao == &#34;1&#34;
+        assert objeto.natureza_operacao == &#34;NATUREZA&#34;
+        assert objeto.modelo == &#34;55&#34;
+        assert objeto.finalidade == &#34;1&#34;
+        assert objeto.ambiente == &#34;2&#34;
+        assert objeto.cliente == cliente
+        assert objeto.produtos == produtos
+        assert objeto.pedido == pedido
+        assert objeto.data_entrada_saida == data
+        assert objeto.data_emissao == data
+        assert objeto.numero_pedido is None
+        assert objeto.transporte is None
+        assert objeto.fatura is None
+        assert objeto.parcelas is None
+        assert objeto.exportacao is None
+        assert objeto.nfe_referenciada is None
+        assert objeto.retirada is None
+        assert objeto.entrega is None
+        assert objeto.compra is None
+        assert objeto.indicador_intermediador is None
+        assert objeto.informacao_intermediador is None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>unittest.case.TestCase</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="tests.test_nfe.ObjetoEmissaoNFeTestCase.test_novo_objeto_apenas_campos_obrigatorios"><code class="name flex">
+<span>def <span class="ident">test_novo_objeto_apenas_campos_obrigatorios</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_novo_objeto_apenas_campos_obrigatorios(self):
+    endereco = Endereco (
+        codigo_pais         = &#39;1058&#39;,
+        descricao_pais      = &#39;Brasil&#39;,
+        uf                  = &#39;DF&#39;,
+        codigo_municipio    = &#39;5300108&#39;,
+        descricao_municipio = &#39;Brasilia&#39;,
+        cep                 = &#39;70634300&#39;,
+        bairro              = &#39;Zona Industrial&#39;,
+        logradouro          = &#39;Quadra SOFN Quadra 3&#39;,
+        numero              = &#39;484&#39;,
+        complemento         = &#39;Gerado por 4devs&#39;,
+    )
+    
+    cliente  = Cliente(
+        consumidor_final = &#39;1&#39;,
+        contribuinte     = &#39;9&#39;,
+        pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
+        endereco         = endereco,
+    )
+    
+    impostos = nfe.ImpostosProduto(
+        Pis (
+            situacao_tributaria=&#39;99&#39;,
+            aliquota=&#39;0.0000&#39;,
+        ),
+        Cofins(
+            situacao_tributaria=&#39;99&#39;,
+            aliquota=&#39;0.0000&#39;,
+        ),
+        Icms (
+            situacao_tributaria=&#39;102&#39;,
+            aliquota_icms=&#39;0.0000&#39;,
+            aliquota_icms_st=&#39;0.0000&#39;,
+        ),
+        Ipi(
+            situacao_tributaria=&#39;99&#39;,
+            aliquota=&#39;0.0000&#39;,
+        ),
+    )
+    
+    produtos = [
+        nfe.Produto(
+            cfop                   = &#39;5102&#39;,
+            item                   = &#34;1&#34;,
+            nome                   = &#34;UNIFORMES&#34;,
+            codigo                 = &#34;123456&#34;,
+            ncm                    = &#34;62069000&#34;,
+            quantidade             = &#34;2.0&#34;,
+            unidade                = &#34;UNID&#34;,
+            subtotal               = &#34;2.0&#34;,
+            total                  = &#34;2.0&#34;,
+            impostos               = impostos,
+            informacoes_adicionais = &#34;Emitido pelo pySisnoAPI&#34;,
+        ),
+    ]
+    
+    pagamento = nfe.Pagamento(
+        formas_pagamento = [
+            nfe.FormaPagamento(
+                forma_pagamento=&#39;0&#39;,
+                meio_pagamento=&#39;01&#39;,
+                valor_pagamento=&#39;1.0&#39;
+            )
+        ]
+    )
+    
+    pedido   = nfe.Pedido(
+        presenca=&#39;0&#39;,
+        pagamento=pagamento,
+        informacoes_complementares=&#39;Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200nEMPRESA ENQUADRADA NO SIMPLES NACIONAL LC 123/2006n&#39;,
+    )
+    
+    data = datetime(2023, 5, 19, 17, 25, 57)
+    
+    objeto = nfe.ObjetoEmissaoNFe(
+        numero_nota_sequencial= &#39;123456&#39;,
+        serie                 = &#39;1&#39;,
+        operacao              = &#39;1&#39;,
+        natureza_operacao     = &#39;NATUREZA&#39;,
+        modelo                = &#39;55&#39;,
+        finalidade            = &#39;1&#39;,
+        ambiente              = &#39;2&#39;,
+        cliente               = cliente,
+        produtos              = produtos,
+        pedido                = pedido,
+        data_entrada_saida    = data,
+        data_emissao          = data,
+    )
+    
+    assert objeto.numero_nota_sequencial == &#34;123456&#34;
+    assert objeto.serie == &#34;1&#34;
+    assert objeto.operacao == &#34;1&#34;
+    assert objeto.natureza_operacao == &#34;NATUREZA&#34;
+    assert objeto.modelo == &#34;55&#34;
+    assert objeto.finalidade == &#34;1&#34;
+    assert objeto.ambiente == &#34;2&#34;
+    assert objeto.cliente == cliente
+    assert objeto.produtos == produtos
+    assert objeto.pedido == pedido
+    assert objeto.data_entrada_saida == data
+    assert objeto.data_emissao == data
+    assert objeto.numero_pedido is None
+    assert objeto.transporte is None
+    assert objeto.fatura is None
+    assert objeto.parcelas is None
+    assert objeto.exportacao is None
+    assert objeto.nfe_referenciada is None
+    assert objeto.retirada is None
+    assert objeto.entrega is None
+    assert objeto.compra is None
+    assert objeto.indicador_intermediador is None
+    assert objeto.informacao_intermediador is None</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="tests.test_nfe.TestNfe"><code class="flex name class">
+<span>class <span class="ident">TestNfe</span></span>
+<span>(</span><span>methodName='runTest')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A class whose instances are single test cases.</p>
+<p>By default, the test code itself should be placed in a method named
+'runTest'.</p>
+<p>If the fixture may be used for many test cases, create as
+many test methods as are needed. When instantiating such a TestCase
+subclass, specify in the constructor arguments the name of the test method
+that the instance is to execute.</p>
+<p>Test authors should subclass TestCase for their own tests. Construction
+and deconstruction of the test's environment ('fixture') can be
+implemented by overriding the 'setUp' and 'tearDown' methods respectively.</p>
+<p>If it is necessary to override the <strong>init</strong> method, the base class
+<strong>init</strong> method must always be called. It is important that subclasses
+should not change the signature of their <strong>init</strong> method, since instances
+of the classes are instantiated automatically by parts of the framework
+in order to be run.</p>
+<p>When subclassing TestCase, you can set these attributes:
+* failureException: determines which exception will be raised when
+the instance's assertion methods fail; test methods raising this
+exception will be deemed to have 'failed' rather than 'errored'.
+* longMessage: determines whether long messages (including repr of
+objects used in assert methods) will be printed on failure in <em>addition</em>
+to any explicit message passed.
+* maxDiff: sets the maximum length of a diff in failure messages
+by assert methods using difflib. It is looked up as an instance
+attribute so can be configured by individual tests if required.</p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TestNfe(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        endereco = Endereco (
+            codigo_pais         = &#39;1058&#39;,
+            descricao_pais      = &#39;Brasil&#39;,
+            uf                  = &#39;DF&#39;,
+            codigo_municipio    = &#39;5300108&#39;,
+            descricao_municipio = &#39;Brasilia&#39;,
+            cep                 = &#39;70634300&#39;,
+            bairro              = &#39;Zona Industrial&#39;,
+            logradouro          = &#39;Quadra SOFN Quadra 3&#39;,
+            numero              = &#39;484&#39;,
+            complemento         = &#39;Gerado por 4devs&#39;,
+        )
+        
+        cliente  = Cliente(
+            consumidor_final = &#39;1&#39;,
+            contribuinte     = &#39;9&#39;,
+            pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
+            endereco         = endereco,
+        )
+        
+        impostos = nfe.ImpostosProduto(
+            Pis (
+                situacao_tributaria=&#39;99&#39;,
+                aliquota=&#39;0.0000&#39;,
+            ),
+            Cofins(
+                situacao_tributaria=&#39;99&#39;,
+                aliquota=&#39;0.0000&#39;,
+            ),
+            Icms (
+                situacao_tributaria=&#39;102&#39;,
+                aliquota_icms=&#39;0.0000&#39;,
+                aliquota_icms_st=&#39;0.0000&#39;,
+            ),
+            Ipi(
+                situacao_tributaria=&#39;99&#39;,
+                aliquota=&#39;0.0000&#39;,
+            ),
+        )
+        
+        produtos = [
+            nfe.Produto(
+                cfop                   = &#39;5102&#39;,
+                item                   = &#34;1&#34;,
+                nome                   = &#34;UNIFORMES&#34;,
+                codigo                 = &#34;123456&#34;,
+                ncm                    = &#34;62069000&#34;,
+                quantidade             = &#34;2.0&#34;,
+                unidade                = &#34;UNID&#34;,
+                subtotal               = &#34;2.0&#34;,
+                total                  = &#34;2.0&#34;,
+                impostos               = impostos,
+                informacoes_adicionais = &#34;Emitido pelo pySisnoAPI&#34;,
+            ),
+        ]
+        
+        pagamento = nfe.Pagamento(
+            formas_pagamento = [
+                nfe.FormaPagamento(
+                    forma_pagamento=&#39;0&#39;,
+                    meio_pagamento=&#39;01&#39;,
+                    valor_pagamento=&#39;1.0&#39;
+                )
+            ]
+        )
+        
+        pedido   = nfe.Pedido(
+            presenca=&#39;0&#39;,
+            pagamento=pagamento,
+            # informacoes_complementares=&#39;Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200nEMPRESA ENQUADRADA NO SIMPLES NACIONAL LC 123/2006n&#39;,
+        )
+        
+        data = datetime(2023, 5, 19, 17, 25, 57).strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
+        
+        self.objeto = nfe.ObjetoEmissaoNFe(
+            numero_nota_sequencial= &#39;123456&#39;,
+            serie                 = &#39;1&#39;,
+            operacao              = &#39;1&#39;,
+            natureza_operacao     = &#39;NATUREZA&#39;,
+            modelo                = &#39;55&#39;,
+            finalidade            = &#39;1&#39;,
+            ambiente              = &#39;2&#39;,
+            cliente               = cliente,
+            produtos              = produtos,
+            pedido                = pedido,
+            data_entrada_saida    = data,
+            data_emissao          = data,
+        )
+    
+    def test_listar_pelo_menos_uma_nfe(self):
+        # Mocking:
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        
+        mock_response.json.return_value = {
+            &#39;status&#39;: &#39;Sucesso&#39;, 
+            &#39;descricao&#39;: &#39;Página de notas de serviço do emissor&#39;,
+            &#34;dados&#34;: {
+                &#39;total&#39;: 1, 
+                &#39;itens_por_pagina&#39;: 10,
+                &#39;pagina_atual&#39;: 0, 
+                &#39;itens&#39;: [
+                    {
+                        &#34;id&#34;: 31833,
+                        &#34;empresa&#34;: {
+                            &#34;cnpj&#34;: &#34;05397048000107&#34;,                               # https://www.4devs.com.br/gerador_de_cnpj
+                            &#34;nome_fantasia&#34;: &#34;Empresa do Fulano&#34;,
+                            &#34;razao_social&#34;: &#34;Fulanos Inc.&#34;,
+                            &#34;endereco&#34;: {
+                                &#34;id&#34;: 7,
+                                &#34;codigo_pais&#34;: &#34;1058&#34;,
+                                &#34;descricao_pais&#34;: &#34;BRASIL&#34;,
+                                &#34;uf&#34;: &#34;DF&#34;,
+                                &#34;codigo_municipio&#34;: &#34;5300108&#34;,
+                                &#34;descricao_municipio&#34;: &#34;Brasilia&#34;,
+                                &#34;cep&#34;: &#34;70343-520&#34;,                                 # https://www.4devs.com.br/gerador_de_cep
+                                &#34;bairro&#34;: &#34;ASA SUL&#34;,
+                                &#34;logradouro&#34;: &#34;ENDERECO DA EMPRESA&#34;,
+                                &#34;numero&#34;: &#34;7&#34;,
+                                &#34;complemento&#34;: &#34;COMPLEMENTO QUALQUER&#34;
+                            },
+                            &#34;telefone&#34;: &#34;(11) 9999-9999&#34;,
+                            &#34;inscricao_estadual&#34;: &#34;0123456789123&#34;,
+                            &#34;regime_tributario&#34;: &#34;1&#34;,
+                            &#34;classificacao_nacional_atividades_economicas&#34;: &#34;8512100&#34;,
+                            &#34;ambiente&#34;: &#34;2&#34;,
+                            &#34;id_csc&#34;: &#34;1&#34;,
+                            &#34;csc&#34;: &#34;A55B0362-814F-4F93-B652-F3DAAF8697F1&#34;,
+                            &#34;codigo_regime_especial_tributacao&#34;: &#34;6&#34;,
+                            &#34;site&#34;: &#34;https://fulanos.da.silva.junior.inc&#34;,
+                            &#34;utiliza_tributos_aproximados&#34;: True,
+                            &#34;informacoes_complementares&#34;: &#34;Informações Complementares&#34;,
+                            &#34;senha_portal_prefeitura&#34;: &#34;542 caracteres&#34;
+                        },
+                        &#34;tipo&#34;: &#34;NF-e&#34;,
+                        &#34;serie&#34;: &#34;1&#34;,
+                        &#34;numero_nota&#34;: &#34;50&#34;,
+                        &#34;chave_acesso&#34;: &#34;53230500665143000112550010000000777777777777&#34;,
+                        &#34;protocolo&#34;: &#34;353230007777777&#34;,
+                        &#34;nome_destinatario&#34;: &#34;NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL&#34;,
+                        &#34;uf_destinatario&#34;: &#34;DF&#34;,
+                        &#34;cpf_cnpj_destinatario&#34;: &#34;94346387047&#34;,  # https://www.4devs.com.br/gerador_de_cpf
+                        &#34;valor_total&#34;: &#34;4.00&#34;,
+                        &#34;status&#34;: &#34;Autorizada&#34;,
+                        &#34;motivo&#34;: &#34;Autorizado o uso da NF-e&#34;,
+                        &#34;data_emissao&#34;: &#34;02/06/2023 17:25:57&#34;,
+                        &#34;data_autorizacao&#34;: &#34;02/06/2023 21:29:40&#34;,
+                        &#34;modelo&#34;: &#34;55&#34;,
+                        &#34;ambiente&#34;: &#34;2&#34;,
+                        &#34;xml&#34;: &#34;XML&#34;,
+                        &#34;json_objeto_nfe&#34;: &#34;OBJETO JSON&#34;,
+                        &#34;tipo_emissao&#34;: &#34;1&#34;
+                    }
+                ], 
+                &#39;informacoesAdicionais&#39;: {
+                    &#39;totalAutorizadas&#39;: 0.0, 
+                    &#39;totalCanceladas&#39;: 0.0
+                },
+            }
+        }
+
+        requests.get = MagicMock(return_value=mock_response)
+        
+        # Chamando a Função:
+        nfes = nfe.listar()
+        
+        # Checando resultado:
+        self.assertGreaterEqual(len(nfes), 1)
+        
+    def test_validar_nfe_normal(self):
+        # Mocking:
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            &#39;status&#39;: &#39;Sucesso&#39;, 
+            &#39;message&#39;: &#39;Nota validada pela API&#39;,
+        }
+        
+        requests.get = MagicMock(return_value=mock_response)
+        
+        # Chamando a Função:
+        result = nfe.validar(self.objeto, tipo_emissao=&#39;1&#39;)
+        
+        # Checando resultado:
+        self.assertEqual(&#39;Sucesso&#39;, result[&#39;status&#39;])
+        self.assertEqual(&#39;Nota validada pela API&#39;, result[&#39;message&#39;])</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>unittest.case.TestCase</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="tests.test_nfe.TestNfe.setUp"><code class="name flex">
+<span>def <span class="ident">setUp</span></span>(<span>self) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Hook method for setting up the test fixture before exercising it.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def setUp(self) -&gt; None:
+    endereco = Endereco (
+        codigo_pais         = &#39;1058&#39;,
+        descricao_pais      = &#39;Brasil&#39;,
+        uf                  = &#39;DF&#39;,
+        codigo_municipio    = &#39;5300108&#39;,
+        descricao_municipio = &#39;Brasilia&#39;,
+        cep                 = &#39;70634300&#39;,
+        bairro              = &#39;Zona Industrial&#39;,
+        logradouro          = &#39;Quadra SOFN Quadra 3&#39;,
+        numero              = &#39;484&#39;,
+        complemento         = &#39;Gerado por 4devs&#39;,
+    )
+    
+    cliente  = Cliente(
+        consumidor_final = &#39;1&#39;,
+        contribuinte     = &#39;9&#39;,
+        pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
+        endereco         = endereco,
+    )
+    
+    impostos = nfe.ImpostosProduto(
+        Pis (
+            situacao_tributaria=&#39;99&#39;,
+            aliquota=&#39;0.0000&#39;,
+        ),
+        Cofins(
+            situacao_tributaria=&#39;99&#39;,
+            aliquota=&#39;0.0000&#39;,
+        ),
+        Icms (
+            situacao_tributaria=&#39;102&#39;,
+            aliquota_icms=&#39;0.0000&#39;,
+            aliquota_icms_st=&#39;0.0000&#39;,
+        ),
+        Ipi(
+            situacao_tributaria=&#39;99&#39;,
+            aliquota=&#39;0.0000&#39;,
+        ),
+    )
+    
+    produtos = [
+        nfe.Produto(
+            cfop                   = &#39;5102&#39;,
+            item                   = &#34;1&#34;,
+            nome                   = &#34;UNIFORMES&#34;,
+            codigo                 = &#34;123456&#34;,
+            ncm                    = &#34;62069000&#34;,
+            quantidade             = &#34;2.0&#34;,
+            unidade                = &#34;UNID&#34;,
+            subtotal               = &#34;2.0&#34;,
+            total                  = &#34;2.0&#34;,
+            impostos               = impostos,
+            informacoes_adicionais = &#34;Emitido pelo pySisnoAPI&#34;,
+        ),
+    ]
+    
+    pagamento = nfe.Pagamento(
+        formas_pagamento = [
+            nfe.FormaPagamento(
+                forma_pagamento=&#39;0&#39;,
+                meio_pagamento=&#39;01&#39;,
+                valor_pagamento=&#39;1.0&#39;
+            )
+        ]
+    )
+    
+    pedido   = nfe.Pedido(
+        presenca=&#39;0&#39;,
+        pagamento=pagamento,
+        # informacoes_complementares=&#39;Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200nEMPRESA ENQUADRADA NO SIMPLES NACIONAL LC 123/2006n&#39;,
+    )
+    
+    data = datetime(2023, 5, 19, 17, 25, 57).strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
+    
+    self.objeto = nfe.ObjetoEmissaoNFe(
+        numero_nota_sequencial= &#39;123456&#39;,
+        serie                 = &#39;1&#39;,
+        operacao              = &#39;1&#39;,
+        natureza_operacao     = &#39;NATUREZA&#39;,
+        modelo                = &#39;55&#39;,
+        finalidade            = &#39;1&#39;,
+        ambiente              = &#39;2&#39;,
+        cliente               = cliente,
+        produtos              = produtos,
+        pedido                = pedido,
+        data_entrada_saida    = data,
+        data_emissao          = data,
+    )</code></pre>
+</details>
+</dd>
+<dt id="tests.test_nfe.TestNfe.test_listar_pelo_menos_uma_nfe"><code class="name flex">
+<span>def <span class="ident">test_listar_pelo_menos_uma_nfe</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_listar_pelo_menos_uma_nfe(self):
+    # Mocking:
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    
+    mock_response.json.return_value = {
+        &#39;status&#39;: &#39;Sucesso&#39;, 
+        &#39;descricao&#39;: &#39;Página de notas de serviço do emissor&#39;,
+        &#34;dados&#34;: {
+            &#39;total&#39;: 1, 
+            &#39;itens_por_pagina&#39;: 10,
+            &#39;pagina_atual&#39;: 0, 
+            &#39;itens&#39;: [
+                {
+                    &#34;id&#34;: 31833,
+                    &#34;empresa&#34;: {
+                        &#34;cnpj&#34;: &#34;05397048000107&#34;,                               # https://www.4devs.com.br/gerador_de_cnpj
+                        &#34;nome_fantasia&#34;: &#34;Empresa do Fulano&#34;,
+                        &#34;razao_social&#34;: &#34;Fulanos Inc.&#34;,
+                        &#34;endereco&#34;: {
+                            &#34;id&#34;: 7,
+                            &#34;codigo_pais&#34;: &#34;1058&#34;,
+                            &#34;descricao_pais&#34;: &#34;BRASIL&#34;,
+                            &#34;uf&#34;: &#34;DF&#34;,
+                            &#34;codigo_municipio&#34;: &#34;5300108&#34;,
+                            &#34;descricao_municipio&#34;: &#34;Brasilia&#34;,
+                            &#34;cep&#34;: &#34;70343-520&#34;,                                 # https://www.4devs.com.br/gerador_de_cep
+                            &#34;bairro&#34;: &#34;ASA SUL&#34;,
+                            &#34;logradouro&#34;: &#34;ENDERECO DA EMPRESA&#34;,
+                            &#34;numero&#34;: &#34;7&#34;,
+                            &#34;complemento&#34;: &#34;COMPLEMENTO QUALQUER&#34;
+                        },
+                        &#34;telefone&#34;: &#34;(11) 9999-9999&#34;,
+                        &#34;inscricao_estadual&#34;: &#34;0123456789123&#34;,
+                        &#34;regime_tributario&#34;: &#34;1&#34;,
+                        &#34;classificacao_nacional_atividades_economicas&#34;: &#34;8512100&#34;,
+                        &#34;ambiente&#34;: &#34;2&#34;,
+                        &#34;id_csc&#34;: &#34;1&#34;,
+                        &#34;csc&#34;: &#34;A55B0362-814F-4F93-B652-F3DAAF8697F1&#34;,
+                        &#34;codigo_regime_especial_tributacao&#34;: &#34;6&#34;,
+                        &#34;site&#34;: &#34;https://fulanos.da.silva.junior.inc&#34;,
+                        &#34;utiliza_tributos_aproximados&#34;: True,
+                        &#34;informacoes_complementares&#34;: &#34;Informações Complementares&#34;,
+                        &#34;senha_portal_prefeitura&#34;: &#34;542 caracteres&#34;
+                    },
+                    &#34;tipo&#34;: &#34;NF-e&#34;,
+                    &#34;serie&#34;: &#34;1&#34;,
+                    &#34;numero_nota&#34;: &#34;50&#34;,
+                    &#34;chave_acesso&#34;: &#34;53230500665143000112550010000000777777777777&#34;,
+                    &#34;protocolo&#34;: &#34;353230007777777&#34;,
+                    &#34;nome_destinatario&#34;: &#34;NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL&#34;,
+                    &#34;uf_destinatario&#34;: &#34;DF&#34;,
+                    &#34;cpf_cnpj_destinatario&#34;: &#34;94346387047&#34;,  # https://www.4devs.com.br/gerador_de_cpf
+                    &#34;valor_total&#34;: &#34;4.00&#34;,
+                    &#34;status&#34;: &#34;Autorizada&#34;,
+                    &#34;motivo&#34;: &#34;Autorizado o uso da NF-e&#34;,
+                    &#34;data_emissao&#34;: &#34;02/06/2023 17:25:57&#34;,
+                    &#34;data_autorizacao&#34;: &#34;02/06/2023 21:29:40&#34;,
+                    &#34;modelo&#34;: &#34;55&#34;,
+                    &#34;ambiente&#34;: &#34;2&#34;,
+                    &#34;xml&#34;: &#34;XML&#34;,
+                    &#34;json_objeto_nfe&#34;: &#34;OBJETO JSON&#34;,
+                    &#34;tipo_emissao&#34;: &#34;1&#34;
+                }
+            ], 
+            &#39;informacoesAdicionais&#39;: {
+                &#39;totalAutorizadas&#39;: 0.0, 
+                &#39;totalCanceladas&#39;: 0.0
+            },
+        }
+    }
+
+    requests.get = MagicMock(return_value=mock_response)
+    
+    # Chamando a Função:
+    nfes = nfe.listar()
+    
+    # Checando resultado:
+    self.assertGreaterEqual(len(nfes), 1)</code></pre>
+</details>
+</dd>
+<dt id="tests.test_nfe.TestNfe.test_validar_nfe_normal"><code class="name flex">
+<span>def <span class="ident">test_validar_nfe_normal</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_validar_nfe_normal(self):
+    # Mocking:
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        &#39;status&#39;: &#39;Sucesso&#39;, 
+        &#39;message&#39;: &#39;Nota validada pela API&#39;,
+    }
+    
+    requests.get = MagicMock(return_value=mock_response)
+    
+    # Chamando a Função:
+    result = nfe.validar(self.objeto, tipo_emissao=&#39;1&#39;)
+    
+    # Checando resultado:
+    self.assertEqual(&#39;Sucesso&#39;, result[&#39;status&#39;])
+    self.assertEqual(&#39;Nota validada pela API&#39;, result[&#39;message&#39;])</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="tests" href="index.html">tests</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="tests.test_nfe.ObjetoEmissaoNFeTestCase" href="#tests.test_nfe.ObjetoEmissaoNFeTestCase">ObjetoEmissaoNFeTestCase</a></code></h4>
+<ul class="">
+<li><code><a title="tests.test_nfe.ObjetoEmissaoNFeTestCase.test_novo_objeto_apenas_campos_obrigatorios" href="#tests.test_nfe.ObjetoEmissaoNFeTestCase.test_novo_objeto_apenas_campos_obrigatorios">test_novo_objeto_apenas_campos_obrigatorios</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="tests.test_nfe.TestNfe" href="#tests.test_nfe.TestNfe">TestNfe</a></code></h4>
+<ul class="">
+<li><code><a title="tests.test_nfe.TestNfe.setUp" href="#tests.test_nfe.TestNfe.setUp">setUp</a></code></li>
+<li><code><a title="tests.test_nfe.TestNfe.test_listar_pelo_menos_uma_nfe" href="#tests.test_nfe.TestNfe.test_listar_pelo_menos_uma_nfe">test_listar_pelo_menos_uma_nfe</a></code></li>
+<li><code><a title="tests.test_nfe.TestNfe.test_validar_nfe_normal" href="#tests.test_nfe.TestNfe.test_validar_nfe_normal">test_validar_nfe_normal</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
