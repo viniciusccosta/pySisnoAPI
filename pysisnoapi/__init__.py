@@ -80,11 +80,11 @@ class BaseClass:
         Returns:
             dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
         """
-        return asdict(self, dict_factory=dict_factory)
+        return asdict(self, dict_factory=_dict_factory)
 
 @dataclass
 class Cfop:
-    """CFOP (Código Fiscal de Operações e Prestações)
+    """Classe `CFOP` (Código Fiscal de Operações e Prestações)
     """
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo: Optional[str] = None
@@ -93,7 +93,8 @@ class Cfop:
 
 @dataclass
 class Cliente:
-    """Geralmente é o destinatário da NFe.
+    """Classe `Cliente`
+    Geralmente é o destinatário da NFe.
     """
     consumidor_final: str
     contribuinte    : str
@@ -138,42 +139,42 @@ class Cliente:
 class Cofins:
     """Contribuição para Financiamento da Seguridade Social.
 
-    situacao_tributaria:
-        01: Operação Tributável com Alíquota Básica
-        02: Operação Tributável com Alíquota por Unidade de Medida de Produto
-        03: Operação Tributável com Alíquota por Unidade de Medida de Produto
-        04: Operação Tributável Monofásica - Revenda a Alíquota Zero
-        05: Operação Tributável por Substituição Tributária
-        06: Operação Tributável a Alíquota Zero
-        07: Operação Isenta da Contribuição
-        08: Operação sem Incidência da Contribuição
-        09: Operação com Suspensão da Contribuição
-        49: Outras Operações de Saída
-        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno
-        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno
-        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação
-        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno
-        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação
-        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação
-        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação
-        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno
-        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno
-        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação
-        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno
-        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação
-        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação
-        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação
-        67: Crédito Presumido - Outras Operações
-        70: Operação de Aquisição sem Direito a Crédito
-        71: Operação de Aquisição com Isenção
-        72: Operação de Aquisição com Suspensão
-        73: Operação de Aquisição a Alíquota Zero
-        74: Operação de Aquisição sem Incidência da Contribuição
-        75: Operação de Aquisição por Substituição Tributária
-        98: Outras Operações de Entrada
-        99: Outras Operações
-        
-    aliquota (str): $0.0000 
+    situacao_tributaria:  
+        01: Operação Tributável com Alíquota Básica  
+        02: Operação Tributável com Alíquota por Unidade de Medida de Produto  
+        03: Operação Tributável com Alíquota por Unidade de Medida de Produto  
+        04: Operação Tributável Monofásica - Revenda a Alíquota Zero  
+        05: Operação Tributável por Substituição Tributária  
+        06: Operação Tributável a Alíquota Zero  
+        07: Operação Isenta da Contribuição  
+        08: Operação sem Incidência da Contribuição  
+        09: Operação com Suspensão da Contribuição  
+        49: Outras Operações de Saída  
+        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno  
+        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno  
+        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação  
+        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno  
+        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação  
+        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação  
+        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação  
+        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno  
+        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno  
+        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação  
+        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno  
+        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação  
+        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação  
+        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação  
+        67: Crédito Presumido - Outras Operações  
+        70: Operação de Aquisição sem Direito a Crédito  
+        71: Operação de Aquisição com Isenção  
+        72: Operação de Aquisição com Suspensão  
+        73: Operação de Aquisição a Alíquota Zero  
+        74: Operação de Aquisição sem Incidência da Contribuição  
+        75: Operação de Aquisição por Substituição Tributária  
+        98: Outras Operações de Entrada  
+        99: Outras Operações  
+    
+    aliquota (str): $0.0000  
         Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
     
     aliquota_st	(str): $0.0000
@@ -237,6 +238,9 @@ class Empresa:
 
 @dataclass
 class Endereco:
+    """Classe `Endereço`
+    """
+    
     codigo_pais        : str
     descricao_pais     : str
     bairro             : str
@@ -282,7 +286,7 @@ class Ibpt:
 
 @dataclass
 class Icms:
-    """Imposto sobre Circulação de Mercadorias e Serviços
+    """Classe `ICMS` (Imposto sobre Circulação de Mercadorias e Serviços)
     """
     situacao_tributaria                       : str
     
@@ -311,7 +315,7 @@ class Impostos:
 
 @dataclass
 class Ipi:
-    """Imposto Sobre Produtos Industrializados
+    """Classe `IPI` (Imposto Sobre Produtos Industrializados)
 
     situacao_tributaria:  
         00: Entrada com Recuperação de Crédito  
@@ -361,7 +365,7 @@ class Issqn:
 
 @dataclass
 class Municipio:
-    """Classe Município
+    """Classe `Município`
     """
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo_ibge : Optional[int] = None
@@ -373,6 +377,10 @@ class Municipio:
 
 @dataclass
 class NotaFiscal:
+    """Classe `Nota Fiscal`.
+    
+    Até 01/2023 essa classe também era usada para Notas Fiscais de Serviço (NFSe).
+    """
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                      : Optional[int]         = None
     empresa                 : Optional['Empresa']   = None
@@ -428,7 +436,7 @@ class Observacao:
 
 @dataclass
 class PessoaFisica:
-    """Classe Pessoa Física
+    """Classe `Pessoa Física`
     
     Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
     """
@@ -441,7 +449,7 @@ class PessoaFisica:
 
 @dataclass
 class PessoaJuridica:
-    """Classe Pessoa Jurídica
+    """Classe `Pessoa Jurídica`
     """
     cnpj        : str
     razao_social: str
@@ -451,7 +459,7 @@ class PessoaJuridica:
 
 @dataclass
 class Pis:
-    """Programas de Integração Social e de Formação do Patrimônio do Servidor Público (PIS/PASEP)
+    """Classe `PIS` (Programas de Integração Social)
 
     situacao_tributaria (str): Situação Tributária  
         01: Operação Tributável com Alíquota Básica  
@@ -491,7 +499,7 @@ class Pis:
     aliquota (str): $0.0000 
         Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
     
-    aliquota_st	(str): $0.0000
+    aliquota_st	(str): $0.0000  
     
     aliquota_retencao (str): $0.0000
     
@@ -524,6 +532,11 @@ class Transporte:
 
 @dataclass
 class Uf:
+    """Classe `UF`(Unidade Federativa)
+
+    Returns:
+        _type_: _description_
+    """
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     # TODO: Até o dia 01/06/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
     codigo_ibge: Optional[str]  = None
@@ -560,7 +573,7 @@ def alterar_empresa(token_empresa:str, token_secret_empresa:str):
     HEADERS["token-empresa"]        = token_empresa
     HEADERS["token-secret-empresa"] = token_secret_empresa
 
-def dict_factory(x: List[Tuple]) -> Optional[Dict]:
+def _dict_factory(x: List[Tuple]) -> Optional[Dict]:
     """Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.
 
     Essa função é chamada automaticamente durante a conversão de uma classe para um dicionário usando `dataclasses.asdict`, 
