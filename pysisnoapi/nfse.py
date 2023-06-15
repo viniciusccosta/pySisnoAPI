@@ -161,7 +161,6 @@ class PaginaNotaServico:
     def asdict(self,):
         return self.__dict__
 
-@dataclass
 class ImpostosServico(Impostos):
     issqn: "Issqn"
 

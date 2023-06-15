@@ -12,12 +12,12 @@
 # Imports:
 import os
 import functools
-from dotenv import load_dotenv
+
+from dotenv      import load_dotenv
 from dataclasses import dataclass, asdict
-from typing import Optional, List, Tuple, Dict
-from datetime import datetime
-from dateutil import parser
-# from pydantic import BaseModel, validator
+from typing      import Optional, List, Tuple, Dict
+from datetime    import datetime
+from dateutil    import parser
 
 # ======================================================================================================================
 # Globals:
@@ -25,9 +25,9 @@ load_dotenv()
 
 URL     = "https://homolog.arkaonline.com.br/nfe-service"               # TODO: Provisório, em breve voltará para 'https://homolog.sisno.com.br/nfe-service/'
 HEADERS = {
-    "token-emissor"         : os.getenv("token-emissor", ""),
+    "token-emissor"         : os.getenv("token-emissor"       , ""),
     "token-secret-emissor"  : os.getenv("token-secret-emissor", ""),
-    "token-empresa"         : os.getenv("token-empresa", ""),
+    "token-empresa"         : os.getenv("token-empresa"       , ""),
     "token-secret-empresa"  : os.getenv("token-secret-empresa", ""),
     "accept"                : "application/json",
     "Content-Type"          : "application/json",
@@ -100,7 +100,7 @@ class Cliente:
     contribuinte    : str
     endereco        : "Endereco"
     
-    pessoa_fisica   : Optional["PessoaFisica"] = None
+    pessoa_fisica   : Optional["PessoaFisica"]   = None
     pessoa_juridica : Optional["PessoaJuridica"] = None
     
     id              : Optional[int] = None
@@ -108,32 +108,25 @@ class Cliente:
     telefone        : Optional[str] = None
     email           : Optional[str] = None
     faz_retencao    : Optional[str] = None
+        
+    def __post_init__(self):        
+        self.validate_pessoa()
+        self.validate_consumidor_final()
+        self.validate_contribuinte()
     
-    # @validator('pessoa_juridica')
-    # def validate_pessoa_juridica(cls, value, values):
-    #     if not isinstance(value, PessoaJuridica):
-    #         raise TypeError("Pessoa Juridica deve ser um objeto da classe PessoaJuridica")
-    #     if value and values.get('pessoa_fisica'):
-    #         raise ValueError("Informe apenas um dos campos PessoaFisica ou PessoaJuridica")
-    #     if not value and not values.get('pessoa_fisica'):
-    #         raise ValueError("Informe pelo menos um dos campos PessoaFisica ou PessoaJuridica")
-    #     return value
+    def validate_pessoa(self):
+        if self.pessoa_fisica and self.pessoa_juridica:
+            raise ValueError("Informe apenas um dos campos pessoa_fisica ou pessoa_juridica")
+        if not self.pessoa_fisica and not self.pessoa_juridica:
+            raise ValueError("Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica")
     
-    # @validator('consumidor_final')
-    # def validate_consumidor_final(cls, consumidor_final):
-    #     if not isinstance(consumidor_final, str):
-    #         raise TypeError("Consumidor Final tem que ser uma string")
-    #     if consumidor_final not in ['1', '2',]:
-    #         raise ValueError(f"Consumidor Final {consumidor_final} inválido")
-    #     return consumidor_final
+    def validate_consumidor_final(self):
+        if self.consumidor_final not in ['1', '2',]:
+            raise ValueError(f"Consumidor Final {self.consumidor_final} inválido")
     
-    # @validator('contribuinte')
-    # def validate_contribuinte(cls, contribuinte):
-    #     if not isinstance(contribuinte, str):
-    #         raise TypeError("Contribuinte tem que ser uma string")
-    #     if contribuinte not in ['1', '2', '9']:
-    #         raise ValueError(f"Contribuinte {contribuinte} inválido")
-    #     return contribuinte
+    def validate_contribuinte(self):
+        if self.contribuinte not in ['1', '2', '9']:
+            raise ValueError(f"Contribuinte {self.contribuinte} inválido")
 
 @dataclass
 class Cofins:
@@ -445,7 +438,11 @@ class PessoaFisica:
     cpf           : Optional[str] = None
     id_estrangeiro: Optional[str] = None
     
-    # TODO: Só pode passar um dos dois: "cpf" ou "id_estrangeiro"
+    def __post_init__(self):
+        if self.cpf and self.id_estrangeiro:
+            raise ValueError("Informe somente um dos campos: cpf ou id_estrangeiro")
+        if not self.cpf and not self.id_estrangeiro:
+            raise ValueError("Informe um dos campos: cpf ou id_estrangeiro")
 
 @dataclass
 class PessoaJuridica:
@@ -454,8 +451,8 @@ class PessoaJuridica:
     cnpj        : str
     razao_social: str
     
-    im          : Optional[str]
-    suframa     : Optional[str]
+    im          : Optional[str] = None
+    suframa     : Optional[str] = None
 
 @dataclass
 class Pis:
@@ -520,15 +517,10 @@ class RetencaoIcmsTransporte:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
         return dados if len(dados) > 0 else None
 
+@dataclass
 class Transporte:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+    ...
 
 @dataclass
 class Uf:
