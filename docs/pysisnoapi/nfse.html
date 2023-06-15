@@ -192,7 +192,6 @@ class PaginaNotaServico:
     def asdict(self,):
         return self.__dict__
 
-@dataclass
 class ImpostosServico(Impostos):
     issqn: &#34;Issqn&#34;
 
@@ -634,16 +633,15 @@ def retransmitir(*args, **kwargs):
 </dd>
 <dt id="pysisnoapi.nfse.ImpostosServico"><code class="flex name class">
 <span>class <span class="ident">ImpostosServico</span></span>
-<span>(</span><span>pis: Pis, cofins: Cofins, issqn: Issqn)</span>
+<span>(</span><span>pis: Pis, cofins: Cofins)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>ImpostosServico(pis: 'Pis', cofins: 'Cofins', issqn: 'Issqn')</p></div>
+<div class="desc"><p>Classe Base para as Classes de Impostos de Produtos e Serviços.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class ImpostosServico(Impostos):
+<pre><code class="python">class ImpostosServico(Impostos):
     issqn: &#34;Issqn&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>

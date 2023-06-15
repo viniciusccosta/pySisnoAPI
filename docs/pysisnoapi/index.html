@@ -46,12 +46,12 @@
 # Imports:
 import os
 import functools
-from dotenv import load_dotenv
+
+from dotenv      import load_dotenv
 from dataclasses import dataclass, asdict
-from typing import Optional, List, Tuple, Dict
-from datetime import datetime
-from dateutil import parser
-# from pydantic import BaseModel, validator
+from typing      import Optional, List, Tuple, Dict
+from datetime    import datetime
+from dateutil    import parser
 
 # ======================================================================================================================
 # Globals:
@@ -59,9 +59,9 @@ load_dotenv()
 
 URL     = &#34;https://homolog.arkaonline.com.br/nfe-service&#34;               # TODO: Provisório, em breve voltará para &#39;https://homolog.sisno.com.br/nfe-service/&#39;
 HEADERS = {
-    &#34;token-emissor&#34;         : os.getenv(&#34;token-emissor&#34;, &#34;&#34;),
+    &#34;token-emissor&#34;         : os.getenv(&#34;token-emissor&#34;       , &#34;&#34;),
     &#34;token-secret-emissor&#34;  : os.getenv(&#34;token-secret-emissor&#34;, &#34;&#34;),
-    &#34;token-empresa&#34;         : os.getenv(&#34;token-empresa&#34;, &#34;&#34;),
+    &#34;token-empresa&#34;         : os.getenv(&#34;token-empresa&#34;       , &#34;&#34;),
     &#34;token-secret-empresa&#34;  : os.getenv(&#34;token-secret-empresa&#34;, &#34;&#34;),
     &#34;accept&#34;                : &#34;application/json&#34;,
     &#34;Content-Type&#34;          : &#34;application/json&#34;,
@@ -134,7 +134,7 @@ class Cliente:
     contribuinte    : str
     endereco        : &#34;Endereco&#34;
     
-    pessoa_fisica   : Optional[&#34;PessoaFisica&#34;] = None
+    pessoa_fisica   : Optional[&#34;PessoaFisica&#34;]   = None
     pessoa_juridica : Optional[&#34;PessoaJuridica&#34;] = None
     
     id              : Optional[int] = None
@@ -142,32 +142,25 @@ class Cliente:
     telefone        : Optional[str] = None
     email           : Optional[str] = None
     faz_retencao    : Optional[str] = None
+        
+    def __post_init__(self):        
+        self.validate_pessoa()
+        self.validate_consumidor_final()
+        self.validate_contribuinte()
     
-    # @validator(&#39;pessoa_juridica&#39;)
-    # def validate_pessoa_juridica(cls, value, values):
-    #     if not isinstance(value, PessoaJuridica):
-    #         raise TypeError(&#34;Pessoa Juridica deve ser um objeto da classe PessoaJuridica&#34;)
-    #     if value and values.get(&#39;pessoa_fisica&#39;):
-    #         raise ValueError(&#34;Informe apenas um dos campos PessoaFisica ou PessoaJuridica&#34;)
-    #     if not value and not values.get(&#39;pessoa_fisica&#39;):
-    #         raise ValueError(&#34;Informe pelo menos um dos campos PessoaFisica ou PessoaJuridica&#34;)
-    #     return value
+    def validate_pessoa(self):
+        if self.pessoa_fisica and self.pessoa_juridica:
+            raise ValueError(&#34;Informe apenas um dos campos pessoa_fisica ou pessoa_juridica&#34;)
+        if not self.pessoa_fisica and not self.pessoa_juridica:
+            raise ValueError(&#34;Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica&#34;)
     
-    # @validator(&#39;consumidor_final&#39;)
-    # def validate_consumidor_final(cls, consumidor_final):
-    #     if not isinstance(consumidor_final, str):
-    #         raise TypeError(&#34;Consumidor Final tem que ser uma string&#34;)
-    #     if consumidor_final not in [&#39;1&#39;, &#39;2&#39;,]:
-    #         raise ValueError(f&#34;Consumidor Final {consumidor_final} inválido&#34;)
-    #     return consumidor_final
+    def validate_consumidor_final(self):
+        if self.consumidor_final not in [&#39;1&#39;, &#39;2&#39;,]:
+            raise ValueError(f&#34;Consumidor Final {self.consumidor_final} inválido&#34;)
     
-    # @validator(&#39;contribuinte&#39;)
-    # def validate_contribuinte(cls, contribuinte):
-    #     if not isinstance(contribuinte, str):
-    #         raise TypeError(&#34;Contribuinte tem que ser uma string&#34;)
-    #     if contribuinte not in [&#39;1&#39;, &#39;2&#39;, &#39;9&#39;]:
-    #         raise ValueError(f&#34;Contribuinte {contribuinte} inválido&#34;)
-    #     return contribuinte
+    def validate_contribuinte(self):
+        if self.contribuinte not in [&#39;1&#39;, &#39;2&#39;, &#39;9&#39;]:
+            raise ValueError(f&#34;Contribuinte {self.contribuinte} inválido&#34;)
 
 @dataclass
 class Cofins:
@@ -479,7 +472,11 @@ class PessoaFisica:
     cpf           : Optional[str] = None
     id_estrangeiro: Optional[str] = None
     
-    # TODO: Só pode passar um dos dois: &#34;cpf&#34; ou &#34;id_estrangeiro&#34;
+    def __post_init__(self):
+        if self.cpf and self.id_estrangeiro:
+            raise ValueError(&#34;Informe somente um dos campos: cpf ou id_estrangeiro&#34;)
+        if not self.cpf and not self.id_estrangeiro:
+            raise ValueError(&#34;Informe um dos campos: cpf ou id_estrangeiro&#34;)
 
 @dataclass
 class PessoaJuridica:
@@ -488,8 +485,8 @@ class PessoaJuridica:
     cnpj        : str
     razao_social: str
     
-    im          : Optional[str]
-    suframa     : Optional[str]
+    im          : Optional[str] = None
+    suframa     : Optional[str] = None
 
 @dataclass
 class Pis:
@@ -554,15 +551,10 @@ class RetencaoIcmsTransporte:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
         return dados if len(dados) &gt; 0 else None
 
+@dataclass
 class Transporte:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
+    ...
 
 @dataclass
 class Uf:
@@ -875,7 +867,7 @@ class Cliente:
     contribuinte    : str
     endereco        : &#34;Endereco&#34;
     
-    pessoa_fisica   : Optional[&#34;PessoaFisica&#34;] = None
+    pessoa_fisica   : Optional[&#34;PessoaFisica&#34;]   = None
     pessoa_juridica : Optional[&#34;PessoaJuridica&#34;] = None
     
     id              : Optional[int] = None
@@ -883,32 +875,25 @@ class Cliente:
     telefone        : Optional[str] = None
     email           : Optional[str] = None
     faz_retencao    : Optional[str] = None
+        
+    def __post_init__(self):        
+        self.validate_pessoa()
+        self.validate_consumidor_final()
+        self.validate_contribuinte()
     
-    # @validator(&#39;pessoa_juridica&#39;)
-    # def validate_pessoa_juridica(cls, value, values):
-    #     if not isinstance(value, PessoaJuridica):
-    #         raise TypeError(&#34;Pessoa Juridica deve ser um objeto da classe PessoaJuridica&#34;)
-    #     if value and values.get(&#39;pessoa_fisica&#39;):
-    #         raise ValueError(&#34;Informe apenas um dos campos PessoaFisica ou PessoaJuridica&#34;)
-    #     if not value and not values.get(&#39;pessoa_fisica&#39;):
-    #         raise ValueError(&#34;Informe pelo menos um dos campos PessoaFisica ou PessoaJuridica&#34;)
-    #     return value
+    def validate_pessoa(self):
+        if self.pessoa_fisica and self.pessoa_juridica:
+            raise ValueError(&#34;Informe apenas um dos campos pessoa_fisica ou pessoa_juridica&#34;)
+        if not self.pessoa_fisica and not self.pessoa_juridica:
+            raise ValueError(&#34;Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica&#34;)
     
-    # @validator(&#39;consumidor_final&#39;)
-    # def validate_consumidor_final(cls, consumidor_final):
-    #     if not isinstance(consumidor_final, str):
-    #         raise TypeError(&#34;Consumidor Final tem que ser uma string&#34;)
-    #     if consumidor_final not in [&#39;1&#39;, &#39;2&#39;,]:
-    #         raise ValueError(f&#34;Consumidor Final {consumidor_final} inválido&#34;)
-    #     return consumidor_final
+    def validate_consumidor_final(self):
+        if self.consumidor_final not in [&#39;1&#39;, &#39;2&#39;,]:
+            raise ValueError(f&#34;Consumidor Final {self.consumidor_final} inválido&#34;)
     
-    # @validator(&#39;contribuinte&#39;)
-    # def validate_contribuinte(cls, contribuinte):
-    #     if not isinstance(contribuinte, str):
-    #         raise TypeError(&#34;Contribuinte tem que ser uma string&#34;)
-    #     if contribuinte not in [&#39;1&#39;, &#39;2&#39;, &#39;9&#39;]:
-    #         raise ValueError(f&#34;Contribuinte {contribuinte} inválido&#34;)
-    #     return contribuinte</code></pre>
+    def validate_contribuinte(self):
+        if self.contribuinte not in [&#39;1&#39;, &#39;2&#39;, &#39;9&#39;]:
+            raise ValueError(f&#34;Contribuinte {self.contribuinte} inválido&#34;)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -951,6 +936,53 @@ class Cliente:
 <dt id="pysisnoapi.Cliente.telefone"><code class="name">var <span class="ident">telefone</span> : Optional[str]</code></dt>
 <dd>
 <div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="pysisnoapi.Cliente.validate_consumidor_final"><code class="name flex">
+<span>def <span class="ident">validate_consumidor_final</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_consumidor_final(self):
+    if self.consumidor_final not in [&#39;1&#39;, &#39;2&#39;,]:
+        raise ValueError(f&#34;Consumidor Final {self.consumidor_final} inválido&#34;)</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.Cliente.validate_contribuinte"><code class="name flex">
+<span>def <span class="ident">validate_contribuinte</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_contribuinte(self):
+    if self.contribuinte not in [&#39;1&#39;, &#39;2&#39;, &#39;9&#39;]:
+        raise ValueError(f&#34;Contribuinte {self.contribuinte} inválido&#34;)</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.Cliente.validate_pessoa"><code class="name flex">
+<span>def <span class="ident">validate_pessoa</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_pessoa(self):
+    if self.pessoa_fisica and self.pessoa_juridica:
+        raise ValueError(&#34;Informe apenas um dos campos pessoa_fisica ou pessoa_juridica&#34;)
+    if not self.pessoa_fisica and not self.pessoa_juridica:
+        raise ValueError(&#34;Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica&#34;)</code></pre>
+</details>
 </dd>
 </dl>
 </dd>
@@ -2054,7 +2086,11 @@ class PessoaFisica:
     cpf           : Optional[str] = None
     id_estrangeiro: Optional[str] = None
     
-    # TODO: Só pode passar um dos dois: &#34;cpf&#34; ou &#34;id_estrangeiro&#34;</code></pre>
+    def __post_init__(self):
+        if self.cpf and self.id_estrangeiro:
+            raise ValueError(&#34;Informe somente um dos campos: cpf ou id_estrangeiro&#34;)
+        if not self.cpf and not self.id_estrangeiro:
+            raise ValueError(&#34;Informe um dos campos: cpf ou id_estrangeiro&#34;)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -2074,7 +2110,7 @@ class PessoaFisica:
 </dd>
 <dt id="pysisnoapi.PessoaJuridica"><code class="flex name class">
 <span>class <span class="ident">PessoaJuridica</span></span>
-<span>(</span><span>cnpj: str, razao_social: str, im: Optional[str], suframa: Optional[str])</span>
+<span>(</span><span>cnpj: str, razao_social: str, im: Optional[str] = None, suframa: Optional[str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Classe <code>Pessoa Jurídica</code></p></div>
@@ -2089,8 +2125,8 @@ class PessoaJuridica:
     cnpj        : str
     razao_social: str
     
-    im          : Optional[str]
-    suframa     : Optional[str]</code></pre>
+    im          : Optional[str] = None
+    suframa     : Optional[str] = None</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -2277,42 +2313,18 @@ class Pis:
 </dd>
 <dt id="pysisnoapi.Transporte"><code class="flex name class">
 <span>class <span class="ident">Transporte</span></span>
-<span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Transporte()</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Transporte:
+<pre><code class="python">@dataclass
+class Transporte:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
+    ...</code></pre>
 </details>
-<h3>Methods</h3>
-<dl>
-<dt id="pysisnoapi.Transporte.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def asdict(self):
-    dados = self.__dict__
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
-</details>
-</dd>
-</dl>
 </dd>
 <dt id="pysisnoapi.Uf"><code class="flex name class">
 <span>class <span class="ident">Uf</span></span>
@@ -2420,7 +2432,7 @@ def from_json(cls, **kwargs):
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Cliente" href="#pysisnoapi.Cliente">Cliente</a></code></h4>
-<ul class="two-column">
+<ul class="">
 <li><code><a title="pysisnoapi.Cliente.consumidor_final" href="#pysisnoapi.Cliente.consumidor_final">consumidor_final</a></code></li>
 <li><code><a title="pysisnoapi.Cliente.contribuinte" href="#pysisnoapi.Cliente.contribuinte">contribuinte</a></code></li>
 <li><code><a title="pysisnoapi.Cliente.email" href="#pysisnoapi.Cliente.email">email</a></code></li>
@@ -2431,6 +2443,9 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.Cliente.pessoa_fisica" href="#pysisnoapi.Cliente.pessoa_fisica">pessoa_fisica</a></code></li>
 <li><code><a title="pysisnoapi.Cliente.pessoa_juridica" href="#pysisnoapi.Cliente.pessoa_juridica">pessoa_juridica</a></code></li>
 <li><code><a title="pysisnoapi.Cliente.telefone" href="#pysisnoapi.Cliente.telefone">telefone</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.validate_consumidor_final" href="#pysisnoapi.Cliente.validate_consumidor_final">validate_consumidor_final</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.validate_contribuinte" href="#pysisnoapi.Cliente.validate_contribuinte">validate_contribuinte</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.validate_pessoa" href="#pysisnoapi.Cliente.validate_pessoa">validate_pessoa</a></code></li>
 </ul>
 </li>
 <li>
@@ -2633,9 +2648,6 @@ def from_json(cls, **kwargs):
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Transporte" href="#pysisnoapi.Transporte">Transporte</a></code></h4>
-<ul class="">
-<li><code><a title="pysisnoapi.Transporte.asdict" href="#pysisnoapi.Transporte.asdict">asdict</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Uf" href="#pysisnoapi.Uf">Uf</a></code></h4>
