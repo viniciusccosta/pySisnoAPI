@@ -51,12 +51,13 @@ from dataclasses import dataclass, asdict
 from typing import Optional, List, Tuple, Dict
 from datetime import datetime
 from dateutil import parser
+# from pydantic import BaseModel, validator
 
 # ======================================================================================================================
 # Globals:
 load_dotenv()
 
-URL     = &#34;http://homolog.arkaonline.com.br/nfe-service/&#34;               # TODO: Provisório, em breve voltará para &#39;https://homolog.sisno.com.br/nfe-service/&#39;
+URL     = &#34;https://homolog.arkaonline.com.br/nfe-service&#34;               # TODO: Provisório, em breve voltará para &#39;https://homolog.sisno.com.br/nfe-service/&#39;
 HEADERS = {
     &#34;token-emissor&#34;         : os.getenv(&#34;token-emissor&#34;, &#34;&#34;),
     &#34;token-secret-emissor&#34;  : os.getenv(&#34;token-secret-emissor&#34;, &#34;&#34;),
@@ -114,9 +115,9 @@ class BaseClass:
             dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
         &#34;&#34;&#34;
         return asdict(self, dict_factory=dict_factory)
-    
+
 @dataclass
-class Cfop(BaseClass):
+class Cfop:
     &#34;&#34;&#34;CFOP (Código Fiscal de Operações e Prestações)
     &#34;&#34;&#34;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
@@ -124,62 +125,100 @@ class Cfop(BaseClass):
     descricao: Optional[str] = None
     aplicacao: Optional[str] = None
 
+@dataclass
 class Cliente:
-    def __init__(self, consumidor_final, contribuinte, endereco, **kwargs):
-        # Deve ser informado apenas um dos campos [pessoa_fisica, pessoa_juridica]
-        if &#34;pessoa_fisica&#34; not in kwargs and &#34;pessoa_juridica&#34; not in kwargs:
-            raise Exception(&#34;Necessário conter pelo menos um dos campos &#39;pessoa_fisica&#39; ou &#39;pessoa_jurica&#39;&#34;)
-        elif &#34;pessoa_fisica&#34; in kwargs and &#34;pessoa_juridica&#34; in kwargs:
-            raise Exception(&#34;Informar apenas um dos campos &#39;pessoa_fisica&#39; ou &#39;pessoa_jurica&#39;&#34;)
+    &#34;&#34;&#34;Geralmente é o destinatário da NFe.
+    &#34;&#34;&#34;
+    consumidor_final: str
+    contribuinte    : str
+    endereco        : &#34;Endereco&#34;
+    
+    pessoa_fisica   : Optional[&#34;PessoaFisica&#34;] = None
+    pessoa_juridica : Optional[&#34;PessoaJuridica&#34;] = None
+    
+    id              : Optional[int] = None
+    ie              : Optional[str] = None
+    telefone        : Optional[str] = None
+    email           : Optional[str] = None
+    faz_retencao    : Optional[str] = None
+    
+    # @validator(&#39;pessoa_juridica&#39;)
+    # def validate_pessoa_juridica(cls, value, values):
+    #     if not isinstance(value, PessoaJuridica):
+    #         raise TypeError(&#34;Pessoa Juridica deve ser um objeto da classe PessoaJuridica&#34;)
+    #     if value and values.get(&#39;pessoa_fisica&#39;):
+    #         raise ValueError(&#34;Informe apenas um dos campos PessoaFisica ou PessoaJuridica&#34;)
+    #     if not value and not values.get(&#39;pessoa_fisica&#39;):
+    #         raise ValueError(&#34;Informe pelo menos um dos campos PessoaFisica ou PessoaJuridica&#34;)
+    #     return value
+    
+    # @validator(&#39;consumidor_final&#39;)
+    # def validate_consumidor_final(cls, consumidor_final):
+    #     if not isinstance(consumidor_final, str):
+    #         raise TypeError(&#34;Consumidor Final tem que ser uma string&#34;)
+    #     if consumidor_final not in [&#39;1&#39;, &#39;2&#39;,]:
+    #         raise ValueError(f&#34;Consumidor Final {consumidor_final} inválido&#34;)
+    #     return consumidor_final
+    
+    # @validator(&#39;contribuinte&#39;)
+    # def validate_contribuinte(cls, contribuinte):
+    #     if not isinstance(contribuinte, str):
+    #         raise TypeError(&#34;Contribuinte tem que ser uma string&#34;)
+    #     if contribuinte not in [&#39;1&#39;, &#39;2&#39;, &#39;9&#39;]:
+    #         raise ValueError(f&#34;Contribuinte {contribuinte} inválido&#34;)
+    #     return contribuinte
 
-        self.pessoa_fisica      = kwargs.get(&#34;pessoa_fisica&#34;, None)         # Objeto PessoaFisica
-        self.pessoa_juridica    = kwargs.get(&#34;pessoa_juridica&#34;, None)       # Objeto PessoaJuridica
-
-        self.ie                 = kwargs.get(&#34;ie&#34;, &#39;&#39;)
-        self.consumidor_final   = consumidor_final                          # string (0: Não, 1: Sim)
-        self.contribuinte       = contribuinte                              # string (1: Contribuinte ICMS, 2: Contribuinte isento, 9: Não contribuinte)
-        self.endereco           = endereco                                  # Objeto Endereco
-        self.telefone           = kwargs.get(&#34;telefone&#34;, &#39;&#39;)
-        self.email              = kwargs.get(&#34;email&#34;, &#39;&#39;)
-        self.faz_retencao       = kwargs.get(&#34;faz_retencao&#34;, None)          # boolean
-
-    def asdict(self):
-        # Deve ser informado apenas um dos campos [pessoa_fisica, pessoa_juridica]
-
-        if self.pessoa_juridica:
-            dados = {
-                &#34;ie&#34;                : self.ie,
-                &#34;pessoa_juridica&#34;   : self.pessoa_juridica,
-                &#34;consumidor_final&#34;  : self.consumidor_final,
-                &#34;contribuinte&#34;      : self.contribuinte,
-                &#34;endereco&#34;          : self.endereco,
-                &#34;telefone&#34;          : self.telefone,
-                &#34;email&#34;             : self.email,
-                &#34;faz_retencao&#34;      : self.faz_retencao,
-            }
-        else:
-            dados = {
-                &#34;ie&#34;                : self.ie,
-                &#34;pessoa_fisica&#34;     : self.pessoa_fisica,
-                &#34;consumidor_final&#34;  : self.consumidor_final,
-                &#34;contribuinte&#34;      : self.contribuinte,
-                &#34;endereco&#34;          : self.endereco,
-                &#34;telefone&#34;          : self.telefone,
-                &#34;email&#34;             : self.email,
-                &#34;faz_retencao&#34;      : self.faz_retencao,
-            }
-        
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
-
+@dataclass
 class Cofins:
-    def __init__(self, **kwargs):
-        self.situacao_tributaria     = kwargs.get(&#34;situacao_tributaria&#34;, None)  # string [ 01, 02, 03, 04, 05, 06, 07, 08, 09, 49, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 70, 71, 72, 73, 74, 75, 98, 99 ]
+    &#34;&#34;&#34;Contribuição para Financiamento da Seguridade Social.
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
+    situacao_tributaria:
+        01: Operação Tributável com Alíquota Básica
+        02: Operação Tributável com Alíquota por Unidade de Medida de Produto
+        03: Operação Tributável com Alíquota por Unidade de Medida de Produto
+        04: Operação Tributável Monofásica - Revenda a Alíquota Zero
+        05: Operação Tributável por Substituição Tributária
+        06: Operação Tributável a Alíquota Zero
+        07: Operação Isenta da Contribuição
+        08: Operação sem Incidência da Contribuição
+        09: Operação com Suspensão da Contribuição
+        49: Outras Operações de Saída
+        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno
+        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno
+        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação
+        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno
+        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação
+        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação
+        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação
+        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno
+        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno
+        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação
+        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno
+        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação
+        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação
+        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação
+        67: Crédito Presumido - Outras Operações
+        70: Operação de Aquisição sem Direito a Crédito
+        71: Operação de Aquisição com Isenção
+        72: Operação de Aquisição com Suspensão
+        73: Operação de Aquisição a Alíquota Zero
+        74: Operação de Aquisição sem Incidência da Contribuição
+        75: Operação de Aquisição por Substituição Tributária
+        98: Outras Operações de Entrada
+        99: Outras Operações
+        
+    aliquota (str): $0.0000 
+        Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
+    
+    aliquota_st (str): $0.0000
+    
+    aliquota_retencao (str): $0.0000
+    &#34;&#34;&#34;
+    situacao_tributaria : str
+    
+    aliquota            : Optional[str] = None
+    aliquota_st         : Optional[str] = None
+    aliquota_retencao   : Optional[str] = None
 
 class DeclaracaoImportacaoAdicao:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
@@ -192,7 +231,7 @@ class DeclaracaoImportacaoAdicao:
         return dados if len(dados) &gt; 0 else None
 
 @dataclass
-class Empresa(BaseClass):
+class Empresa:
     &#34;&#34;&#34;
         Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
         Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
@@ -231,13 +270,14 @@ class Empresa(BaseClass):
         return cls(endereco=endereco, **kwargs)
 
 @dataclass
-class Endereco(BaseClass):
-    id                 : int
+class Endereco:
     codigo_pais        : str
     descricao_pais     : str
     bairro             : str
     logradouro         : str
     numero             : str
+    
+    id                 : Optional[int] = None
     uf                 : Optional[str] = None
     codigo_municipio   : Optional[str] = None
     descricao_municipio: Optional[str] = None
@@ -248,37 +288,8 @@ class Endereco(BaseClass):
     def from_json(cls, **kwargs):
         return cls(**kwargs)
     
-    # def asdict(self):
-    #     # Quando o país não for Brasil, ignorar os campos [uf, codigo_municipio, descricao_municipio, cep]
-
-    #     if self.codigo_pais == &#34;55&#34;:
-    #         dados = {
-    #             &#34;codigo_pais&#34;        : self.codigo_pais,
-    #             &#34;descricao_pais&#34;     : self.descricao_pais,
-    #             &#34;uf&#34;                 : self.uf,
-    #             &#34;codigo_municipio&#34;   : self.codigo_municipio,
-    #             &#34;descricao_municipio&#34;: self.descricao_municipio,
-    #             &#34;cep&#34;                : self.cep,
-    #             &#34;bairro&#34;             : self.bairro,
-    #             &#34;logradouro&#34;         : self.logradouro,
-    #             &#34;numero&#34;             : self.numero,
-    #             &#34;complemento&#34;        : self.complemento
-    #         }
-    #     else:
-    #         dados = {
-    #             &#34;codigo_pais&#34;        : self.codigo_pais,
-    #             &#34;descricao_pais&#34;     : self.descricao_pais,
-    #             &#34;bairro&#34;             : self.bairro,
-    #             &#34;logradouro&#34;         : self.logradouro,
-    #             &#34;numero&#34;             : self.numero,
-    #             &#34;complemento&#34;        : self.complemento
-    #         }
-        
-    #     dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    #     return dados if len(dados) &gt; 0 else None
-
 @dataclass
-class Ibpt(BaseClass):
+class Ibpt:
     &#34;&#34;&#34;Classe `IBPT` (Impostos sobre Produtos e Serviços)
     &#34;&#34;&#34;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
@@ -303,54 +314,61 @@ class Ibpt(BaseClass):
         uf = Uf.from_json(**uf_dict)
         return cls(unidade_federativa=uf, **kwargs)
 
+@dataclass
 class Icms:
-    def __init__(self, **kwargs):
-        self.situacao_tributaria     = kwargs.get(&#34;situacao_tributaria&#34;, None)  # string [ 00, 10, 20, 30, 40, 41, 50, 51, 60, 70, 90, 101, 102, 103, 201, 202, 203, 300, 400, 500, 900 ]
+    &#34;&#34;&#34;Imposto sobre Circulação de Mercadorias e Serviços
+    &#34;&#34;&#34;
+    situacao_tributaria                       : str
+    
+    codigo_cfop                               : Optional[str] = None
+    aliquota_icms                             : Optional[str] = None
+    percentual_reducao_bc_icms                : Optional[str] = None
+    aliquota_fcp                              : Optional[str] = None
+    percentual_reducao_bc_icms_st             : Optional[str] = None
+    aliquota_aplicavel_calculo_credito        : Optional[str] = None
+    aliquota_icms_st                          : Optional[str] = None
+    aliquota_fcp_st                           : Optional[str] = None
+    percentual_margem_valor_agregado_icms_st  : Optional[str] = None
+    percentual_diferimento                    : Optional[str] = None
+    percentual_desonerado                     : Optional[str] = None
+    motivo_desoneracao                        : Optional[str] = None
+    percentual_icms_st_retido                 : Optional[str] = None
+    utilizar_tabela_aliquotas_interestaduais  : Optional[str] = None
+    utilizar_aliquota_interestadual_importacao: Optional[str] = None
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
-
+@dataclass
 class Impostos:
-    def __init__(self, tipo, pis, cofins, **kwargs):
-        # Quando produto, não informar o campo issqn. Quando serviço, não informar os campos icms e ipi.
-        self.tipo                    = tipo                         # 0: Produto, 1: Serviço
+    &#34;&#34;&#34;Classe Base para as Classes de Impostos de Produtos e Serviços.
+    &#34;&#34;&#34;
+    pis   : &#34;Pis&#34;
+    cofins: &#34;Cofins&#34;
 
-        self.icms                    = kwargs.get(&#34;icms&#34;, None)     # Objeto ICMS
-        self.ipi                     = kwargs.get(&#34;ipi&#34;, None)      # Objeto IPI
-        self.pis                     = pis
-        self.cofins                  = cofins
-        self.issqn                   = kwargs.get(&#34;issqn&#34;, None)    # Objeto ISSQN
-
-    def asdict(self):
-        # 0: Produto, 1: Serviço
-
-        if self.tipo == &#34;0&#34;:
-            dados = {
-                &#34;icms&#34;  : self.icms,
-                &#34;ipi&#34;   : self.ipi,
-                &#34;pis&#34;   : self.pis,
-                &#34;cofins&#34;: self.cofins,
-            }
-        elif self.tipo == &#34;1&#34;:
-            dados = {
-                &#34;pis&#34;   : self.pis,
-                &#34;cofins&#34;: self.cofins,
-                &#34;issqn&#34; : self.issqn,
-            }
-        
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
-
+@dataclass
 class Ipi:
-    def __init__(self, **kwargs):
-        self.situacao_tributaria     = kwargs.get(&#34;situacao_tributaria&#34;, None)  # string [ 00, 01, 02, 03, 04, 05, 49, 50, 51, 52, 53, 54, 55, 99 ]
+    &#34;&#34;&#34;Imposto Sobre Produtos Industrializados
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
+    situacao_tributaria:  
+        00: Entrada com Recuperação de Crédito  
+        01: Entrada Tributada com Alíquota Zero  
+        02: Entrada Isenta  
+        03: Entrada Não Tributada  
+        04: Entrada Imune  
+        05: Entrada com Suspensão  
+        49: Outras Entradas  
+        50: Saída Tributada  
+        51: Saída Tributável com Alíquota Zero  
+        52: Saída Isenta  
+        53: Saída Não Tributada  
+        54: Saída Imune  
+        55: Saída com Suspensão  
+        99: Outras Saídas  
+    &#34;&#34;&#34;
+    situacao_tributaria : str
+    
+    aliquota            : Optional[str] = None
+    codigo_enquadramento: Optional[str] = None
+    codigo_selo         : Optional[str] = None
+    qtd_selo            : Optional[str] = None
 
 class Issqn:
     def __init__(self, **kwargs):
@@ -376,7 +394,9 @@ class Issqn:
         return dados if len(dados) &gt; 0 else None
 
 @dataclass
-class Municipio(BaseClass):
+class Municipio:
+    &#34;&#34;&#34;Classe Município
+    &#34;&#34;&#34;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo_ibge : Optional[int] = None
     descricao   : Optional[str] = None
@@ -386,7 +406,7 @@ class Municipio(BaseClass):
         return cls(**kwargs)
 
 @dataclass
-class NotaFiscal(BaseClass):
+class NotaFiscal:
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                      : Optional[int]         = None
     empresa                 : Optional[&#39;Empresa&#39;]   = None
@@ -440,102 +460,82 @@ class Observacao:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
         return dados if len(dados) &gt; 0 else None
 
+@dataclass
 class PessoaFisica:
-    def __init__(self, nome_completo, **kwargs):
-        # Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
-        if &#34;cpf&#34; not in kwargs and &#34;id_estrangeiro&#34; not in kwargs:
-            raise Exception(&#34;Necessário conter pelo menos um dos campos &#39;cpf&#39; ou &#39;id_estrangeiro&#39;&#34;)
-        elif &#34;cpf&#34; in kwargs and &#34;id_estrangeiro&#34; in kwargs:
-            raise Exception(&#34;Informar apenas um dos campos &#39;cpf&#39; ou &#39;id_estrangeiro&#39;&#34;)
+    &#34;&#34;&#34;Classe Pessoa Física
+    
+    Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
+    &#34;&#34;&#34;
+    nome_completo: str
+    
+    cpf           : Optional[str] = None
+    id_estrangeiro: Optional[str] = None
+    
+    # TODO: Só pode passar um dos dois: &#34;cpf&#34; ou &#34;id_estrangeiro&#34;
 
-        self.cpf            = kwargs.get(&#34;cpf&#34;, &#39;&#39;)                 # string
-        self.id_estrangeiro = kwargs.get(&#34;id_estrangeiro&#34;, &#39;&#39;)      # string
-        self.nome_completo  = nome_completo                         # string
-
-    def asdict(self):
-        # TODO: Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
-
-        if self.id_estrangeiro:
-            dados = {
-                &#34;id_estrangeiro&#34;    : self.id_estrangeiro,
-                &#34;nome_completo&#34;     : self.nome_completo,
-            }
-        else:
-            dados = {
-                &#34;cpf&#34;               : self.cpf,
-                &#34;nome_completo&#34;     : self.nome_completo,
-            }
-        
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
-
+@dataclass
 class PessoaJuridica:
-    def __init__(self, **kwargs):
-        self.cnpj                    = kwargs.get(&#34;cnpj&#34;, None)                 # string
-        self.razao_social            = kwargs.get(&#34;razao_social&#34;, None)         # string
+    &#34;&#34;&#34;Classe Pessoa Jurídica
+    &#34;&#34;&#34;
+    cnpj        : str
+    razao_social: str
+    
+    im          : Optional[str]
+    suframa     : Optional[str]
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
-
+@dataclass
 class Pis:
-    def __init__(self, situacao_tributaria, **kwargs):
-        &#34;&#34;&#34;
-        Args:
-            situacao_tributaria (str): Situação Tributária  
-                01: Operação Tributável com Alíquota Básica  
-                02: Operação Tributável com Alíquota por Unidade de Medida de Produto  
-                03: Operação Tributável com Alíquota por Unidade de Medida de Produto  
-                04: Operação Tributável Monofásica - Revenda a Alíquota Zero  
-                05: Operação Tributável por Substituição Tributária  
-                06: Operação Tributável a Alíquota Zero  
-                07: Operação Isenta da Contribuição  
-                08: Operação sem Incidência da Contribuição  
-                09: Operação com Suspensão da Contribuição  
-                49: Outras Operações de Saída  
-                50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno  
-                51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno  
-                52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação  
-                53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno  
-                54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação  
-                55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação  
-                56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação  
-                60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno  
-                61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno  
-                62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação  
-                63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno  
-                64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação  
-                65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação  
-                66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação  
-                67: Crédito Presumido - Outras Operações  
-                70: Operação de Aquisição sem Direito a Crédito  
-                71: Operação de Aquisição com Isenção  
-                72: Operação de Aquisição com Suspensão  
-                73: Operação de Aquisição a Alíquota Zero  
-                74: Operação de Aquisição sem Incidência da Contribuição  
-                75: Operação de Aquisição por Substituição Tributária  
-                98: Outras Operações de Entrada  
-                99: Outras Operações  
-            
-            aliquota (str): $0.0000 
-                Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
-            
-            aliquota_st (str): $0.0000
-            
-            aliquota_retencao (str): $0.0000
-        &#34;&#34;&#34;
+    &#34;&#34;&#34;Programas de Integração Social e de Formação do Patrimônio do Servidor Público (PIS/PASEP)
 
-        self.situacao_tributaria = situacao_tributaria
-        self.aliquota            = kwargs.get(&#34;aliquota&#34;, None)
-        self.aliquota_st         = kwargs.get(&#34;aliquota_st&#34;, None)
-        self.aliquota_retencao   = kwargs.get(&#34;aliquota_retencao&#34;, None)
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
-
+    situacao_tributaria (str): Situação Tributária  
+        01: Operação Tributável com Alíquota Básica  
+        02: Operação Tributável com Alíquota por Unidade de Medida de Produto  
+        03: Operação Tributável com Alíquota por Unidade de Medida de Produto  
+        04: Operação Tributável Monofásica - Revenda a Alíquota Zero  
+        05: Operação Tributável por Substituição Tributária  
+        06: Operação Tributável a Alíquota Zero  
+        07: Operação Isenta da Contribuição  
+        08: Operação sem Incidência da Contribuição  
+        09: Operação com Suspensão da Contribuição  
+        49: Outras Operações de Saída  
+        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno  
+        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno  
+        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação  
+        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno  
+        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação  
+        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação  
+        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação  
+        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno  
+        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno  
+        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação  
+        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno  
+        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação  
+        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação  
+        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação  
+        67: Crédito Presumido - Outras Operações  
+        70: Operação de Aquisição sem Direito a Crédito  
+        71: Operação de Aquisição com Isenção  
+        72: Operação de Aquisição com Suspensão  
+        73: Operação de Aquisição a Alíquota Zero  
+        74: Operação de Aquisição sem Incidência da Contribuição  
+        75: Operação de Aquisição por Substituição Tributária  
+        98: Outras Operações de Entrada  
+        99: Outras Operações  
+    
+    aliquota (str): $0.0000 
+        Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
+    
+    aliquota_st (str): $0.0000
+    
+    aliquota_retencao (str): $0.0000
+    
+    &#34;&#34;&#34;
+    situacao_tributaria: str
+    
+    aliquota           : Optional[str] = None
+    aliquota_st        : Optional[str] = None
+    aliquota_retencao  : Optional[str] = None
+    
 class RetencaoIcmsTransporte:
     # TODO: Até o dia 10/05/2023 essa classe só está sendo usada na classe &#34;Transporte&#34;, que não está sendo usada
     def __init__(self, **kwargs):
@@ -557,7 +557,7 @@ class Transporte:
         return dados if len(dados) &gt; 0 else None
 
 @dataclass
-class Uf(BaseClass):
+class Uf:
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     # TODO: Até o dia 01/06/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
     codigo_ibge: Optional[str]  = None
@@ -813,14 +813,7 @@ class BaseClass:
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li><a title="pysisnoapi.Cfop" href="#pysisnoapi.Cfop">Cfop</a></li>
-<li><a title="pysisnoapi.Empresa" href="#pysisnoapi.Empresa">Empresa</a></li>
-<li><a title="pysisnoapi.Endereco" href="#pysisnoapi.Endereco">Endereco</a></li>
-<li><a title="pysisnoapi.Ibpt" href="#pysisnoapi.Ibpt">Ibpt</a></li>
-<li><a title="pysisnoapi.Municipio" href="#pysisnoapi.Municipio">Municipio</a></li>
-<li><a title="pysisnoapi.NotaFiscal" href="#pysisnoapi.NotaFiscal">NotaFiscal</a></li>
-<li><a title="pysisnoapi.Uf" href="#pysisnoapi.Uf">Uf</a></li>
-<li><a title="pysisnoapi.nfse.NotaFiscalServico" href="nfse.html#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a></li>
+<li><a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="nfe.html#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
@@ -868,7 +861,7 @@ desde que esses valores não sejam nulos (None).</p>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
-class Cfop(BaseClass):
+class Cfop:
     &#34;&#34;&#34;CFOP (Código Fiscal de Operações e Prestações)
     &#34;&#34;&#34;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
@@ -876,10 +869,6 @@ class Cfop(BaseClass):
     descricao: Optional[str] = None
     aplicacao: Optional[str] = None</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></li>
-</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Cfop.aplicacao"><code class="name">var <span class="ident">aplicacao</span> : Optional[str]</code></dt>
@@ -895,151 +884,222 @@ class Cfop(BaseClass):
 <div class="desc"></div>
 </dd>
 </dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></b></code>:
-<ul class="hlist">
-<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
-</ul>
-</li>
-</ul>
 </dd>
 <dt id="pysisnoapi.Cliente"><code class="flex name class">
 <span>class <span class="ident">Cliente</span></span>
-<span>(</span><span>consumidor_final, contribuinte, endereco, **kwargs)</span>
+<span>(</span><span>consumidor_final: str, contribuinte: str, endereco: <a title="pysisnoapi.Endereco" href="#pysisnoapi.Endereco">Endereco</a>, pessoa_fisica: Optional[ForwardRef('<a title="pysisnoapi.PessoaFisica" href="#pysisnoapi.PessoaFisica">PessoaFisica</a>')] = None, pessoa_juridica: Optional[ForwardRef('<a title="pysisnoapi.PessoaJuridica" href="#pysisnoapi.PessoaJuridica">PessoaJuridica</a>')] = None, id: Optional[int] = None, ie: Optional[str] = None, telefone: Optional[str] = None, email: Optional[str] = None, faz_retencao: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Geralmente é o destinatário da NFe.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Cliente:
-    def __init__(self, consumidor_final, contribuinte, endereco, **kwargs):
-        # Deve ser informado apenas um dos campos [pessoa_fisica, pessoa_juridica]
-        if &#34;pessoa_fisica&#34; not in kwargs and &#34;pessoa_juridica&#34; not in kwargs:
-            raise Exception(&#34;Necessário conter pelo menos um dos campos &#39;pessoa_fisica&#39; ou &#39;pessoa_jurica&#39;&#34;)
-        elif &#34;pessoa_fisica&#34; in kwargs and &#34;pessoa_juridica&#34; in kwargs:
-            raise Exception(&#34;Informar apenas um dos campos &#39;pessoa_fisica&#39; ou &#39;pessoa_jurica&#39;&#34;)
-
-        self.pessoa_fisica      = kwargs.get(&#34;pessoa_fisica&#34;, None)         # Objeto PessoaFisica
-        self.pessoa_juridica    = kwargs.get(&#34;pessoa_juridica&#34;, None)       # Objeto PessoaJuridica
-
-        self.ie                 = kwargs.get(&#34;ie&#34;, &#39;&#39;)
-        self.consumidor_final   = consumidor_final                          # string (0: Não, 1: Sim)
-        self.contribuinte       = contribuinte                              # string (1: Contribuinte ICMS, 2: Contribuinte isento, 9: Não contribuinte)
-        self.endereco           = endereco                                  # Objeto Endereco
-        self.telefone           = kwargs.get(&#34;telefone&#34;, &#39;&#39;)
-        self.email              = kwargs.get(&#34;email&#34;, &#39;&#39;)
-        self.faz_retencao       = kwargs.get(&#34;faz_retencao&#34;, None)          # boolean
-
-    def asdict(self):
-        # Deve ser informado apenas um dos campos [pessoa_fisica, pessoa_juridica]
-
-        if self.pessoa_juridica:
-            dados = {
-                &#34;ie&#34;                : self.ie,
-                &#34;pessoa_juridica&#34;   : self.pessoa_juridica,
-                &#34;consumidor_final&#34;  : self.consumidor_final,
-                &#34;contribuinte&#34;      : self.contribuinte,
-                &#34;endereco&#34;          : self.endereco,
-                &#34;telefone&#34;          : self.telefone,
-                &#34;email&#34;             : self.email,
-                &#34;faz_retencao&#34;      : self.faz_retencao,
-            }
-        else:
-            dados = {
-                &#34;ie&#34;                : self.ie,
-                &#34;pessoa_fisica&#34;     : self.pessoa_fisica,
-                &#34;consumidor_final&#34;  : self.consumidor_final,
-                &#34;contribuinte&#34;      : self.contribuinte,
-                &#34;endereco&#34;          : self.endereco,
-                &#34;telefone&#34;          : self.telefone,
-                &#34;email&#34;             : self.email,
-                &#34;faz_retencao&#34;      : self.faz_retencao,
-            }
-        
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
-</details>
-<h3>Methods</h3>
-<dl>
-<dt id="pysisnoapi.Cliente.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def asdict(self):
-    # Deve ser informado apenas um dos campos [pessoa_fisica, pessoa_juridica]
-
-    if self.pessoa_juridica:
-        dados = {
-            &#34;ie&#34;                : self.ie,
-            &#34;pessoa_juridica&#34;   : self.pessoa_juridica,
-            &#34;consumidor_final&#34;  : self.consumidor_final,
-            &#34;contribuinte&#34;      : self.contribuinte,
-            &#34;endereco&#34;          : self.endereco,
-            &#34;telefone&#34;          : self.telefone,
-            &#34;email&#34;             : self.email,
-            &#34;faz_retencao&#34;      : self.faz_retencao,
-        }
-    else:
-        dados = {
-            &#34;ie&#34;                : self.ie,
-            &#34;pessoa_fisica&#34;     : self.pessoa_fisica,
-            &#34;consumidor_final&#34;  : self.consumidor_final,
-            &#34;contribuinte&#34;      : self.contribuinte,
-            &#34;endereco&#34;          : self.endereco,
-            &#34;telefone&#34;          : self.telefone,
-            &#34;email&#34;             : self.email,
-            &#34;faz_retencao&#34;      : self.faz_retencao,
-        }
+<pre><code class="python">@dataclass
+class Cliente:
+    &#34;&#34;&#34;Geralmente é o destinatário da NFe.
+    &#34;&#34;&#34;
+    consumidor_final: str
+    contribuinte    : str
+    endereco        : &#34;Endereco&#34;
     
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
+    pessoa_fisica   : Optional[&#34;PessoaFisica&#34;] = None
+    pessoa_juridica : Optional[&#34;PessoaJuridica&#34;] = None
+    
+    id              : Optional[int] = None
+    ie              : Optional[str] = None
+    telefone        : Optional[str] = None
+    email           : Optional[str] = None
+    faz_retencao    : Optional[str] = None
+    
+    # @validator(&#39;pessoa_juridica&#39;)
+    # def validate_pessoa_juridica(cls, value, values):
+    #     if not isinstance(value, PessoaJuridica):
+    #         raise TypeError(&#34;Pessoa Juridica deve ser um objeto da classe PessoaJuridica&#34;)
+    #     if value and values.get(&#39;pessoa_fisica&#39;):
+    #         raise ValueError(&#34;Informe apenas um dos campos PessoaFisica ou PessoaJuridica&#34;)
+    #     if not value and not values.get(&#39;pessoa_fisica&#39;):
+    #         raise ValueError(&#34;Informe pelo menos um dos campos PessoaFisica ou PessoaJuridica&#34;)
+    #     return value
+    
+    # @validator(&#39;consumidor_final&#39;)
+    # def validate_consumidor_final(cls, consumidor_final):
+    #     if not isinstance(consumidor_final, str):
+    #         raise TypeError(&#34;Consumidor Final tem que ser uma string&#34;)
+    #     if consumidor_final not in [&#39;1&#39;, &#39;2&#39;,]:
+    #         raise ValueError(f&#34;Consumidor Final {consumidor_final} inválido&#34;)
+    #     return consumidor_final
+    
+    # @validator(&#39;contribuinte&#39;)
+    # def validate_contribuinte(cls, contribuinte):
+    #     if not isinstance(contribuinte, str):
+    #         raise TypeError(&#34;Contribuinte tem que ser uma string&#34;)
+    #     if contribuinte not in [&#39;1&#39;, &#39;2&#39;, &#39;9&#39;]:
+    #         raise ValueError(f&#34;Contribuinte {contribuinte} inválido&#34;)
+    #     return contribuinte</code></pre>
 </details>
+<h3>Class variables</h3>
+<dl>
+<dt id="pysisnoapi.Cliente.consumidor_final"><code class="name">var <span class="ident">consumidor_final</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Cliente.contribuinte"><code class="name">var <span class="ident">contribuinte</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Cliente.email"><code class="name">var <span class="ident">email</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Cliente.endereco"><code class="name">var <span class="ident">endereco</span> : <a title="pysisnoapi.Endereco" href="#pysisnoapi.Endereco">Endereco</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Cliente.faz_retencao"><code class="name">var <span class="ident">faz_retencao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Cliente.id"><code class="name">var <span class="ident">id</span> : Optional[int]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Cliente.ie"><code class="name">var <span class="ident">ie</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Cliente.pessoa_fisica"><code class="name">var <span class="ident">pessoa_fisica</span> : Optional[<a title="pysisnoapi.PessoaFisica" href="#pysisnoapi.PessoaFisica">PessoaFisica</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Cliente.pessoa_juridica"><code class="name">var <span class="ident">pessoa_juridica</span> : Optional[<a title="pysisnoapi.PessoaJuridica" href="#pysisnoapi.PessoaJuridica">PessoaJuridica</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Cliente.telefone"><code class="name">var <span class="ident">telefone</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
 <dt id="pysisnoapi.Cofins"><code class="flex name class">
 <span>class <span class="ident">Cofins</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>situacao_tributaria: str, aliquota: Optional[str] = None, aliquota_st: Optional[str] = None, aliquota_retencao: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Contribuição para Financiamento da Seguridade Social.</p>
+<p>situacao_tributaria:
+01: Operação Tributável com Alíquota Básica
+02: Operação Tributável com Alíquota por Unidade de Medida de Produto
+03: Operação Tributável com Alíquota por Unidade de Medida de Produto
+04: Operação Tributável Monofásica - Revenda a Alíquota Zero
+05: Operação Tributável por Substituição Tributária
+06: Operação Tributável a Alíquota Zero
+07: Operação Isenta da Contribuição
+08: Operação sem Incidência da Contribuição
+09: Operação com Suspensão da Contribuição
+49: Outras Operações de Saída
+50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno
+51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno
+52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação
+53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno
+54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação
+55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação
+56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação
+60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno
+61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno
+62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação
+63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno
+64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação
+65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação
+66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação
+67: Crédito Presumido - Outras Operações
+70: Operação de Aquisição sem Direito a Crédito
+71: Operação de Aquisição com Isenção
+72: Operação de Aquisição com Suspensão
+73: Operação de Aquisição a Alíquota Zero
+74: Operação de Aquisição sem Incidência da Contribuição
+75: Operação de Aquisição por Substituição Tributária
+98: Outras Operações de Entrada
+99: Outras Operações</p>
+<p>aliquota (str): $0.0000
+Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade
+</p>
+<p>aliquota_st (str): $0.0000</p>
+<p>aliquota_retencao (str): $0.0000</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Cofins:
-    def __init__(self, **kwargs):
-        self.situacao_tributaria     = kwargs.get(&#34;situacao_tributaria&#34;, None)  # string [ 01, 02, 03, 04, 05, 06, 07, 08, 09, 49, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 70, 71, 72, 73, 74, 75, 98, 99 ]
+<pre><code class="python">@dataclass
+class Cofins:
+    &#34;&#34;&#34;Contribuição para Financiamento da Seguridade Social.
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
+    situacao_tributaria:
+        01: Operação Tributável com Alíquota Básica
+        02: Operação Tributável com Alíquota por Unidade de Medida de Produto
+        03: Operação Tributável com Alíquota por Unidade de Medida de Produto
+        04: Operação Tributável Monofásica - Revenda a Alíquota Zero
+        05: Operação Tributável por Substituição Tributária
+        06: Operação Tributável a Alíquota Zero
+        07: Operação Isenta da Contribuição
+        08: Operação sem Incidência da Contribuição
+        09: Operação com Suspensão da Contribuição
+        49: Outras Operações de Saída
+        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno
+        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno
+        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação
+        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno
+        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação
+        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação
+        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação
+        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno
+        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno
+        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação
+        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno
+        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação
+        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação
+        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação
+        67: Crédito Presumido - Outras Operações
+        70: Operação de Aquisição sem Direito a Crédito
+        71: Operação de Aquisição com Isenção
+        72: Operação de Aquisição com Suspensão
+        73: Operação de Aquisição a Alíquota Zero
+        74: Operação de Aquisição sem Incidência da Contribuição
+        75: Operação de Aquisição por Substituição Tributária
+        98: Outras Operações de Entrada
+        99: Outras Operações
+        
+    aliquota (str): $0.0000 
+        Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
+    
+    aliquota_st (str): $0.0000
+    
+    aliquota_retencao (str): $0.0000
+    &#34;&#34;&#34;
+    situacao_tributaria : str
+    
+    aliquota            : Optional[str] = None
+    aliquota_st         : Optional[str] = None
+    aliquota_retencao   : Optional[str] = None</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.Cofins.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
-</code></dt>
+<dt id="pysisnoapi.Cofins.aliquota"><code class="name">var <span class="ident">aliquota</span> : Optional[str]</code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def asdict(self):
-    dados = self.__dict__
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
-</details>
+</dd>
+<dt id="pysisnoapi.Cofins.aliquota_retencao"><code class="name">var <span class="ident">aliquota_retencao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Cofins.aliquota_st"><code class="name">var <span class="ident">aliquota_st</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Cofins.situacao_tributaria"><code class="name">var <span class="ident">situacao_tributaria</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -1095,7 +1155,7 @@ Em resumo: não há necessidade de se preocupar com os campos, caso não saiba a
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
-class Empresa(BaseClass):
+class Empresa:
     &#34;&#34;&#34;
         Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
         Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
@@ -1133,10 +1193,6 @@ class Empresa(BaseClass):
         
         return cls(endereco=endereco, **kwargs)</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></li>
-</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Empresa.ambiente"><code class="name">var <span class="ident">ambiente</span> : Optional[str]</code></dt>
@@ -1252,33 +1308,26 @@ def from_json(cls, **kwargs):
 </details>
 </dd>
 </dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></b></code>:
-<ul class="hlist">
-<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
-</ul>
-</li>
-</ul>
 </dd>
 <dt id="pysisnoapi.Endereco"><code class="flex name class">
 <span>class <span class="ident">Endereco</span></span>
-<span>(</span><span>id: int, codigo_pais: str, descricao_pais: str, bairro: str, logradouro: str, numero: str, uf: Optional[str] = None, codigo_municipio: Optional[str] = None, descricao_municipio: Optional[str] = None, cep: Optional[str] = None, complemento: Optional[str] = None)</span>
+<span>(</span><span>codigo_pais: str, descricao_pais: str, bairro: str, logradouro: str, numero: str, id: Optional[int] = None, uf: Optional[str] = None, codigo_municipio: Optional[str] = None, descricao_municipio: Optional[str] = None, cep: Optional[str] = None, complemento: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Endereco(id: int, codigo_pais: str, descricao_pais: str, bairro: str, logradouro: str, numero: str, uf: Optional[str] = None, codigo_municipio: Optional[str] = None, descricao_municipio: Optional[str] = None, cep: Optional[str] = None, complemento: Optional[str] = None)</p></div>
+<div class="desc"><p>Endereco(codigo_pais: str, descricao_pais: str, bairro: str, logradouro: str, numero: str, id: Optional[int] = None, uf: Optional[str] = None, codigo_municipio: Optional[str] = None, descricao_municipio: Optional[str] = None, cep: Optional[str] = None, complemento: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
-class Endereco(BaseClass):
-    id                 : int
+class Endereco:
     codigo_pais        : str
     descricao_pais     : str
     bairro             : str
     logradouro         : str
     numero             : str
+    
+    id                 : Optional[int] = None
     uf                 : Optional[str] = None
     codigo_municipio   : Optional[str] = None
     descricao_municipio: Optional[str] = None
@@ -1287,41 +1336,8 @@ class Endereco(BaseClass):
     
     @classmethod
     def from_json(cls, **kwargs):
-        return cls(**kwargs)
-    
-    # def asdict(self):
-    #     # Quando o país não for Brasil, ignorar os campos [uf, codigo_municipio, descricao_municipio, cep]
-
-    #     if self.codigo_pais == &#34;55&#34;:
-    #         dados = {
-    #             &#34;codigo_pais&#34;        : self.codigo_pais,
-    #             &#34;descricao_pais&#34;     : self.descricao_pais,
-    #             &#34;uf&#34;                 : self.uf,
-    #             &#34;codigo_municipio&#34;   : self.codigo_municipio,
-    #             &#34;descricao_municipio&#34;: self.descricao_municipio,
-    #             &#34;cep&#34;                : self.cep,
-    #             &#34;bairro&#34;             : self.bairro,
-    #             &#34;logradouro&#34;         : self.logradouro,
-    #             &#34;numero&#34;             : self.numero,
-    #             &#34;complemento&#34;        : self.complemento
-    #         }
-    #     else:
-    #         dados = {
-    #             &#34;codigo_pais&#34;        : self.codigo_pais,
-    #             &#34;descricao_pais&#34;     : self.descricao_pais,
-    #             &#34;bairro&#34;             : self.bairro,
-    #             &#34;logradouro&#34;         : self.logradouro,
-    #             &#34;numero&#34;             : self.numero,
-    #             &#34;complemento&#34;        : self.complemento
-    #         }
-        
-    #     dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    #     return dados if len(dados) &gt; 0 else None</code></pre>
+        return cls(**kwargs)</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></li>
-</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Endereco.bairro"><code class="name">var <span class="ident">bairro</span> : str</code></dt>
@@ -1352,7 +1368,7 @@ class Endereco(BaseClass):
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="pysisnoapi.Endereco.id"><code class="name">var <span class="ident">id</span> : int</code></dt>
+<dt id="pysisnoapi.Endereco.id"><code class="name">var <span class="ident">id</span> : Optional[int]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1386,14 +1402,6 @@ def from_json(cls, **kwargs):
 </details>
 </dd>
 </dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></b></code>:
-<ul class="hlist">
-<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
-</ul>
-</li>
-</ul>
 </dd>
 <dt id="pysisnoapi.Ibpt"><code class="flex name class">
 <span>class <span class="ident">Ibpt</span></span>
@@ -1406,7 +1414,7 @@ def from_json(cls, **kwargs):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
-class Ibpt(BaseClass):
+class Ibpt:
     &#34;&#34;&#34;Classe `IBPT` (Impostos sobre Produtos e Serviços)
     &#34;&#34;&#34;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
@@ -1431,10 +1439,6 @@ class Ibpt(BaseClass):
         uf = Uf.from_json(**uf_dict)
         return cls(unidade_federativa=uf, **kwargs)</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></li>
-</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Ibpt.ativo"><code class="name">var <span class="ident">ativo</span> : Optional[str]</code></dt>
@@ -1513,163 +1517,214 @@ def from_json(cls, **kwargs):
 </details>
 </dd>
 </dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></b></code>:
-<ul class="hlist">
-<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
-</ul>
-</li>
-</ul>
 </dd>
 <dt id="pysisnoapi.Icms"><code class="flex name class">
 <span>class <span class="ident">Icms</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>situacao_tributaria: str, codigo_cfop: Optional[str] = None, aliquota_icms: Optional[str] = None, percentual_reducao_bc_icms: Optional[str] = None, aliquota_fcp: Optional[str] = None, percentual_reducao_bc_icms_st: Optional[str] = None, aliquota_aplicavel_calculo_credito: Optional[str] = None, aliquota_icms_st: Optional[str] = None, aliquota_fcp_st: Optional[str] = None, percentual_margem_valor_agregado_icms_st: Optional[str] = None, percentual_diferimento: Optional[str] = None, percentual_desonerado: Optional[str] = None, motivo_desoneracao: Optional[str] = None, percentual_icms_st_retido: Optional[str] = None, utilizar_tabela_aliquotas_interestaduais: Optional[str] = None, utilizar_aliquota_interestadual_importacao: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Imposto sobre Circulação de Mercadorias e Serviços</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Icms:
-    def __init__(self, **kwargs):
-        self.situacao_tributaria     = kwargs.get(&#34;situacao_tributaria&#34;, None)  # string [ 00, 10, 20, 30, 40, 41, 50, 51, 60, 70, 90, 101, 102, 103, 201, 202, 203, 300, 400, 500, 900 ]
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
+<pre><code class="python">@dataclass
+class Icms:
+    &#34;&#34;&#34;Imposto sobre Circulação de Mercadorias e Serviços
+    &#34;&#34;&#34;
+    situacao_tributaria                       : str
+    
+    codigo_cfop                               : Optional[str] = None
+    aliquota_icms                             : Optional[str] = None
+    percentual_reducao_bc_icms                : Optional[str] = None
+    aliquota_fcp                              : Optional[str] = None
+    percentual_reducao_bc_icms_st             : Optional[str] = None
+    aliquota_aplicavel_calculo_credito        : Optional[str] = None
+    aliquota_icms_st                          : Optional[str] = None
+    aliquota_fcp_st                           : Optional[str] = None
+    percentual_margem_valor_agregado_icms_st  : Optional[str] = None
+    percentual_diferimento                    : Optional[str] = None
+    percentual_desonerado                     : Optional[str] = None
+    motivo_desoneracao                        : Optional[str] = None
+    percentual_icms_st_retido                 : Optional[str] = None
+    utilizar_tabela_aliquotas_interestaduais  : Optional[str] = None
+    utilizar_aliquota_interestadual_importacao: Optional[str] = None</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.Icms.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
-</code></dt>
+<dt id="pysisnoapi.Icms.aliquota_aplicavel_calculo_credito"><code class="name">var <span class="ident">aliquota_aplicavel_calculo_credito</span> : Optional[str]</code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def asdict(self):
-    dados = self.__dict__
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
-</details>
+</dd>
+<dt id="pysisnoapi.Icms.aliquota_fcp"><code class="name">var <span class="ident">aliquota_fcp</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Icms.aliquota_fcp_st"><code class="name">var <span class="ident">aliquota_fcp_st</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Icms.aliquota_icms"><code class="name">var <span class="ident">aliquota_icms</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Icms.aliquota_icms_st"><code class="name">var <span class="ident">aliquota_icms_st</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Icms.codigo_cfop"><code class="name">var <span class="ident">codigo_cfop</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Icms.motivo_desoneracao"><code class="name">var <span class="ident">motivo_desoneracao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Icms.percentual_desonerado"><code class="name">var <span class="ident">percentual_desonerado</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Icms.percentual_diferimento"><code class="name">var <span class="ident">percentual_diferimento</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Icms.percentual_icms_st_retido"><code class="name">var <span class="ident">percentual_icms_st_retido</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Icms.percentual_margem_valor_agregado_icms_st"><code class="name">var <span class="ident">percentual_margem_valor_agregado_icms_st</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Icms.percentual_reducao_bc_icms"><code class="name">var <span class="ident">percentual_reducao_bc_icms</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Icms.percentual_reducao_bc_icms_st"><code class="name">var <span class="ident">percentual_reducao_bc_icms_st</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Icms.situacao_tributaria"><code class="name">var <span class="ident">situacao_tributaria</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Icms.utilizar_aliquota_interestadual_importacao"><code class="name">var <span class="ident">utilizar_aliquota_interestadual_importacao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Icms.utilizar_tabela_aliquotas_interestaduais"><code class="name">var <span class="ident">utilizar_tabela_aliquotas_interestaduais</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
 <dt id="pysisnoapi.Impostos"><code class="flex name class">
 <span>class <span class="ident">Impostos</span></span>
-<span>(</span><span>tipo, pis, cofins, **kwargs)</span>
+<span>(</span><span>pis: <a title="pysisnoapi.Pis" href="#pysisnoapi.Pis">Pis</a>, cofins: <a title="pysisnoapi.Cofins" href="#pysisnoapi.Cofins">Cofins</a>)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Classe Base para as Classes de Impostos de Produtos e Serviços.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Impostos:
-    def __init__(self, tipo, pis, cofins, **kwargs):
-        # Quando produto, não informar o campo issqn. Quando serviço, não informar os campos icms e ipi.
-        self.tipo                    = tipo                         # 0: Produto, 1: Serviço
-
-        self.icms                    = kwargs.get(&#34;icms&#34;, None)     # Objeto ICMS
-        self.ipi                     = kwargs.get(&#34;ipi&#34;, None)      # Objeto IPI
-        self.pis                     = pis
-        self.cofins                  = cofins
-        self.issqn                   = kwargs.get(&#34;issqn&#34;, None)    # Objeto ISSQN
-
-    def asdict(self):
-        # 0: Produto, 1: Serviço
-
-        if self.tipo == &#34;0&#34;:
-            dados = {
-                &#34;icms&#34;  : self.icms,
-                &#34;ipi&#34;   : self.ipi,
-                &#34;pis&#34;   : self.pis,
-                &#34;cofins&#34;: self.cofins,
-            }
-        elif self.tipo == &#34;1&#34;:
-            dados = {
-                &#34;pis&#34;   : self.pis,
-                &#34;cofins&#34;: self.cofins,
-                &#34;issqn&#34; : self.issqn,
-            }
-        
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
+<pre><code class="python">@dataclass
+class Impostos:
+    &#34;&#34;&#34;Classe Base para as Classes de Impostos de Produtos e Serviços.
+    &#34;&#34;&#34;
+    pis   : &#34;Pis&#34;
+    cofins: &#34;Cofins&#34;</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="pysisnoapi.nfe.ImpostosProduto" href="nfe.html#pysisnoapi.nfe.ImpostosProduto">ImpostosProduto</a></li>
+<li><a title="pysisnoapi.nfse.ImpostosServico" href="nfse.html#pysisnoapi.nfse.ImpostosServico">ImpostosServico</a></li>
+</ul>
+<h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.Impostos.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
-</code></dt>
+<dt id="pysisnoapi.Impostos.cofins"><code class="name">var <span class="ident">cofins</span> : <a title="pysisnoapi.Cofins" href="#pysisnoapi.Cofins">Cofins</a></code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def asdict(self):
-    # 0: Produto, 1: Serviço
-
-    if self.tipo == &#34;0&#34;:
-        dados = {
-            &#34;icms&#34;  : self.icms,
-            &#34;ipi&#34;   : self.ipi,
-            &#34;pis&#34;   : self.pis,
-            &#34;cofins&#34;: self.cofins,
-        }
-    elif self.tipo == &#34;1&#34;:
-        dados = {
-            &#34;pis&#34;   : self.pis,
-            &#34;cofins&#34;: self.cofins,
-            &#34;issqn&#34; : self.issqn,
-        }
-    
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
-</details>
+</dd>
+<dt id="pysisnoapi.Impostos.pis"><code class="name">var <span class="ident">pis</span> : <a title="pysisnoapi.Pis" href="#pysisnoapi.Pis">Pis</a></code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
 <dt id="pysisnoapi.Ipi"><code class="flex name class">
 <span>class <span class="ident">Ipi</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>situacao_tributaria: str, aliquota: Optional[str] = None, codigo_enquadramento: Optional[str] = None, codigo_selo: Optional[str] = None, qtd_selo: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Imposto Sobre Produtos Industrializados</p>
+<p>situacao_tributaria:<br>
+00: Entrada com Recuperação de Crédito<br>
+01: Entrada Tributada com Alíquota Zero<br>
+02: Entrada Isenta<br>
+03: Entrada Não Tributada<br>
+04: Entrada Imune<br>
+05: Entrada com Suspensão<br>
+49: Outras Entradas<br>
+50: Saída Tributada<br>
+51: Saída Tributável com Alíquota Zero<br>
+52: Saída Isenta<br>
+53: Saída Não Tributada<br>
+54: Saída Imune<br>
+55: Saída com Suspensão<br>
+99: Outras Saídas</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Ipi:
-    def __init__(self, **kwargs):
-        self.situacao_tributaria     = kwargs.get(&#34;situacao_tributaria&#34;, None)  # string [ 00, 01, 02, 03, 04, 05, 49, 50, 51, 52, 53, 54, 55, 99 ]
+<pre><code class="python">@dataclass
+class Ipi:
+    &#34;&#34;&#34;Imposto Sobre Produtos Industrializados
 
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
+    situacao_tributaria:  
+        00: Entrada com Recuperação de Crédito  
+        01: Entrada Tributada com Alíquota Zero  
+        02: Entrada Isenta  
+        03: Entrada Não Tributada  
+        04: Entrada Imune  
+        05: Entrada com Suspensão  
+        49: Outras Entradas  
+        50: Saída Tributada  
+        51: Saída Tributável com Alíquota Zero  
+        52: Saída Isenta  
+        53: Saída Não Tributada  
+        54: Saída Imune  
+        55: Saída com Suspensão  
+        99: Outras Saídas  
+    &#34;&#34;&#34;
+    situacao_tributaria : str
+    
+    aliquota            : Optional[str] = None
+    codigo_enquadramento: Optional[str] = None
+    codigo_selo         : Optional[str] = None
+    qtd_selo            : Optional[str] = None</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.Ipi.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
-</code></dt>
+<dt id="pysisnoapi.Ipi.aliquota"><code class="name">var <span class="ident">aliquota</span> : Optional[str]</code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def asdict(self):
-    dados = self.__dict__
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
-</details>
+</dd>
+<dt id="pysisnoapi.Ipi.codigo_enquadramento"><code class="name">var <span class="ident">codigo_enquadramento</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ipi.codigo_selo"><code class="name">var <span class="ident">codigo_selo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ipi.qtd_selo"><code class="name">var <span class="ident">qtd_selo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ipi.situacao_tributaria"><code class="name">var <span class="ident">situacao_tributaria</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -1737,13 +1792,15 @@ def from_json(cls, **kwargs):
 <span>(</span><span>codigo_ibge: Optional[int] = None, descricao: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Municipio(codigo_ibge: Optional[int] = None, descricao: Optional[str] = None)</p></div>
+<div class="desc"><p>Classe Município</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
-class Municipio(BaseClass):
+class Municipio:
+    &#34;&#34;&#34;Classe Município
+    &#34;&#34;&#34;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo_ibge : Optional[int] = None
     descricao   : Optional[str] = None
@@ -1752,10 +1809,6 @@ class Municipio(BaseClass):
     def from_json(cls, **kwargs):
         return cls(**kwargs)</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></li>
-</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Municipio.codigo_ibge"><code class="name">var <span class="ident">codigo_ibge</span> : Optional[int]</code></dt>
@@ -1784,14 +1837,6 @@ def from_json(cls, **kwargs):
 </details>
 </dd>
 </dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></b></code>:
-<ul class="hlist">
-<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
-</ul>
-</li>
-</ul>
 </dd>
 <dt id="pysisnoapi.NotaFiscal"><code class="flex name class">
 <span>class <span class="ident">NotaFiscal</span></span>
@@ -1804,7 +1849,7 @@ def from_json(cls, **kwargs):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
-class NotaFiscal(BaseClass):
+class NotaFiscal:
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                      : Optional[int]         = None
     empresa                 : Optional[&#39;Empresa&#39;]   = None
@@ -1846,10 +1891,6 @@ class NotaFiscal(BaseClass):
             **kwargs
         )</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></li>
-</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.NotaFiscal.ambiente"><code class="name">var <span class="ident">ambiente</span> : Optional[str]</code></dt>
@@ -1968,14 +2009,6 @@ def from_json(cls, **kwargs):
 </details>
 </dd>
 </dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></b></code>:
-<ul class="hlist">
-<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
-</ul>
-</li>
-</ul>
 </dd>
 <dt id="pysisnoapi.Observacao"><code class="flex name class">
 <span>class <span class="ident">Observacao</span></span>
@@ -2020,122 +2053,91 @@ def from_json(cls, **kwargs):
 </dd>
 <dt id="pysisnoapi.PessoaFisica"><code class="flex name class">
 <span>class <span class="ident">PessoaFisica</span></span>
-<span>(</span><span>nome_completo, **kwargs)</span>
+<span>(</span><span>nome_completo: str, cpf: Optional[str] = None, id_estrangeiro: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Classe Pessoa Física</p>
+<p>Deve ser informado apenas um dos campos [cpf, id_estrangeiro]</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class PessoaFisica:
-    def __init__(self, nome_completo, **kwargs):
-        # Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
-        if &#34;cpf&#34; not in kwargs and &#34;id_estrangeiro&#34; not in kwargs:
-            raise Exception(&#34;Necessário conter pelo menos um dos campos &#39;cpf&#39; ou &#39;id_estrangeiro&#39;&#34;)
-        elif &#34;cpf&#34; in kwargs and &#34;id_estrangeiro&#34; in kwargs:
-            raise Exception(&#34;Informar apenas um dos campos &#39;cpf&#39; ou &#39;id_estrangeiro&#39;&#34;)
-
-        self.cpf            = kwargs.get(&#34;cpf&#34;, &#39;&#39;)                 # string
-        self.id_estrangeiro = kwargs.get(&#34;id_estrangeiro&#34;, &#39;&#39;)      # string
-        self.nome_completo  = nome_completo                         # string
-
-    def asdict(self):
-        # TODO: Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
-
-        if self.id_estrangeiro:
-            dados = {
-                &#34;id_estrangeiro&#34;    : self.id_estrangeiro,
-                &#34;nome_completo&#34;     : self.nome_completo,
-            }
-        else:
-            dados = {
-                &#34;cpf&#34;               : self.cpf,
-                &#34;nome_completo&#34;     : self.nome_completo,
-            }
-        
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
-</details>
-<h3>Methods</h3>
-<dl>
-<dt id="pysisnoapi.PessoaFisica.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def asdict(self):
-    # TODO: Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
-
-    if self.id_estrangeiro:
-        dados = {
-            &#34;id_estrangeiro&#34;    : self.id_estrangeiro,
-            &#34;nome_completo&#34;     : self.nome_completo,
-        }
-    else:
-        dados = {
-            &#34;cpf&#34;               : self.cpf,
-            &#34;nome_completo&#34;     : self.nome_completo,
-        }
+<pre><code class="python">@dataclass
+class PessoaFisica:
+    &#34;&#34;&#34;Classe Pessoa Física
     
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
+    Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
+    &#34;&#34;&#34;
+    nome_completo: str
+    
+    cpf           : Optional[str] = None
+    id_estrangeiro: Optional[str] = None
+    
+    # TODO: Só pode passar um dos dois: &#34;cpf&#34; ou &#34;id_estrangeiro&#34;</code></pre>
 </details>
+<h3>Class variables</h3>
+<dl>
+<dt id="pysisnoapi.PessoaFisica.cpf"><code class="name">var <span class="ident">cpf</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.PessoaFisica.id_estrangeiro"><code class="name">var <span class="ident">id_estrangeiro</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.PessoaFisica.nome_completo"><code class="name">var <span class="ident">nome_completo</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
 <dt id="pysisnoapi.PessoaJuridica"><code class="flex name class">
 <span>class <span class="ident">PessoaJuridica</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>cnpj: str, razao_social: str, im: Optional[str], suframa: Optional[str])</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Classe Pessoa Jurídica</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class PessoaJuridica:
-    def __init__(self, **kwargs):
-        self.cnpj                    = kwargs.get(&#34;cnpj&#34;, None)                 # string
-        self.razao_social            = kwargs.get(&#34;razao_social&#34;, None)         # string
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
+<pre><code class="python">@dataclass
+class PessoaJuridica:
+    &#34;&#34;&#34;Classe Pessoa Jurídica
+    &#34;&#34;&#34;
+    cnpj        : str
+    razao_social: str
+    
+    im          : Optional[str]
+    suframa     : Optional[str]</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.PessoaJuridica.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
-</code></dt>
+<dt id="pysisnoapi.PessoaJuridica.cnpj"><code class="name">var <span class="ident">cnpj</span> : str</code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def asdict(self):
-    dados = self.__dict__
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
-</details>
+</dd>
+<dt id="pysisnoapi.PessoaJuridica.im"><code class="name">var <span class="ident">im</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.PessoaJuridica.razao_social"><code class="name">var <span class="ident">razao_social</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.PessoaJuridica.suframa"><code class="name">var <span class="ident">suframa</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
 <dt id="pysisnoapi.Pis"><code class="flex name class">
 <span>class <span class="ident">Pis</span></span>
-<span>(</span><span>situacao_tributaria, **kwargs)</span>
+<span>(</span><span>situacao_tributaria: str, aliquota: Optional[str] = None, aliquota_st: Optional[str] = None, aliquota_retencao: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>situacao_tributaria</code></strong> :&ensp;<code>str</code></dt>
-<dd>Situação Tributária<br>
+<div class="desc"><p>Programas de Integração Social e de Formação do Patrimônio do Servidor Público (PIS/PASEP)</p>
+<p>situacao_tributaria (str): Situação Tributária<br>
 01: Operação Tributável com Alíquota Básica<br>
 02: Operação Tributável com Alíquota por Unidade de Medida de Produto<br>
 03: Operação Tributável com Alíquota por Unidade de Medida de Produto<br>
@@ -2169,93 +2171,86 @@ def from_json(cls, **kwargs):
 75: Operação de Aquisição por Substituição Tributária<br>
 98: Outras Operações de Entrada<br>
 99: Outras Operações
-</dd>
-<dt><strong><code>aliquota</code></strong> :&ensp;<code>str</code></dt>
-<dd>$0.0000
+</p>
+<p>aliquota (str): $0.0000
 Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade
-</dd>
-<dt><strong><code>aliquota_st</code></strong> :&ensp;<code>str</code></dt>
-<dd>$0.0000</dd>
-<dt><strong><code>aliquota_retencao</code></strong> :&ensp;<code>str</code></dt>
-<dd>$0.0000</dd>
-</dl></div>
+</p>
+<p>aliquota_st (str): $0.0000</p>
+<p>aliquota_retencao (str): $0.0000</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Pis:
-    def __init__(self, situacao_tributaria, **kwargs):
-        &#34;&#34;&#34;
-        Args:
-            situacao_tributaria (str): Situação Tributária  
-                01: Operação Tributável com Alíquota Básica  
-                02: Operação Tributável com Alíquota por Unidade de Medida de Produto  
-                03: Operação Tributável com Alíquota por Unidade de Medida de Produto  
-                04: Operação Tributável Monofásica - Revenda a Alíquota Zero  
-                05: Operação Tributável por Substituição Tributária  
-                06: Operação Tributável a Alíquota Zero  
-                07: Operação Isenta da Contribuição  
-                08: Operação sem Incidência da Contribuição  
-                09: Operação com Suspensão da Contribuição  
-                49: Outras Operações de Saída  
-                50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno  
-                51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno  
-                52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação  
-                53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno  
-                54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação  
-                55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação  
-                56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação  
-                60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno  
-                61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno  
-                62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação  
-                63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno  
-                64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação  
-                65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação  
-                66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação  
-                67: Crédito Presumido - Outras Operações  
-                70: Operação de Aquisição sem Direito a Crédito  
-                71: Operação de Aquisição com Isenção  
-                72: Operação de Aquisição com Suspensão  
-                73: Operação de Aquisição a Alíquota Zero  
-                74: Operação de Aquisição sem Incidência da Contribuição  
-                75: Operação de Aquisição por Substituição Tributária  
-                98: Outras Operações de Entrada  
-                99: Outras Operações  
-            
-            aliquota (str): $0.0000 
-                Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
-            
-            aliquota_st (str): $0.0000
-            
-            aliquota_retencao (str): $0.0000
-        &#34;&#34;&#34;
+<pre><code class="python">@dataclass
+class Pis:
+    &#34;&#34;&#34;Programas de Integração Social e de Formação do Patrimônio do Servidor Público (PIS/PASEP)
 
-        self.situacao_tributaria = situacao_tributaria
-        self.aliquota            = kwargs.get(&#34;aliquota&#34;, None)
-        self.aliquota_st         = kwargs.get(&#34;aliquota_st&#34;, None)
-        self.aliquota_retencao   = kwargs.get(&#34;aliquota_retencao&#34;, None)
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
+    situacao_tributaria (str): Situação Tributária  
+        01: Operação Tributável com Alíquota Básica  
+        02: Operação Tributável com Alíquota por Unidade de Medida de Produto  
+        03: Operação Tributável com Alíquota por Unidade de Medida de Produto  
+        04: Operação Tributável Monofásica - Revenda a Alíquota Zero  
+        05: Operação Tributável por Substituição Tributária  
+        06: Operação Tributável a Alíquota Zero  
+        07: Operação Isenta da Contribuição  
+        08: Operação sem Incidência da Contribuição  
+        09: Operação com Suspensão da Contribuição  
+        49: Outras Operações de Saída  
+        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno  
+        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno  
+        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação  
+        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno  
+        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação  
+        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação  
+        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação  
+        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno  
+        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno  
+        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação  
+        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno  
+        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação  
+        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação  
+        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação  
+        67: Crédito Presumido - Outras Operações  
+        70: Operação de Aquisição sem Direito a Crédito  
+        71: Operação de Aquisição com Isenção  
+        72: Operação de Aquisição com Suspensão  
+        73: Operação de Aquisição a Alíquota Zero  
+        74: Operação de Aquisição sem Incidência da Contribuição  
+        75: Operação de Aquisição por Substituição Tributária  
+        98: Outras Operações de Entrada  
+        99: Outras Operações  
+    
+    aliquota (str): $0.0000 
+        Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
+    
+    aliquota_st (str): $0.0000
+    
+    aliquota_retencao (str): $0.0000
+    
+    &#34;&#34;&#34;
+    situacao_tributaria: str
+    
+    aliquota           : Optional[str] = None
+    aliquota_st        : Optional[str] = None
+    aliquota_retencao  : Optional[str] = None</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.Pis.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
-</code></dt>
+<dt id="pysisnoapi.Pis.aliquota"><code class="name">var <span class="ident">aliquota</span> : Optional[str]</code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def asdict(self):
-    dados = self.__dict__
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
-</details>
+</dd>
+<dt id="pysisnoapi.Pis.aliquota_retencao"><code class="name">var <span class="ident">aliquota_retencao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Pis.aliquota_st"><code class="name">var <span class="ident">aliquota_st</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Pis.situacao_tributaria"><code class="name">var <span class="ident">situacao_tributaria</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -2348,7 +2343,7 @@ Passar percentual quando tributado pela alíquota ou em reais quando tributado p
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
-class Uf(BaseClass):
+class Uf:
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     # TODO: Até o dia 01/06/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
     codigo_ibge: Optional[str]  = None
@@ -2359,10 +2354,6 @@ class Uf(BaseClass):
     def from_json(cls, **kwargs):
         return cls(**kwargs)</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></li>
-</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Uf.codigo_ibge"><code class="name">var <span class="ident">codigo_ibge</span> : Optional[str]</code></dt>
@@ -2395,14 +2386,6 @@ def from_json(cls, **kwargs):
 </details>
 </dd>
 </dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></b></code>:
-<ul class="hlist">
-<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
-</ul>
-</li>
-</ul>
 </dd>
 </dl>
 </section>
@@ -2446,14 +2429,26 @@ def from_json(cls, **kwargs):
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Cliente" href="#pysisnoapi.Cliente">Cliente</a></code></h4>
-<ul class="">
-<li><code><a title="pysisnoapi.Cliente.asdict" href="#pysisnoapi.Cliente.asdict">asdict</a></code></li>
+<ul class="two-column">
+<li><code><a title="pysisnoapi.Cliente.consumidor_final" href="#pysisnoapi.Cliente.consumidor_final">consumidor_final</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.contribuinte" href="#pysisnoapi.Cliente.contribuinte">contribuinte</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.email" href="#pysisnoapi.Cliente.email">email</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.endereco" href="#pysisnoapi.Cliente.endereco">endereco</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.faz_retencao" href="#pysisnoapi.Cliente.faz_retencao">faz_retencao</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.id" href="#pysisnoapi.Cliente.id">id</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.ie" href="#pysisnoapi.Cliente.ie">ie</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.pessoa_fisica" href="#pysisnoapi.Cliente.pessoa_fisica">pessoa_fisica</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.pessoa_juridica" href="#pysisnoapi.Cliente.pessoa_juridica">pessoa_juridica</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.telefone" href="#pysisnoapi.Cliente.telefone">telefone</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Cofins" href="#pysisnoapi.Cofins">Cofins</a></code></h4>
 <ul class="">
-<li><code><a title="pysisnoapi.Cofins.asdict" href="#pysisnoapi.Cofins.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Cofins.aliquota" href="#pysisnoapi.Cofins.aliquota">aliquota</a></code></li>
+<li><code><a title="pysisnoapi.Cofins.aliquota_retencao" href="#pysisnoapi.Cofins.aliquota_retencao">aliquota_retencao</a></code></li>
+<li><code><a title="pysisnoapi.Cofins.aliquota_st" href="#pysisnoapi.Cofins.aliquota_st">aliquota_st</a></code></li>
+<li><code><a title="pysisnoapi.Cofins.situacao_tributaria" href="#pysisnoapi.Cofins.situacao_tributaria">situacao_tributaria</a></code></li>
 </ul>
 </li>
 <li>
@@ -2531,19 +2526,39 @@ def from_json(cls, **kwargs):
 <li>
 <h4><code><a title="pysisnoapi.Icms" href="#pysisnoapi.Icms">Icms</a></code></h4>
 <ul class="">
-<li><code><a title="pysisnoapi.Icms.asdict" href="#pysisnoapi.Icms.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Icms.aliquota_aplicavel_calculo_credito" href="#pysisnoapi.Icms.aliquota_aplicavel_calculo_credito">aliquota_aplicavel_calculo_credito</a></code></li>
+<li><code><a title="pysisnoapi.Icms.aliquota_fcp" href="#pysisnoapi.Icms.aliquota_fcp">aliquota_fcp</a></code></li>
+<li><code><a title="pysisnoapi.Icms.aliquota_fcp_st" href="#pysisnoapi.Icms.aliquota_fcp_st">aliquota_fcp_st</a></code></li>
+<li><code><a title="pysisnoapi.Icms.aliquota_icms" href="#pysisnoapi.Icms.aliquota_icms">aliquota_icms</a></code></li>
+<li><code><a title="pysisnoapi.Icms.aliquota_icms_st" href="#pysisnoapi.Icms.aliquota_icms_st">aliquota_icms_st</a></code></li>
+<li><code><a title="pysisnoapi.Icms.codigo_cfop" href="#pysisnoapi.Icms.codigo_cfop">codigo_cfop</a></code></li>
+<li><code><a title="pysisnoapi.Icms.motivo_desoneracao" href="#pysisnoapi.Icms.motivo_desoneracao">motivo_desoneracao</a></code></li>
+<li><code><a title="pysisnoapi.Icms.percentual_desonerado" href="#pysisnoapi.Icms.percentual_desonerado">percentual_desonerado</a></code></li>
+<li><code><a title="pysisnoapi.Icms.percentual_diferimento" href="#pysisnoapi.Icms.percentual_diferimento">percentual_diferimento</a></code></li>
+<li><code><a title="pysisnoapi.Icms.percentual_icms_st_retido" href="#pysisnoapi.Icms.percentual_icms_st_retido">percentual_icms_st_retido</a></code></li>
+<li><code><a title="pysisnoapi.Icms.percentual_margem_valor_agregado_icms_st" href="#pysisnoapi.Icms.percentual_margem_valor_agregado_icms_st">percentual_margem_valor_agregado_icms_st</a></code></li>
+<li><code><a title="pysisnoapi.Icms.percentual_reducao_bc_icms" href="#pysisnoapi.Icms.percentual_reducao_bc_icms">percentual_reducao_bc_icms</a></code></li>
+<li><code><a title="pysisnoapi.Icms.percentual_reducao_bc_icms_st" href="#pysisnoapi.Icms.percentual_reducao_bc_icms_st">percentual_reducao_bc_icms_st</a></code></li>
+<li><code><a title="pysisnoapi.Icms.situacao_tributaria" href="#pysisnoapi.Icms.situacao_tributaria">situacao_tributaria</a></code></li>
+<li><code><a title="pysisnoapi.Icms.utilizar_aliquota_interestadual_importacao" href="#pysisnoapi.Icms.utilizar_aliquota_interestadual_importacao">utilizar_aliquota_interestadual_importacao</a></code></li>
+<li><code><a title="pysisnoapi.Icms.utilizar_tabela_aliquotas_interestaduais" href="#pysisnoapi.Icms.utilizar_tabela_aliquotas_interestaduais">utilizar_tabela_aliquotas_interestaduais</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Impostos" href="#pysisnoapi.Impostos">Impostos</a></code></h4>
 <ul class="">
-<li><code><a title="pysisnoapi.Impostos.asdict" href="#pysisnoapi.Impostos.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Impostos.cofins" href="#pysisnoapi.Impostos.cofins">cofins</a></code></li>
+<li><code><a title="pysisnoapi.Impostos.pis" href="#pysisnoapi.Impostos.pis">pis</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Ipi" href="#pysisnoapi.Ipi">Ipi</a></code></h4>
 <ul class="">
-<li><code><a title="pysisnoapi.Ipi.asdict" href="#pysisnoapi.Ipi.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Ipi.aliquota" href="#pysisnoapi.Ipi.aliquota">aliquota</a></code></li>
+<li><code><a title="pysisnoapi.Ipi.codigo_enquadramento" href="#pysisnoapi.Ipi.codigo_enquadramento">codigo_enquadramento</a></code></li>
+<li><code><a title="pysisnoapi.Ipi.codigo_selo" href="#pysisnoapi.Ipi.codigo_selo">codigo_selo</a></code></li>
+<li><code><a title="pysisnoapi.Ipi.qtd_selo" href="#pysisnoapi.Ipi.qtd_selo">qtd_selo</a></code></li>
+<li><code><a title="pysisnoapi.Ipi.situacao_tributaria" href="#pysisnoapi.Ipi.situacao_tributaria">situacao_tributaria</a></code></li>
 </ul>
 </li>
 <li>
@@ -2596,19 +2611,27 @@ def from_json(cls, **kwargs):
 <li>
 <h4><code><a title="pysisnoapi.PessoaFisica" href="#pysisnoapi.PessoaFisica">PessoaFisica</a></code></h4>
 <ul class="">
-<li><code><a title="pysisnoapi.PessoaFisica.asdict" href="#pysisnoapi.PessoaFisica.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.PessoaFisica.cpf" href="#pysisnoapi.PessoaFisica.cpf">cpf</a></code></li>
+<li><code><a title="pysisnoapi.PessoaFisica.id_estrangeiro" href="#pysisnoapi.PessoaFisica.id_estrangeiro">id_estrangeiro</a></code></li>
+<li><code><a title="pysisnoapi.PessoaFisica.nome_completo" href="#pysisnoapi.PessoaFisica.nome_completo">nome_completo</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.PessoaJuridica" href="#pysisnoapi.PessoaJuridica">PessoaJuridica</a></code></h4>
 <ul class="">
-<li><code><a title="pysisnoapi.PessoaJuridica.asdict" href="#pysisnoapi.PessoaJuridica.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.PessoaJuridica.cnpj" href="#pysisnoapi.PessoaJuridica.cnpj">cnpj</a></code></li>
+<li><code><a title="pysisnoapi.PessoaJuridica.im" href="#pysisnoapi.PessoaJuridica.im">im</a></code></li>
+<li><code><a title="pysisnoapi.PessoaJuridica.razao_social" href="#pysisnoapi.PessoaJuridica.razao_social">razao_social</a></code></li>
+<li><code><a title="pysisnoapi.PessoaJuridica.suframa" href="#pysisnoapi.PessoaJuridica.suframa">suframa</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Pis" href="#pysisnoapi.Pis">Pis</a></code></h4>
 <ul class="">
-<li><code><a title="pysisnoapi.Pis.asdict" href="#pysisnoapi.Pis.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Pis.aliquota" href="#pysisnoapi.Pis.aliquota">aliquota</a></code></li>
+<li><code><a title="pysisnoapi.Pis.aliquota_retencao" href="#pysisnoapi.Pis.aliquota_retencao">aliquota_retencao</a></code></li>
+<li><code><a title="pysisnoapi.Pis.aliquota_st" href="#pysisnoapi.Pis.aliquota_st">aliquota_st</a></code></li>
+<li><code><a title="pysisnoapi.Pis.situacao_tributaria" href="#pysisnoapi.Pis.situacao_tributaria">situacao_tributaria</a></code></li>
 </ul>
 </li>
 <li>
