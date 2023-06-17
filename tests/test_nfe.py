@@ -1,11 +1,15 @@
-from unittest.mock import MagicMock
+# =================================================================
 import requests
 import unittest
+
+from unittest.mock import MagicMock
+
 from pysisnoapi import nfe
 from pysisnoapi import *
 from datetime import datetime
 
-class TestNfe(unittest.TestCase):
+# =================================================================
+class NfeTestCase(unittest.TestCase):
     def setUp(self) -> None:
         endereco = Endereco (
             codigo_pais         = '1058',
@@ -96,7 +100,7 @@ class TestNfe(unittest.TestCase):
             data_emissao          = data,
         )
     
-    def test_listar_pelo_menos_uma_nfe(self):
+    def test_listar(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -176,7 +180,7 @@ class TestNfe(unittest.TestCase):
         # Checando resultado:
         self.assertGreaterEqual(len(nfes), 1)
         
-    def test_validar_nfe_normal(self):
+    def test_validar(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -195,8 +199,8 @@ class TestNfe(unittest.TestCase):
         self.assertEqual('Nota validada pela API', result['message'])
         
 class ObjetoEmissaoNFeTestCase(unittest.TestCase):
-    def test_novo_objeto_apenas_campos_obrigatorios(self):
-        endereco = Endereco (
+    def setUp(self) -> None:
+        self.endereco = Endereco (
             codigo_pais         = '1058',
             descricao_pais      = 'Brasil',
             uf                  = 'DF',
@@ -209,14 +213,14 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
             complemento         = 'Gerado por 4devs',
         )
         
-        cliente  = Cliente(
+        self.cliente  = Cliente(
             consumidor_final = '1',
             contribuinte     = '9',
             pessoa_fisica    = PessoaFisica(nome_completo="Vicente Marcos Samuel Nunes", cpf='44301337199'),
-            endereco         = endereco,
+            endereco         = self.endereco,
         )
         
-        impostos = nfe.ImpostosProduto(
+        self.impostos = nfe.ImpostosProduto(
             Pis (
                 situacao_tributaria='99',
                 aliquota='0.0000',
@@ -236,7 +240,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
             ),
         )
         
-        produtos = [
+        self.produtos = [
             nfe.Produto(
                 cfop                   = '5102',
                 item                   = "1",
@@ -247,12 +251,12 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 unidade                = "UNID",
                 subtotal               = "2.0",
                 total                  = "2.0",
-                impostos               = impostos,
+                impostos               = self.impostos,
                 informacoes_adicionais = "Emitido pelo pySisnoAPI",
             ),
         ]
         
-        pagamento = nfe.Pagamento(
+        self.pagamento = nfe.Pagamento(
             formas_pagamento = [
                 nfe.FormaPagamento(
                     forma_pagamento='0',
@@ -262,52 +266,410 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
             ]
         )
         
-        pedido   = nfe.Pedido(
+        self.pedido   = nfe.Pedido(
             presenca='0',
-            pagamento=pagamento,
+            pagamento=self.pagamento,
             informacoes_complementares='Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200nEMPRESA ENQUADRADA NO SIMPLES NACIONAL LC 123/2006n',
         )
         
-        data = datetime(2023, 5, 19, 17, 25, 57)
-        
-        objeto = nfe.ObjetoEmissaoNFe(
-            numero_nota_sequencial= '123456',
-            serie                 = '1',
-            operacao              = '1',
-            natureza_operacao     = 'NATUREZA',
-            modelo                = '55',
-            finalidade            = '1',
-            ambiente              = '2',
-            cliente               = cliente,
-            produtos              = produtos,
-            pedido                = pedido,
-            data_entrada_saida    = data,
-            data_emissao          = data,
+        self.data = datetime(2023, 5, 19, 17, 25, 57)
+    
+    def test_todos_campos_obrigatorios(self):
+        objeto = nfe.ObjetoEmissaoNFe (
+            numero_nota_sequencial = '123456',
+            serie                  = '1',
+            operacao               = '1',
+            natureza_operacao      = 'NATUREZA',
+            modelo                 = '55',
+            finalidade             = '1',
+            ambiente               = '2',
+            cliente                = self.cliente,
+            produtos               = self.produtos,
+            pedido                 = self.pedido,
+            data_entrada_saida     = self.data,
+            data_emissao           = self.data,
         )
         
         assert objeto.numero_nota_sequencial == "123456"
-        assert objeto.serie == "1"
-        assert objeto.operacao == "1"
-        assert objeto.natureza_operacao == "NATUREZA"
-        assert objeto.modelo == "55"
-        assert objeto.finalidade == "1"
-        assert objeto.ambiente == "2"
-        assert objeto.cliente == cliente
-        assert objeto.produtos == produtos
-        assert objeto.pedido == pedido
-        assert objeto.data_entrada_saida == data
-        assert objeto.data_emissao == data
-        assert objeto.numero_pedido is None
-        assert objeto.transporte is None
-        assert objeto.fatura is None
-        assert objeto.parcelas is None
-        assert objeto.exportacao is None
-        assert objeto.nfe_referenciada is None
-        assert objeto.retirada is None
-        assert objeto.entrega is None
-        assert objeto.compra is None
-        assert objeto.indicador_intermediador is None
-        assert objeto.informacao_intermediador is None
+        assert objeto.serie                  == "1"
+        assert objeto.operacao               == "1"
+        assert objeto.natureza_operacao      == "NATUREZA"
+        assert objeto.modelo                 == "55"
+        assert objeto.finalidade             == "1"
+        assert objeto.ambiente               == "2"
+        assert objeto.cliente                == self.cliente
+        assert objeto.produtos               == self.produtos
+        assert objeto.pedido                 == self.pedido
+        assert objeto.data_entrada_saida     == self.data
+        assert objeto.data_emissao           == self.data
         
+        assert objeto.numero_pedido            is None
+        assert objeto.transporte               is None
+        assert objeto.fatura                   is None
+        assert objeto.parcelas                 is None
+        assert objeto.exportacao               is None
+        assert objeto.nfe_referenciada         is None
+        assert objeto.retirada                 is None
+        assert objeto.entrega                  is None
+        assert objeto.compra                   is None
+        assert objeto.indicador_intermediador  is None
+        assert objeto.informacao_intermediador is None
+
+    def test_campo_obrigatorio_numero_sequencial(self):
+        with self.assertRaises(TypeError):
+            nfe.ObjetoEmissaoNFe (
+                serie                  = '1',
+                operacao               = '1',
+                natureza_operacao      = 'NATUREZA',
+                modelo                 = '55',
+                finalidade             = '1',
+                ambiente               = '2',
+                cliente                = self.cliente,
+                produtos               = self.produtos,
+                pedido                 = self.pedido,
+                data_entrada_saida     = self.data,
+                data_emissao           = self.data,
+            )
+    
+    def test_campo_obrigatorio_serie(self):
+        with self.assertRaises(TypeError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial = '123456',
+                operacao               = '1',
+                natureza_operacao      = 'NATUREZA',
+                modelo                 = '55',
+                finalidade             = '1',
+                ambiente               = '2',
+                cliente                = self.cliente,
+                produtos               = self.produtos,
+                pedido                 = self.pedido,
+                data_entrada_saida     = self.data,
+                data_emissao           = self.data,
+            )
+    
+    def test_campo_obrigatorio_operacao(self):
+        with self.assertRaises(TypeError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial = '123456',
+                serie                  = '1',
+                natureza_operacao      = 'NATUREZA',
+                modelo                 = '55',
+                finalidade             = '1',
+                ambiente               = '2',
+                cliente                = self.cliente,
+                produtos               = self.produtos,
+                pedido                 = self.pedido,
+                data_entrada_saida     = self.data,
+                data_emissao           = self.data,
+            )
+        
+    def test_campo_obrigatorio_natureza_operacao(self):
+        with self.assertRaises(TypeError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial = '123456',
+                serie                  = '1',
+                operacao               = '1',
+                modelo                 = '55',
+                finalidade             = '1',
+                ambiente               = '2',
+                cliente                = self.cliente,
+                produtos               = self.produtos,
+                pedido                 = self.pedido,
+                data_entrada_saida     = self.data,
+                data_emissao           = self.data,
+            )
+        
+    def test_campo_obrigatorio_modelo(self):
+        with self.assertRaises(TypeError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial = '123456',
+                serie                  = '1',
+                operacao               = '1',
+                natureza_operacao      = 'NATUREZA',
+                finalidade             = '1',
+                ambiente               = '2',
+                cliente                = self.cliente,
+                produtos               = self.produtos,
+                pedido                 = self.pedido,
+                data_entrada_saida     = self.data,
+                data_emissao           = self.data,
+            )
+        
+    def test_campo_obrigatorio_finalidade(self):
+        with self.assertRaises(TypeError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial = '123456',
+                serie                  = '1',
+                operacao               = '1',
+                natureza_operacao      = 'NATUREZA',
+                modelo                 = '55',
+                ambiente               = '2',
+                cliente                = self.cliente,
+                produtos               = self.produtos,
+                pedido                 = self.pedido,
+                data_entrada_saida     = self.data,
+                data_emissao           = self.data,
+            )
+        
+    def test_campo_obrigatorio_ambiente(self):
+        with self.assertRaises(TypeError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial = '123456',
+                serie                  = '1',
+                operacao               = '1',
+                natureza_operacao      = 'NATUREZA',
+                modelo                 = '55',
+                finalidade             = '1',
+                cliente                = self.cliente,
+                produtos               = self.produtos,
+                pedido                 = self.pedido,
+                data_entrada_saida     = self.data,
+                data_emissao           = self.data,
+            )
+        
+    def test_campo_obrigatorio_cliente(self):
+        with self.assertRaises(TypeError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial = '123456',
+                serie                  = '1',
+                operacao               = '1',
+                natureza_operacao      = 'NATUREZA',
+                modelo                 = '55',
+                finalidade             = '1',
+                ambiente               = '2',
+                produtos               = self.produtos,
+                pedido                 = self.pedido,
+                data_entrada_saida     = self.data,
+                data_emissao           = self.data,
+            )
+        
+    def test_campo_obrigatorio_produtos(self):
+        with self.assertRaises(TypeError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial = '123456',
+                serie                  = '1',
+                operacao               = '1',
+                natureza_operacao      = 'NATUREZA',
+                modelo                 = '55',
+                finalidade             = '1',
+                ambiente               = '2',
+                cliente                = self.cliente,
+                pedido                 = self.pedido,
+                data_entrada_saida     = self.data,
+                data_emissao           = self.data,
+            )
+        
+    def test_campo_obrigatorio_pedido(self):
+        with self.assertRaises(TypeError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial = '123456',
+                serie                  = '1',
+                operacao               = '1',
+                natureza_operacao      = 'NATUREZA',
+                modelo                 = '55',
+                finalidade             = '1',
+                ambiente               = '2',
+                cliente                = self.cliente,
+                produtos               = self.produtos,
+                data_entrada_saida     = self.data,
+                data_emissao           = self.data,
+            )
+        
+    def test_campo_obrigatorio_data_entrada_saida(self):
+        with self.assertRaises(TypeError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial = '123456',
+                serie                  = '1',
+                operacao               = '1',
+                natureza_operacao      = 'NATUREZA',
+                modelo                 = '55',
+                finalidade             = '1',
+                ambiente               = '2',
+                cliente                = self.cliente,
+                produtos               = self.produtos,
+                pedido                 = self.pedido,
+                data_emissao           = self.data,
+            )
+        
+    def test_campo_obrigatorio_emissao(self):
+        with self.assertRaises(TypeError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial = '123456',
+                serie                  = '1',
+                operacao               = '1',
+                natureza_operacao      = 'NATUREZA',
+                modelo                 = '55',
+                finalidade             = '1',
+                ambiente               = '2',
+                cliente                = self.cliente,
+                produtos               = self.produtos,
+                pedido                 = self.pedido,
+                data_entrada_saida     = self.data,
+            )
+
+    def test_operacao_invalida(self):
+        with self.assertRaises(ValueError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial= '123456',
+                serie                 = '1',
+                operacao              = '',
+                natureza_operacao     = 'NATUREZA',
+                modelo                = '55',
+                finalidade            = '1',
+                ambiente              = '2',
+                cliente               = self.cliente,
+                produtos              = self.produtos,
+                pedido                = self.pedido,
+                data_entrada_saida    = self.data,
+                data_emissao          = self.data,
+            )
+    
+    def test_modelo_invalido(self):
+        with self.assertRaises(ValueError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial= '123456',
+                serie                 = '1',
+                operacao              = '1',
+                natureza_operacao     = 'NATUREZA',
+                modelo                = '',
+                finalidade            = '1',
+                ambiente              = '2',
+                cliente               = self.cliente,
+                produtos              = self.produtos,
+                pedido                = self.pedido,
+                data_entrada_saida    = self.data,
+                data_emissao          = self.data,
+            )
+    
+    def test_finalidade_invalida(self):
+        with self.assertRaises(ValueError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial= '123456',
+                serie                 = '1',
+                operacao              = '1',
+                natureza_operacao     = 'NATUREZA',
+                modelo                = '55',
+                finalidade            = '',
+                ambiente              = '2',
+                cliente               = self.cliente,
+                produtos              = self.produtos,
+                pedido                = self.pedido,
+                data_entrada_saida    = self.data,
+                data_emissao          = self.data,
+            )
+    
+    def test_ambiente_invalido(self):
+        with self.assertRaises(ValueError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial= '123456',
+                serie                 = '1',
+                operacao              = '1',
+                natureza_operacao     = 'NATUREZA',
+                modelo                = '55',
+                finalidade            = '1',
+                ambiente              = '',
+                cliente               = self.cliente,
+                produtos              = self.produtos,
+                pedido                = self.pedido,
+                data_entrada_saida    = self.data,
+                data_emissao          = self.data,
+            )
+
+class PagamentoUnitTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.forma_pgto = nfe.FormaPagamento (
+            forma_pagamento = '0',
+            meio_pagamento  = '01',
+            valor_pagamento = '1.00',
+        )
+        
+    def test_todos_campos_obrigatorios(self):
+        pagamento = nfe.Pagamento (
+            formas_pagamento = [
+                self.forma_pgto,
+                self.forma_pgto,
+            ]
+        )
+        
+        self.assertEquals(len(pagamento.formas_pagamento), 2)
+
+class FormaPagamentoUnitTest(unittest.TestCase):
+    def test_todos_campos_obrigatorios(self):
+        forma_pgto = nfe.FormaPagamento (
+            forma_pagamento = '0',
+            meio_pagamento  = '01',
+            valor_pagamento = '1.00',
+        )
+        
+        self.assertEquals(forma_pgto.forma_pagamento, '0')
+        self.assertEquals(forma_pgto.meio_pagamento , '01')
+        self.assertEquals(forma_pgto.valor_pagamento, '1.00')
+    
+    def test_campo_obrigatorio_forma_pagamento(self):
+        with self.assertRaises(TypeError):
+            nfe.FormaPagamento(
+                meio_pagamento  = '01',
+                valor_pagamento = '1.00',
+            )
+        
+    def test_campo_obrigatorio_meio_pagamento(self):
+        with self.assertRaises(TypeError):
+            nfe.FormaPagamento(
+                forma_pagamento = '0',
+                valor_pagamento = '1.00',
+            )
+    
+    def test_campo_obrigatorio_valor_pagamento(self):
+        with self.assertRaises(TypeError):
+            nfe.FormaPagamento(
+                forma_pagamento = '0',
+                meio_pagamento  = '01',
+            )
+    
+    def test_forma_pagamento_invalido(self):
+        with self.assertRaises(ValueError):
+            nfe.FormaPagamento (
+                forma_pagamento = '',
+                meio_pagamento  = '01',
+                valor_pagamento = '1.00',
+            )
+            
+    def test_meio_pagamento_invalido(self):
+        with self.assertRaises(ValueError):
+            nfe.FormaPagamento (
+                forma_pagamento = '0',
+                meio_pagamento  = '',
+                valor_pagamento = '1.00',
+            )
+            
+    def test_descricao_obrigatorio(self):
+        with self.assertRaises(ValueError):
+            nfe.FormaPagamento (
+                forma_pagamento = '0',
+                meio_pagamento  = '99',
+                valor_pagamento = '1.00'
+            )
+            
+    def test_tamanho_descricao_menor_que_dois(self):
+        with self.assertRaises(ValueError):
+            nfe.FormaPagamento (
+                forma_pagamento          = '0',
+                meio_pagamento           = '99',
+                valor_pagamento          = '1.00',
+                descricao_meio_pagamento = 'a',
+            )
+    
+    def test_tamanho_descricao_maior_que_sessenta(self):
+        with self.assertRaises(ValueError):
+            nfe.FormaPagamento (
+                forma_pagamento          = '0',
+                meio_pagamento           = '99',
+                valor_pagamento          = '1.00',
+                descricao_meio_pagamento = 'x'*70,
+            )
+
+# =================================================================
 if __name__ == "__main__":
     unittest.main()
+
+# =================================================================
