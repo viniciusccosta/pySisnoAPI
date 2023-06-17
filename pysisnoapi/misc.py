@@ -68,7 +68,9 @@ def get_cfops(*args, **kwargs) -> List[Cfop]:
             return
 
 @requires_emissor
-def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> List[Ibpt]:
+def get_ibpts(
+    cod_desc: str, 
+    uf: str, *args, **kwargs) -> List[Ibpt]:
     """
     Obtém os IBPTs através de uma requisição à API.
 

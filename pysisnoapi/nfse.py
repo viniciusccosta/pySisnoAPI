@@ -191,7 +191,17 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
             return response.text
 
 @requires_emissor
-def buscar_notas(cnpj:str=None, data_inicio:datetime=None, data_fim:datetime=None, ambiente:str=None, status:str=None, texto:str=None, pagina:str=None, qtd_por_pagina:str=None, ordencao:str=None, tipo_ordenacao:str=None, *args, **kwargs) -> List[NotaFiscalServico]:
+def buscar_notas(
+    cnpj:str=None, 
+    data_inicio:datetime=None, 
+    data_fim:datetime=None, 
+    ambiente:str=None, 
+    status:str=None, 
+    texto:str=None, 
+    pagina:str=None, 
+    qtd_por_pagina:str=None, 
+    ordencao:str=None, 
+    tipo_ordenacao:str=None, *args, **kwargs) -> List[NotaFiscalServico]:
     """Recupera as notas fiscais de serviço.
 
     Args:

@@ -65,37 +65,27 @@ class ObjetoEmissaoNFe(BaseClass):
     indicador_intermediador : Optional[str]                       = None
     informacao_intermediador: Optional["InformacaoIntermediador"] = None
     
-    # @validator('operacao')
-    # def validate_operacao(cls, operacao):
-    #     if not isinstance(operacao, str):
-    #         raise TypeError("Operação tem que ser uma string")
-    #     if operacao not in ['0', '1']:
-    #         raise ValueError(f"Operação {operacao} inválida")
-    #     return operacao
+    def __post_init__(self):
+        self.validate_operacao()
+        self.validate_modelo()
+        self.validate_finalidade()
+        self.validate_ambiente()
     
-    # @validator('modelo')
-    # def validate_modelo(cls, modelo):
-    #     if not isinstance(modelo, str):
-    #         raise TypeError("Modelo tem que ser uma string")
-    #     if modelo not in ['55', '65']:
-    #         raise ValueError(f"Modelo {modelo} inválido")
-    #     return modelo
+    def validate_operacao(self):
+        if self.operacao not in ['0', '1']:
+            raise ValueError(f"Operação {self.operacao} inválida")
     
-    # @validator('finalidade')
-    # def validate_finalidade(cls, finalidade):
-    #     if not isinstance(finalidade, str):
-    #         raise TypeError("Finalidade tem que ser uma string")
-    #     if finalidade not in ['1', '2', '3', '4']:
-    #         raise ValueError(f"Finalidade {finalidade} inválida")
-    #     return finalidade
+    def validate_modelo(self):
+        if self.modelo not in ['55', '65']:
+            raise ValueError(f"Modelo {self.modelo} inválido")
     
-    # @validator('ambiente')
-    # def validate_ambiente(cls, ambiente):
-    #     if not isinstance(ambiente, str):
-    #         raise TypeError("Ambiente tem que ser uma string")
-    #     if ambiente not in ['1', '2',]:
-    #         raise ValueError(f"Ambiente {ambiente} inválido")
-    #     return ambiente
+    def validate_finalidade(self):
+        if self.finalidade not in ['1', '2', '3', '4']:
+            raise ValueError(f"Finalidade {self.finalidade} inválida")
+    
+    def validate_ambiente(self):
+        if self.ambiente not in ['1', '2',]:
+            raise ValueError(f"Ambiente {self.ambiente} inválido")
 
 @dataclass
 class Pagamento:
@@ -112,6 +102,27 @@ class FormaPagamento:
     autorizacao             : Optional[str] = None
     data_vencimento         : Optional[str] = None
     descricao_meio_pagamento: Optional[str] = None
+    # tipo_integracao         : Optional[str] = None    # TODO: Não está na documentação mas é obrigatório caso meio de pagamento seja 'crédito' ou 'débito'. O valor deve ser '1' ou '2'.
+    
+    def __post_init__(self):
+        self.validate_forma_pagamento()
+        self.validate_meios_pagamento()
+        self.validate_descricao()
+    
+    def validate_forma_pagamento(self):
+        if self.forma_pagamento not in FORMAS_PAGAMENTO:
+            raise ValueError(f'Forma de pagamento {self.forma_pagamento} inválido')
+        
+    def validate_meios_pagamento(self):
+        if self.meio_pagamento not in MEIOS_PAGAMENTO:
+            raise ValueError(f'Meio de pagamento {self.meio_pagamento} inválido')
+        
+    def validate_descricao(self):
+        if self.meio_pagamento == '99':
+            if self.descricao_meio_pagamento is None:
+                raise ValueError(f'Necessário preencher descricao_meio_pagamento quando a forma de pagamento é "(99) Outros".')
+            if len(self.descricao_meio_pagamento) < 2 or len(self.descricao_meio_pagamento) > 60:
+                raise ValueError(f'Descrição do meio de pagamento deve ter entre 2 e 60 caracteres')
 
 @dataclass
 class Produto:
@@ -150,13 +161,12 @@ class Produto:
     valor_desconto                  : Optional[str]                    = None
     valor_outras_despesas_acessorias: Optional[str]                    = None
     
-    # @validator('unidade')
-    # def validate_unidade(cls, unidade):
-    #     if not isinstance(str, unidade):
-    #         return TypeError("Unidade precisa ser uma string")
-    #     if unidade not in ['AMPOLA', 'BALDE', 'BANDEJ', 'BARRA', 'BISNAG', 'BLOCO', 'BOBINA', 'BOMB', 'CAPS', 'CART', 'CENTO', 'CJ', 'CM', 'CM2', 'CX', 'CX2', 'CX3', 'CX5', 'CX10', 'CX15', 'CX20', 'CX25', 'CX50', 'CX100', 'DISP', 'DUZIA', 'EMBAL', 'FARDO', 'FOLHA', 'FRASCO', 'GALAO', 'JOGO', 'KG', 'KIT', 'LATA', 'LITRO', 'M', 'M2', 'M3', 'MILHEI', 'ML', 'MWH', 'PACOTE', 'PALETE', 'PARES', 'PC', 'POTE', 'K', 'RESMA', 'ROLO', 'SACO', 'SACOLA', 'TAMBOR', 'TANQUE', 'TON', 'TUBO', 'UNID', 'VASIL', 'VIDRO',]:
-    #         return ValueError(f"Unidade {unidade} inválida")
-    #     return unidade
+    def __init_post__(self):
+        self.validate_unidade()
+    
+    def validate_unidade(self):
+        if self.unidade not in UNIDADES:
+            return ValueError(f"Unidade {self.unidade} inválida")
 
 @dataclass
 class ImpostosProduto(Impostos):
@@ -241,7 +251,9 @@ def cancelar(*args, **kwargs):
 
 @requires_emissor
 @requires_empresa
-def validar(objetoNfe:ObjetoEmissaoNFe, tipo_emissao:str, *args, **kwargs) -> None:
+def validar(
+    objetoNfe:ObjetoEmissaoNFe, 
+    tipo_emissao:str, *args, **kwargs) -> None:
     """Endpoint utilizado para validar a nota fiscal eletrônica antes de emitir.
 
     Args:
@@ -266,7 +278,9 @@ def validar(objetoNfe:ObjetoEmissaoNFe, tipo_emissao:str, *args, **kwargs) -> No
             return response.text
 
 @requires_emissor
-def listar(qtd:str = None, pagina:str = None, *args, **kwargs) -> List[NotaFiscal]:
+def listar(
+    qtd:str = None, 
+    pagina:str = None, *args, **kwargs) -> List[NotaFiscal]:
     """Recupera as notas fiscais.
     
     No Distrito Federal (DF), antes de 01/2023, as notas fiscais de serviço eram emitidas como NFe.
