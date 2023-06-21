@@ -8,10 +8,11 @@
 # =====================================================================
 from . import *
 
-from datetime import datetime
 import requests
 import json
 import jsonpickle
+
+from datetime import datetime
 
 # =====================================================================
 CSV_HEADERS = [
@@ -120,14 +121,21 @@ class FormaPagamento:
     def validate_descricao(self):
         if self.meio_pagamento == '99':
             if self.descricao_meio_pagamento is None:
-                raise ValueError(f'Necessário preencher descricao_meio_pagamento quando a forma de pagamento é "(99) Outros".')
+                raise ValueError(f'Necessário preencher "descricao_meio_pagamento" quando a forma de pagamento é "(99) Outros".')
             if len(self.descricao_meio_pagamento) < 2 or len(self.descricao_meio_pagamento) > 60:
-                raise ValueError(f'Descrição do meio de pagamento deve ter entre 2 e 60 caracteres')
+                raise ValueError(f'O campo "descricao_meio_pagamento" deve conter entre 2 a 60 caracteres')
 
 @dataclass
 class Produto:
+    """Classe Produto
+
+    Raises:
+        ValueError: Caso o valor de algum atributo seja inválido.
+        TypeError: Caso algum campo obrigatório não for informado.
+    """
+    item                            : str   # Número incremental na lista de produtos
+    
     cfop                            : str
-    item                            : str
     nome                            : str
     codigo                          : str
     ncm                             : str
@@ -135,7 +143,7 @@ class Produto:
     unidade                         : str
     subtotal                        : str
     total                           : str
-    impostos                        : str
+    impostos                        : Impostos
     
     numero_pedido                   : Optional[str]                    = None
     excessao_ibpt                   : Optional[str]                    = None
@@ -161,12 +169,17 @@ class Produto:
     valor_desconto                  : Optional[str]                    = None
     valor_outras_despesas_acessorias: Optional[str]                    = None
     
-    def __init_post__(self):
+    def __post_init__(self):
         self.validate_unidade()
-    
+        self.validate_impostos()
+        
     def validate_unidade(self):
         if self.unidade not in UNIDADES:
-            return ValueError(f"Unidade {self.unidade} inválida")
+            raise ValueError(f"Unidade {self.unidade} inválida.")
+        
+    def validate_impostos(self):
+        if not isinstance(self.impostos, Impostos):
+            raise TypeError(f'Campo "impostos" deve ser {repr(Impostos)} e não {type(self.impostos)}')
 
 @dataclass
 class ImpostosProduto(Impostos):

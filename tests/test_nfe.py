@@ -197,7 +197,9 @@ class NfeTestCase(unittest.TestCase):
         # Checando resultado:
         self.assertEqual('Sucesso', result['status'])
         self.assertEqual('Nota validada pela API', result['message'])
-        
+
+# =================================================================
+# Models:
 class ObjetoEmissaoNFeTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self.endereco = Endereco (
@@ -591,7 +593,7 @@ class PagamentoUnitTest(unittest.TestCase):
             ]
         )
         
-        self.assertEquals(len(pagamento.formas_pagamento), 2)
+        self.assertEqual(len(pagamento.formas_pagamento), 2)
 
 class FormaPagamentoUnitTest(unittest.TestCase):
     def test_todos_campos_obrigatorios(self):
@@ -601,9 +603,9 @@ class FormaPagamentoUnitTest(unittest.TestCase):
             valor_pagamento = '1.00',
         )
         
-        self.assertEquals(forma_pgto.forma_pagamento, '0')
-        self.assertEquals(forma_pgto.meio_pagamento , '01')
-        self.assertEquals(forma_pgto.valor_pagamento, '1.00')
+        self.assertEqual(forma_pgto.forma_pagamento, '0')
+        self.assertEqual(forma_pgto.meio_pagamento , '01')
+        self.assertEqual(forma_pgto.valor_pagamento, '1.00')
     
     def test_campo_obrigatorio_forma_pagamento(self):
         with self.assertRaises(TypeError):
@@ -666,6 +668,205 @@ class FormaPagamentoUnitTest(unittest.TestCase):
                 meio_pagamento           = '99',
                 valor_pagamento          = '1.00',
                 descricao_meio_pagamento = 'x'*70,
+            )
+
+class ProdutoUnitTest(unittest.TestCase):
+    """Testes da classe produtos"""
+    
+    def setUp(self) -> None:
+        self.impostos = nfe.ImpostosProduto(
+            Pis (
+                situacao_tributaria='99',
+                aliquota='0.0000',
+            ),
+            Cofins(
+                situacao_tributaria='99',
+                aliquota='0.0000',
+            ),
+            Icms (
+                situacao_tributaria='102',
+                aliquota_icms='0.0000',
+                aliquota_icms_st='0.0000',
+            ),
+            Ipi(
+                situacao_tributaria='99',
+                aliquota='0.0000',
+            ),
+        )
+    
+    def test_todos_campos_obrigatorios(self):
+        produto = nfe.Produto(
+            item       = "1",
+            cfop       = '5102',
+            nome       = "UNIFORMES",
+            codigo     = "123456",
+            ncm        = "62069000",
+            quantidade = "2.0",
+            unidade    = "UNID",
+            subtotal   = "2.0",
+            total      = "2.0",
+            impostos   = self.impostos,
+        )
+    
+        self.assertEqual(produto.cfop      , '5102')
+        self.assertEqual(produto.item      , '1')
+        self.assertEqual(produto.nome      , 'UNIFORMES')
+        self.assertEqual(produto.codigo    , '123456')
+        self.assertEqual(produto.ncm       , '62069000')
+        self.assertEqual(produto.quantidade, '2.0')
+        self.assertEqual(produto.unidade   , 'UNID')
+        self.assertEqual(produto.subtotal  , '2.0')
+        self.assertEqual(produto.total     , '2.0')
+        self.assertEqual(produto.impostos  , self.impostos)
+        
+    def test_campo_obrigatorio_item(self):
+        with self.assertRaises(TypeError):
+            nfe.Produto (
+                
+                cfop       = '5102',
+                nome       = "UNIFORMES",
+                codigo     = "123456",
+                ncm        = "62069000",
+                quantidade = "2.0",
+                unidade    = "UNID",
+                subtotal   = "2.0",
+                total      = "2.0",
+                impostos   = self.impostos,
+            )
+        
+    def test_campo_obrigatorio_cfop(self):
+        with self.assertRaises(TypeError):
+            nfe.Produto (
+                item       = "1",
+                
+                nome       = "UNIFORMES",
+                codigo     = "123456",
+                ncm        = "62069000",
+                quantidade = "2.0",
+                unidade    = "UNID",
+                subtotal   = "2.0",
+                total      = "2.0",
+                impostos   = self.impostos,
+            )
+            
+    def test_campo_obrigatorio_nome(self):
+        with self.assertRaises(TypeError):
+            nfe.Produto (
+                item       = "1",
+                cfop       = '5102',
+                
+                codigo     = "123456",
+                ncm        = "62069000",
+                quantidade = "2.0",
+                unidade    = "UNID",
+                subtotal   = "2.0",
+                total      = "2.0",
+                impostos   = self.impostos,
+            )
+            
+    def test_campo_obrigatorio_codigo(self):
+        with self.assertRaises(TypeError):
+            nfe.Produto (
+                item       = "1",
+                cfop       = '5102',
+                nome       = "UNIFORMES",
+                
+                ncm        = "62069000",
+                quantidade = "2.0",
+                unidade    = "UNID",
+                subtotal   = "2.0",
+                total      = "2.0",
+                impostos   = self.impostos,
+            )
+            
+    def test_campo_obrigatorio_ncm(self):
+        with self.assertRaises(TypeError):
+            nfe.Produto (
+                item       = "1",
+                cfop       = '5102',
+                nome       = "UNIFORMES",
+                codigo     = "123456",
+                
+                quantidade = "2.0",
+                unidade    = "UNID",
+                subtotal   = "2.0",
+                total      = "2.0",
+                impostos   = self.impostos,
+            )
+            
+    def test_campo_obrigatorio_quantidade(self):
+        with self.assertRaises(TypeError):
+            nfe.Produto (
+                item       = "1",
+                cfop       = '5102',
+                nome       = "UNIFORMES",
+                codigo     = "123456",
+                ncm        = "62069000",
+                
+                unidade    = "UNID",
+                subtotal   = "2.0",
+                total      = "2.0",
+                impostos   = self.impostos,
+            )
+            
+    def test_campo_obrigatorio_unidade(self):
+        with self.assertRaises(TypeError):
+            nfe.Produto (
+                item       = "1",
+                cfop       = '5102',
+                nome       = "UNIFORMES",
+                codigo     = "123456",
+                ncm        = "62069000",
+                quantidade = "2.0",
+                
+                subtotal   = "2.0",
+                total      = "2.0",
+                impostos   = self.impostos,
+            )
+            
+    def test_campo_obrigatorio_subtotal(self):
+        with self.assertRaises(TypeError):
+            nfe.Produto (
+                item       = "1",
+                cfop       = '5102',
+                nome       = "UNIFORMES",
+                codigo     = "123456",
+                ncm        = "62069000",
+                quantidade = "2.0",
+                unidade    = "UNID",
+                
+                total      = "2.0",
+                impostos   = self.impostos,
+            )
+
+    def test_campo_obrigatorio_total(self):
+        with self.assertRaises(TypeError):
+            nfe.Produto (
+                item       = "1",
+                cfop       = '5102',
+                nome       = "UNIFORMES",
+                codigo     = "123456",
+                ncm        = "62069000",
+                quantidade = "2.0",
+                unidade    = "UNID",
+                subtotal   = "2.0",
+                
+                impostos   = self.impostos,
+            )
+    
+    def test_campo_obrigatorio_impostos(self):
+        with self.assertRaises(TypeError):
+            nfe.Produto (
+                item       = "1",
+                cfop       = '5102',
+                nome       = "UNIFORMES",
+                codigo     = "123456",
+                ncm        = "62069000",
+                quantidade = "2.0",
+                unidade    = "UNID",
+                subtotal   = "2.0",
+                total      = "2.0",
+                
             )
 
 # =================================================================
