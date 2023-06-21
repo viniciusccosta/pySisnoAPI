@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 from pysisnoapi import nfse
 
 class TestNfse(unittest.TestCase):
-    def test_buscar_notas_pelo_menos_uma(self):
+    def test_buscar_notas(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -59,6 +59,7 @@ class TestNfse(unittest.TestCase):
                         "valor_total": "1.0",
                         "data_emissao": "02/06/2023 00:45:01",
                         "ambiente": "2",
+                        "json_objeto_nfse": "",
                     }
                 ], 
                 'informacoesAdicionais': {
