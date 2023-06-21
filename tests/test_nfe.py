@@ -2,11 +2,11 @@
 import requests
 import unittest
 
-from unittest.mock import MagicMock
+from unittest.mock  import MagicMock
+from datetime       import datetime
 
-from pysisnoapi import nfe
 from pysisnoapi import *
-from datetime import datetime
+from pysisnoapi import nfe
 
 # =================================================================
 class NfeTestCase(unittest.TestCase):
@@ -32,20 +32,20 @@ class NfeTestCase(unittest.TestCase):
         )
         
         impostos = nfe.ImpostosProduto(
-            Pis (
+            pis = Pis (
                 situacao_tributaria='99',
                 aliquota='0.0000',
             ),
-            Cofins(
+            cofins = Cofins(
                 situacao_tributaria='99',
                 aliquota='0.0000',
             ),
-            Icms (
+            icms = Icms (
                 situacao_tributaria='102',
                 aliquota_icms='0.0000',
                 aliquota_icms_st='0.0000',
             ),
-            Ipi(
+            ipi = Ipi(
                 situacao_tributaria='99',
                 aliquota='0.0000',
             ),
