@@ -32,7 +32,7 @@ from unittest.mock import MagicMock
 from pysisnoapi import nfse
 
 class TestNfse(unittest.TestCase):
-    def test_buscar_notas_pelo_menos_uma(self):
+    def test_buscar_notas(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -87,6 +87,7 @@ class TestNfse(unittest.TestCase):
                         &#34;valor_total&#34;: &#34;1.0&#34;,
                         &#34;data_emissao&#34;: &#34;02/06/2023 00:45:01&#34;,
                         &#34;ambiente&#34;: &#34;2&#34;,
+                        &#34;json_objeto_nfse&#34;: &#34;&#34;,
                     }
                 ], 
                 &#39;informacoesAdicionais&#39;: {
@@ -155,7 +156,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class TestNfse(unittest.TestCase):
-    def test_buscar_notas_pelo_menos_uma(self):
+    def test_buscar_notas(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -210,6 +211,7 @@ not have a method with the specified name.</p></div>
                         &#34;valor_total&#34;: &#34;1.0&#34;,
                         &#34;data_emissao&#34;: &#34;02/06/2023 00:45:01&#34;,
                         &#34;ambiente&#34;: &#34;2&#34;,
+                        &#34;json_objeto_nfse&#34;: &#34;&#34;,
                     }
                 ], 
                 &#39;informacoesAdicionais&#39;: {
@@ -233,8 +235,8 @@ not have a method with the specified name.</p></div>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="tests.test_nfse.TestNfse.test_buscar_notas_pelo_menos_uma"><code class="name flex">
-<span>def <span class="ident">test_buscar_notas_pelo_menos_uma</span></span>(<span>self)</span>
+<dt id="tests.test_nfse.TestNfse.test_buscar_notas"><code class="name flex">
+<span>def <span class="ident">test_buscar_notas</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -242,7 +244,7 @@ not have a method with the specified name.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_buscar_notas_pelo_menos_uma(self):
+<pre><code class="python">def test_buscar_notas(self):
     # Mocking:
     mock_response = MagicMock()
     mock_response.status_code = 200
@@ -297,6 +299,7 @@ not have a method with the specified name.</p></div>
                     &#34;valor_total&#34;: &#34;1.0&#34;,
                     &#34;data_emissao&#34;: &#34;02/06/2023 00:45:01&#34;,
                     &#34;ambiente&#34;: &#34;2&#34;,
+                    &#34;json_objeto_nfse&#34;: &#34;&#34;,
                 }
             ], 
             &#39;informacoesAdicionais&#39;: {
@@ -336,7 +339,7 @@ not have a method with the specified name.</p></div>
 <li>
 <h4><code><a title="tests.test_nfse.TestNfse" href="#tests.test_nfse.TestNfse">TestNfse</a></code></h4>
 <ul class="">
-<li><code><a title="tests.test_nfse.TestNfse.test_buscar_notas_pelo_menos_uma" href="#tests.test_nfse.TestNfse.test_buscar_notas_pelo_menos_uma">test_buscar_notas_pelo_menos_uma</a></code></li>
+<li><code><a title="tests.test_nfse.TestNfse.test_buscar_notas" href="#tests.test_nfse.TestNfse.test_buscar_notas">test_buscar_notas</a></code></li>
 </ul>
 </li>
 </ul>

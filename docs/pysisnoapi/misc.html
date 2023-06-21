@@ -63,7 +63,7 @@ def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
     &#34;&#34;&#34;
 
     headers  = HEADERS.copy()
-    url      = f&#39;{URL}/unidades-federativas/{uf}/municipios&#39;
+    url      = f&#39;{BASE_URL}/unidades-federativas/{uf}/municipios&#39;
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
@@ -87,7 +87,7 @@ def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
     &#34;&#34;&#34;
 
     headers  = HEADERS.copy()
-    url      = f&#39;{URL}/cfops&#39;
+    url      = f&#39;{BASE_URL}/cfops&#39;
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
@@ -101,7 +101,9 @@ def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
             return
 
 @requires_emissor
-def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -&gt; List[Ibpt]:
+def get_ibpts(
+    cod_desc: str, 
+    uf: str, *args, **kwargs) -&gt; List[Ibpt]:
     &#34;&#34;&#34;
     Obtém os IBPTs através de uma requisição à API.
 
@@ -125,7 +127,7 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -&gt; List[Ibpt]:
     headers[&#34;codigo-ou-descricao&#34;] = cod_desc
     headers[&#34;uf&#34;] = uf
 
-    url      = f&#39;{URL}/ibpts&#39;
+    url      = f&#39;{BASE_URL}/ibpts&#39;
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
@@ -174,7 +176,7 @@ def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
     &#34;&#34;&#34;
 
     headers  = HEADERS.copy()
-    url      = f&#39;{URL}/cfops&#39;
+    url      = f&#39;{BASE_URL}/cfops&#39;
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
@@ -216,7 +218,9 @@ def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@requires_emissor
-def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -&gt; List[Ibpt]:
+def get_ibpts(
+    cod_desc: str, 
+    uf: str, *args, **kwargs) -&gt; List[Ibpt]:
     &#34;&#34;&#34;
     Obtém os IBPTs através de uma requisição à API.
 
@@ -240,7 +244,7 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -&gt; List[Ibpt]:
     headers[&#34;codigo-ou-descricao&#34;] = cod_desc
     headers[&#34;uf&#34;] = uf
 
-    url      = f&#39;{URL}/ibpts&#39;
+    url      = f&#39;{BASE_URL}/ibpts&#39;
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
@@ -290,7 +294,7 @@ def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
     &#34;&#34;&#34;
 
     headers  = HEADERS.copy()
-    url      = f&#39;{URL}/unidades-federativas/{uf}/municipios&#39;
+    url      = f&#39;{BASE_URL}/unidades-federativas/{uf}/municipios&#39;
     response = requests.get(url, headers=headers)
 
     match (response.status_code):

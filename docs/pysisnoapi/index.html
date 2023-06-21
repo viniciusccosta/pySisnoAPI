@@ -57,14 +57,101 @@ from dateutil    import parser
 # Globals:
 load_dotenv()
 
-URL     = &#34;https://homolog.arkaonline.com.br/nfe-service&#34;               # TODO: Provisório, em breve voltará para &#39;https://homolog.sisno.com.br/nfe-service/&#39;
-HEADERS = {
+BASE_URL = &#34;https://homolog.arkaonline.com.br/nfe-service&#34;               # TODO: Provisório, em breve voltará para &#39;https://homolog.sisno.com.br/nfe-service/&#39;
+HEADERS  = {
     &#34;token-emissor&#34;         : os.getenv(&#34;token-emissor&#34;       , &#34;&#34;),
     &#34;token-secret-emissor&#34;  : os.getenv(&#34;token-secret-emissor&#34;, &#34;&#34;),
     &#34;token-empresa&#34;         : os.getenv(&#34;token-empresa&#34;       , &#34;&#34;),
     &#34;token-secret-empresa&#34;  : os.getenv(&#34;token-secret-empresa&#34;, &#34;&#34;),
     &#34;accept&#34;                : &#34;application/json&#34;,
     &#34;Content-Type&#34;          : &#34;application/json&#34;,
+}
+
+UNIDADES = [
+    &#39;AMPOLA&#39;,
+    &#39;BALDE&#39;
+    &#39;BANDEJ&#39;,
+    &#39;BARRA&#39;,
+    &#39;BISNAG&#39;,
+    &#39;BLOCO&#39;,
+    &#39;BOBINA&#39;,
+    &#39;BOMB&#39;,
+    &#39;CAPS&#39;,
+    &#39;CART&#39;,
+    &#39;CENTO&#39;,
+    &#39;CJ&#39;,
+    &#39;CM&#39;,
+    &#39;CM2&#39;,
+    &#39;CX&#39;,
+    &#39;CX2&#39;,
+    &#39;CX3&#39;,
+    &#39;CX5&#39;,
+    &#39;CX10&#39;,
+    &#39;CX15&#39;,
+    &#39;CX20&#39;,
+    &#39;CX25&#39;,
+    &#39;CX50&#39;,
+    &#39;CX100&#39;,
+    &#39;DISP&#39;,
+    &#39;DUZIA&#39;,
+    &#39;EMBAL&#39;,
+    &#39;FARDO&#39;,
+    &#39;FOLHA&#39;,
+    &#39;FRASCO&#39;,
+    &#39;GALAO&#39;,
+    &#39;JOGO&#39;,
+    &#39;KG&#39;,
+    &#39;KIT&#39;,
+    &#39;LATA&#39;,
+    &#39;LITRO&#39;,
+    &#39;M&#39;,
+    &#39;M2&#39;,
+    &#39;M3&#39;,
+    &#39;MILHEI&#39;,
+    &#39;ML&#39;,
+    &#39;MWH&#39;,
+    &#39;PACOTE&#39;,
+    &#39;PALETE&#39;,
+    &#39;PARES&#39;,
+    &#39;PC&#39;,
+    &#39;POTE&#39;,
+    &#39;K&#39;,
+    &#39;RESMA&#39;,
+    &#39;ROLO&#39;,
+    &#39;SACO&#39;,
+    &#39;SACOLA&#39;,
+    &#39;TAMBOR&#39;,
+    &#39;TANQUE&#39;,
+    &#39;TON&#39;,
+    &#39;TUBO&#39;,
+    &#39;UNID&#39;,
+    &#39;VASIL&#39;,
+    &#39;VIDRO&#39;,
+]
+
+FORMAS_PAGAMENTO = {
+    &#39;0&#39;: &#39;À Vista&#39;,
+    &#39;1&#39;: &#39;À Prazo&#39;,
+}
+
+MEIOS_PAGAMENTO = {
+    &#39;01&#39;: &#39;Dinheiro&#39;,
+    &#39;02&#39;: &#39;Cheque&#39;,
+    &#39;03&#39;: &#39;Cartão de crédito&#39;,
+    &#39;04&#39;: &#39;Cartão de débito&#39;,
+    &#39;05&#39;: &#39;Cartão da loja&#39;,
+    &#39;10&#39;: &#39;Vale alimentação&#39;,
+    &#39;11&#39;: &#39;Vale refeição&#39;,
+    &#39;12&#39;: &#39;Vale presente&#39;,
+    &#39;13&#39;: &#39;Vale combustível&#39;,
+    &#39;14&#39;: &#39;Duplicata mercantil&#39;,
+    &#39;15&#39;: &#39;Boleto bancário&#39;,
+    &#39;16&#39;: &#39;Depósito bancário&#39;,
+    &#39;17&#39;: &#39;Pagamento Instantaneo (PIX)&#39;,
+    &#39;18&#39;: &#39;Transferência bancária&#39;,
+    &#39;19&#39;: &#39;Programa de fidelidade (Cashback)&#39;,
+    &#39;90&#39;: &#39;Sem pagamento&#39;,
+    &#39;99&#39;: &#39;Outros&#39;,
 }
 
 # ======================================================================================================================
