@@ -420,28 +420,19 @@ class Ipi:
     codigo_selo         : Optional[str] = None
     qtd_selo            : Optional[str] = None
 
+@dataclass
 class Issqn:
-    def __init__(self, **kwargs):
-        """
-            Indicador_exigibilidade_iss  
-                1. Exigível  
-                2. Não incidência  
-                3. Isenção  
-                4. Exportação  
-                5. Imunidade  
-                6. Exigibilidade suspensa por decisão judicial  
-                7. Exigibilidade suspensa por processo administrativo  
-        """
-        
-        self.indicador_exigibilidade_iss     = kwargs.get("indicador_exigibilidade_iss", None)   # string [ 1, 2, 3, 4, 5, 6, 7 ]
-        self.indicador_incentivo_fiscal      = kwargs.get("indicador_incentivo_fiscal", None)    # string (1: Não, 2: Sim)
-        self.item_lista_servicos             = kwargs.get("item_lista_servicos", None)           # string - Item da lista de serviços no Padrão ABRASF (Formato NN.NN)
-        self.aliquota                        = kwargs.get("aliquota", None)                      # string ($0.0000)
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+    indicador_exigibilidade_iss: str    # string [ 1, 2, 3, 4, 5, 6, 7 ]
+    indicador_incentivo_fiscal : str    # string (1: Não, 2: Sim)
+    item_lista_servicos        : str    # string - Item da lista de serviços no Padrão ABRASF (Formato NN.NN)
+    aliquota                   : str    # string ($0.0000)
+    
+    numero_processo            : Optional[str] = None
+    codigo_servico             : Optional[str] = None
+    aliquota_retencao          : Optional[str] = None
+    aliquota_irrf              : Optional[str] = None
+    aliquota_csll              : Optional[str] = None
+    aliquota_previdencia_social: Optional[str] = None
 
 @dataclass
 class Municipio:
