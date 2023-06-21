@@ -11,6 +11,7 @@ from . import *
 import json
 import requests
 from datetime import datetime
+import jsonpickle
 
 # =====================================================================
 CSV_HEADERS = [
@@ -33,64 +34,30 @@ CSV_HEADERS = [
 ]
 
 # =====================================================================
+@dataclass
 class Servico:
-    def __init__(self, valor_servicos, discriminacao, impostos, *args, **kwargs):
-        """
-        Construtor da classe Serviço.
+    """_summary_
 
-        Args:
-            valor_servicos (str): Valor do Serviço no formato $0.00
-            
-            discriminacao (str): Descrição do Serviço
-            
-            impostos (Imposto): Instância da classe "Imposto"
-            
-            **intermediario (Cliente): Intermediário do Serviço
-            
-            **iss_retido (int):  
-                1. Sim  
-                2. Não
-                
-            **responsavel_retencao_iss (int):  
-                1. Tomador  
-                2. Intermediário
-                
-            **deducoes (str): Soma total das deduções/descontos gerais
-            
-            **desconto_incondicionado (str): Soma total dos descontos incondicionados
-            
-            **desconto_condicionado (str): Soma total dos descontos condicionados
-            
-            **outras_retencoes (str): Soma total de outras retenções
-            
-            **informacoes_complementares (str): Informações complementares
-            
-            **data_competencia (str): Data da competência do serviço
-            
-            **uf_local_prestacao (Uf): UF do local da prestação do serviço
-            
-            **municipio_local_prestacao (Municipio): Município do local da prestação do serviço
-        """
-        self.valor_servicos             = valor_servicos
-        self.discriminacao              = discriminacao
-        self.impostos                   = impostos                                      # Objeto "Imposto"
-        self.intermediario              = kwargs.get("intermediario", None)             # Objeto "Cliente"
-        self.iss_retido                 = kwargs.get("iss_retido", 2)                   # 1: Sim, 2: Não                # TODO: Campo obrigatório ?
-        self.responsavel_retencao_iss   = kwargs.get("responsavel_retencao_iss", 1)     # 1: Tomador, 2: Intermediário  # TODO: Campo obrigatório ?
-        self.deducoes                   = kwargs.get("deducoes", '')                    # TODO: $0.00
-        self.desconto_incondicionado    = kwargs.get("desconto_incondicionado", '')     # TODO: $0.00
-        self.desconto_condicionado      = kwargs.get("desconto_condicionado", '')       # TODO: $0.00
-        self.outras_retencoes           = kwargs.get("outras_retencoes", '')            # TODO: $0.00
-        self.informacoes_complementares = kwargs.get("informacoes_complementares", '')  # 
-        self.data_competencia           = kwargs.get("data_competencia", '')            # TODO: $dd/MM/yyyy HH:mm:ss.SSS = datetime.now().strftime("%d/%m/%Y %H:%m:%s.%f") ? # TODO: Campo obrigatório ?
-        self.uf_local_prestacao         = kwargs.get("uf_local_prestacao", '')          # Objeto "Uf"
-        self.municipio_local_prestacao  = kwargs.get("municipio_local_prestacao", '')   # Objeto "Municipio"
+    Returns:
+        _type_: _description_
+    """
+    valor_servicos            : str
+    discriminacao             : str
+    impostos                  : "ImpostosServico"
     
-    def asdict(self,):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+    iss_retido                : Optional[str]         = 2 # 1: Sim, 2: Não
+    responsavel_retencao_iss  : Optional[str]         = 1 # 1: Tomador, 2: Intermediário
     
+    intermediario             : Optional["Cliente"]   = None
+    deducoes                  : Optional[str]         = None
+    desconto_incondicionado   : Optional[str]         = None
+    desconto_condicionado     : Optional[str]         = None
+    outras_retencoes          : Optional[str]         = None
+    informacoes_complementares: Optional[str]         = None
+    data_competencia          : Optional[str]         = None
+    uf_local_prestacao        : Optional["Uf"]        = None
+    municipio_local_prestacao : Optional["Municipio"] = None
+
 class ConstrucaoCivil:
     def __init__(self, *args, **kwargs):
         # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
@@ -102,16 +69,12 @@ class ConstrucaoCivil:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
         return dados if len(dados) > 0 else None
 
-class ObjetoEmissaoNFSe:
-    def __init__(self, cliente:Cliente, servico:Servico, *args, **kwargs):
-        self.cliente            = cliente
-        self.servico            = servico
-        self.construcao_civil   = kwargs.get("construcao_civil", None)                  # Objeto "ConstrucaoCivil"
-
-    def asdict(self,):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+@dataclass
+class ObjetoEmissaoNFSe(BaseClass):
+    cliente: "Cliente"
+    servico: "Servico"
+    
+    construcao_civil: Optional["ConstrucaoCivil"] = None
 
 @dataclass
 class NotaFiscalServico:
@@ -161,13 +124,14 @@ class PaginaNotaServico:
     def asdict(self,):
         return self.__dict__
 
+@dataclass
 class ImpostosServico(Impostos):
     issqn: "Issqn"
 
 # =====================================================================
 @requires_emissor
 @requires_empresa
-def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
+def emitir(objetoNfse: ObjetoEmissaoNFSe, *args, **kwargs):
     """Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
     
     Args:
@@ -178,15 +142,15 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
         str: Com o response.text em caso de falha da requisição
     """
 
-    json_obj = json.dumps(obj_emissao_nfse, default=lambda o: o.asdict())
+    json_str = jsonpickle.encode(objetoNfse.as_filtered_dict(), unpicklable=False)
     
     headers = HEADERS.copy()
     url     = f'{BASE_URL}/nfse'
-    response = requests.post(url, data=json_obj, headers=headers)
+    response = requests.post(url, headers=headers, json=json.loads(json_str))
 
     match (response.status_code):
         case 200:
-            return response.json().get('dados')
+            return response.json()
         case _:
             return response.text
 
