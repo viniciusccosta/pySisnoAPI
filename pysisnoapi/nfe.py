@@ -249,9 +249,34 @@ class PaginaNotas:
 # =====================================================================
 @requires_emissor
 @requires_empresa
-def emitir(*args, **kwargs):
-    raise NotImplementedError
+def emitir(objetoNfe:ObjetoEmissaoNFe, 
+    tipo_emissao:str, *args, **kwargs) -> str:
+    """Endpoint utilizado para efetivamente emitir uma nota fiscal eletrônica.
 
+    Args:
+        nfe (ObjetoEmissaoNFe): Nota Fiscal a ser emitida.
+        
+        tipo_emissao (str): Tipo de Emissão  
+            1: Normal  
+            6: Contigência SNC-AN  
+            7: Contigência SVC-RS  
+    """
+
+    headers = HEADERS.copy()
+    headers['tipo-emissao'] = tipo_emissao    # TODO: Validar antes
+    json_str = jsonpickle.encode(objetoNfe.as_filtered_dict(), unpicklable=False)
+    
+    url = f'{BASE_URL}/nfe'
+    response = requests.post(url, headers=headers, json=json.loads(json_str))
+        
+    match response.status_code:
+        case 200:
+            return response.json()
+        case 412:
+            return response.json()
+        case _:
+            return response.text
+    
 @requires_emissor
 @requires_empresa
 def corrigir(*args, **kwargs):
@@ -264,9 +289,8 @@ def cancelar(*args, **kwargs):
 
 @requires_emissor
 @requires_empresa
-def validar(
-    objetoNfe:ObjetoEmissaoNFe, 
-    tipo_emissao:str, *args, **kwargs) -> None:
+def validar(objetoNfe:ObjetoEmissaoNFe, 
+    tipo_emissao:str, *args, **kwargs) -> str:
     """Endpoint utilizado para validar a nota fiscal eletrônica antes de emitir.
 
     Args:
@@ -281,7 +305,7 @@ def validar(
     headers['tipo-emissao'] = tipo_emissao    # TODO: Validar antes
     json_str = jsonpickle.encode(objetoNfe.as_filtered_dict(), unpicklable=False)
     
-    url = f'{URL}/nfe/validacao-nota'
+    url = f'{BASE_URL}/nfe/validacao-nota'
     response = requests.post(url, headers=headers, json=json.loads(json_str))
     
     match response.status_code:
@@ -291,8 +315,7 @@ def validar(
             return response.text
 
 @requires_emissor
-def listar(
-    qtd:str = None, 
+def listar(qtd:str = None, 
     pagina:str = None, *args, **kwargs) -> List[NotaFiscal]:
     """Recupera as notas fiscais.
     
@@ -313,7 +336,7 @@ def listar(
     if pagina:
         params["pagina"] = pagina
     
-    url = f'{URL}/nfe/lista-notas'
+    url = f'{BASE_URL}/nfe/lista-notas'
     response = requests.get(url, params, headers=headers)
     
     match (response.status_code):

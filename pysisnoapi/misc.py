@@ -30,7 +30,7 @@ def get_municipios(uf: str, *args, **kwargs) -> List[Municipio]:
     """
 
     headers  = HEADERS.copy()
-    url      = f'{URL}/unidades-federativas/{uf}/municipios'
+    url      = f'{BASE_URL}/unidades-federativas/{uf}/municipios'
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
@@ -54,7 +54,7 @@ def get_cfops(*args, **kwargs) -> List[Cfop]:
     """
 
     headers  = HEADERS.copy()
-    url      = f'{URL}/cfops'
+    url      = f'{BASE_URL}/cfops'
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
@@ -94,7 +94,7 @@ def get_ibpts(
     headers["codigo-ou-descricao"] = cod_desc
     headers["uf"] = uf
 
-    url      = f'{URL}/ibpts'
+    url      = f'{BASE_URL}/ibpts'
     response = requests.get(url, headers=headers)
 
     match (response.status_code):

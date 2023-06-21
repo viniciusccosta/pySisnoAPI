@@ -23,8 +23,8 @@ from dateutil    import parser
 # Globals:
 load_dotenv()
 
-URL     = "https://homolog.arkaonline.com.br/nfe-service"               # TODO: Provisório, em breve voltará para 'https://homolog.sisno.com.br/nfe-service/'
-HEADERS = {
+BASE_URL = "https://homolog.arkaonline.com.br/nfe-service"               # TODO: Provisório, em breve voltará para 'https://homolog.sisno.com.br/nfe-service/'
+HEADERS  = {
     "token-emissor"         : os.getenv("token-emissor"       , ""),
     "token-secret-emissor"  : os.getenv("token-secret-emissor", ""),
     "token-empresa"         : os.getenv("token-empresa"       , ""),

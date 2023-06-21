@@ -181,7 +181,7 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
     json_obj = json.dumps(obj_emissao_nfse, default=lambda o: o.asdict())
     
     headers = HEADERS.copy()
-    url     = f'{URL}/nfse'
+    url     = f'{BASE_URL}/nfse'
     response = requests.post(url, data=json_obj, headers=headers)
 
     match (response.status_code):
@@ -269,7 +269,7 @@ def buscar_notas(
     if tipo_ordenacao:
         headers['tipoOrdenacao'] = tipo_ordenacao
 
-    url = f'{URL}/nfse'
+    url = f'{BASE_URL}/nfse'
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
@@ -295,7 +295,7 @@ def recuperar_dados(id_nfse:int, *args, **kwargs):
         raise ValueError("Necessário informar um ID de NFSe válido.")
     
     headers  = HEADERS.copy()
-    url      = f'{URL}/nfse/{id_nfse}'
+    url      = f'{BASE_URL}/nfse/{id_nfse}'
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
