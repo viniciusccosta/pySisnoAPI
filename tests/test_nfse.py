@@ -1,9 +1,63 @@
+# =================================================================
 import unittest
 import requests
+
 from unittest.mock import MagicMock
+
+from pysisnoapi import *
 from pysisnoapi import nfse
 
-class TestNfse(unittest.TestCase):
+# =================================================================
+class NfseTestCase(unittest.TestCase):
+    def setUp(self) -> None:
+        endereco = Endereco (
+            codigo_pais         = '1058',
+            descricao_pais      = 'Brasil',
+            uf                  = 'DF',
+            codigo_municipio    = '5300108',
+            descricao_municipio = 'Brasilia',
+            cep                 = '70634300',
+            bairro              = 'Zona Industrial',
+            logradouro          = 'Quadra SOFN Quadra 3',
+            numero              = '484',
+            complemento         = 'Gerado por 4devs',
+        )
+        
+        cliente  = Cliente(
+            consumidor_final = '1',
+            contribuinte     = '9',
+            pessoa_fisica    = PessoaFisica(nome_completo="Vicente Marcos Samuel Nunes", cpf='44301337199'),
+            endereco         = endereco,
+        )
+        
+        impostos = nfse.ImpostosServico(
+            pis = Pis(
+                situacao_tributaria = '99',
+                aliquota            = '3.5',
+            ),
+            cofins = Cofins(
+                situacao_tributaria = '99',
+                aliquota            = '3.5',
+            ),
+            issqn = Issqn(
+                aliquota                    = "3.5",
+                item_lista_servicos         = "08.02",
+                indicador_incentivo_fiscal  = "1",
+                indicador_exigibilidade_iss = "1",
+            ),
+        )
+        
+        servico = nfse.Servico(
+            valor_servicos  = '1.0',
+            discriminacao   = 'TESTE',
+            impostos        = impostos,
+        )
+        
+        self.objeto = nfse.ObjetoEmissaoNFSe(
+            cliente = cliente,
+            servico = servico,
+        )
+    
     def test_buscar_notas(self):
         # Mocking:
         mock_response = MagicMock()
@@ -76,6 +130,141 @@ class TestNfse(unittest.TestCase):
         
         # Checando resultado:
         self.assertGreaterEqual(len(nfses), 1)
+        
+    def test_emitir_status_processando(self):
+        # Mocking:
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        
+        mock_response.json.return_value = {
+            "id": 22,
+            "empresa": {    # https://www.4devs.com.br/gerador_de_empresas
+                "cnpj": "47520244000169",
+                "nome_fantasia": "Amanda e Ricardo Ferragens ME",
+                "razao_social": "Amanda e Ricardo Ferragens ME",
+                "endereco": {
+                    "id": 76,
+                    "codigo_pais": "1058",
+                    "descricao_pais": "BRASIL",
+                    "uf": "DF",
+                    "codigo_municipio": "5300108",
+                    "descricao_municipio": "Brasilia",
+                    "cep": "71070-037",
+                    "bairro": "TAGUATINGA",
+                    "logradouro": "Quadra QE 44 Conjunto C",
+                    "numero": "503",
+                    "complemento": "COMPLEMENTO"
+                },
+                "telefone": "(61) 2622-0226",
+                "inscricao_estadual": "0727000600110",
+                "regime_tributario": "1",
+                "classificacao_nacional_atividades_economicas": "8512100",
+                "ambiente": "2",
+                "id_csc": "1",
+                "csc": "A55B7362-874F-4F97-B752-F7DAAF8697F1",
+                "codigo_regime_especial_tributacao": "6",
+                "site": "almoxarifado@amandaericardoferragensme.com.br",
+                "utiliza_tributos_aproximados": True,
+                "informacoes_complementares": "Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200",
+                "senha_portal_prefeitura": "eyJlbmMiOiJBMTI7R7NNIiwiYWxnIjoiUlNBLU7BRVAtMjU7In0.CUFL72ld7_tcjqcE-djx0JTxWG7BnPhVkIF7LR7fLIzKyIJ0XreUq7mG_Ed9kR7AyorVbNMH6qaL7ACHELdcUhVoKsEQfCtQxM7kqhs6hXOm-ylmHr6I7pg1Z3SMNxTaQDzXzVUO3HiRRsu9JrlRyE6V9TcdX_U2ZnsAedIl86D3UkZF0In2-OKwyHHxW0Hi58ar0jzqRvN6he__kLhnA5Fxf-1k1qnlg5wq5Xrpdjz16JhVzjTTjDv8DvqCe27pxhbZ7HJHLkoySoYCHwFmq71N-tW2Sx7XOW8YecAEgc7q8nemWSkltjkK9N6GuCLX_zmA-7ISmPWx0hcBrCvZQg.mcbaIXUxn7uIqYgb.dSTq5dovLYxJ73MIzik7_OOuTpsZjXat7UjNvZSLyuqoKN-_wl69s5w0eRu4Y668HuF745wgJgTP6lPDhOUrYSCJdtWLMx-Gvudw5_l0a4o.Xohm6iR1rw1NHzGsAED9Jw"
+            },
+            "uuid": "57d502a5-8f28-4177-acfd-a8e04929b682",
+            "modelo": "nfse",
+            "status": "processando",
+            "motivo": "Lote enviado para processamento",
+            "nome_destinatario": "Tânia Aurora Mariah Moura", # https://www.4devs.com.br/gerador_de_pessoas
+            "uf_destinatario": "DF",
+            "cpf_cnpj_destinatario": "016.968.211-00",
+            "valor_total": "5.00",
+            "data_emissao": "Jun 21, 2023 6:08:18 PM",
+            "ambiente": "2",
+            "json_objeto_nfse": ""
+        }
+        
+        requests.post = MagicMock(return_value=mock_response)
+        
+        # Chamando a Função:
+        resultado = nfse.emitir(self.objeto,)
+        
+        self.assertIn('id', resultado)
+        self.assertIn('empresa', resultado)
+        self.assertIn('uuid', resultado)
+        self.assertIn('modelo', resultado)
+        self.assertIn('status', resultado)
+        self.assertIn('motivo', resultado)
+        self.assertIn('nome_destinatario', resultado)
+        self.assertIn('uf_destinatario', resultado)
+        self.assertIn('cpf_cnpj_destinatario', resultado)
+        self.assertIn('valor_total', resultado)
+        self.assertIn('data_emissao', resultado)
+        self.assertIn('ambiente', resultado)
+        self.assertIn('json_objeto_nfse', resultado)
+        
+        self.assertEqual(resultado['status'], 'processando')
 
+# =================================================================
+class ServicoTestCase(unittest.TestCase):
+    def setUp(self) -> None:       
+        self.impostos = nfse.ImpostosServico(
+            pis = Pis(
+                situacao_tributaria = '99',
+                aliquota            = '3.5',
+            ),
+            cofins = Cofins(
+                situacao_tributaria = '99',
+                aliquota            = '3.5',
+            ),
+            issqn = Issqn(
+                aliquota                    = "3.5",
+                item_lista_servicos         = "08.02",
+                indicador_incentivo_fiscal  = "1",
+                indicador_exigibilidade_iss = "1",
+            ),
+        )
+    
+    def test_todos_campos_obrigatorios(self):
+        servico = nfse.Servico(
+            valor_servicos = "1.00",
+            discriminacao  = "TESTE",
+            impostos       = self.impostos
+        )
+        
+        self.assertEqual(servico.valor_servicos, "1.00")
+        self.assertEqual(servico.discriminacao, "TESTE")
+        self.assertEqual(servico.impostos, self.impostos)
+        
+    def test_campo_obrigatorio_valor_servicos(self):
+        with self.assertRaises(TypeError):
+            nfse.Servico(
+                
+                discriminacao  = "TESTE",
+                impostos       = self.impostos
+            )
+            
+    def test_campo_obrigatorio_discriminacao(self):
+        with self.assertRaises(TypeError):
+            nfse.Servico(
+                valor_servicos = "1.00",
+                
+                impostos       = self.impostos
+            )
+            
+    def test_campo_obrigatorio_impostos(self):
+        with self.assertRaises(TypeError):
+            nfse.Servico(
+                valor_servicos = "1.00",
+                discriminacao  = "TESTE",
+
+            )
+
+class ImpostosServicoTestCase(unittest.TestCase):
+    ...
+    
+class ObjetoEmissaoNFSeTestCase(unittest.TestCase):
+    ...
+
+# =================================================================
 if __name__ == "__main__":
     unittest.main()
+
+# =================================================================
