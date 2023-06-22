@@ -24,6 +24,7 @@ from dateutil    import parser
 load_dotenv()
 
 BASE_URL = 'https://homolog.arkaonline.com.br/nfe-service'               # TODO: Provisório, em breve voltará para 'https://homolog.sisno.com.br/nfe-service/'
+
 HEADERS  = {
     'token-emissor'         : os.getenv('token-emissor'       , ''),
     'token-secret-emissor'  : os.getenv('token-secret-emissor', ''),
@@ -31,6 +32,140 @@ HEADERS  = {
     'token-secret-empresa'  : os.getenv('token-secret-empresa', ''),
     'accept'                : 'application/json',
     'Content-Type'          : 'application/json',
+}
+
+# -------------------------------------------
+AMBIENTES = {
+    '1': 'Produção',
+    '2': 'Homologação',
+}
+
+FORMAS_PAGAMENTO = {
+    '0': 'À Vista',
+    '1': 'À Prazo',
+}
+
+MEIOS_PAGAMENTO = {
+    '01': 'Dinheiro',
+    '02': 'Cheque',
+    '03': 'Cartão de crédito',
+    '04': 'Cartão de débito',
+    '05': 'Cartão da loja',
+    '10': 'Vale alimentação',
+    '11': 'Vale refeição',
+    '12': 'Vale presente',
+    '13': 'Vale combustível',
+    '14': 'Duplicata mercantil',
+    '15': 'Boleto bancário',
+    '16': 'Depósito bancário',
+    '17': 'Pagamento Instantaneo (PIX)',
+    '18': 'Transferência bancária',
+    '19': 'Programa de fidelidade (Cashback)',
+    '90': 'Sem pagamento',
+    '99': 'Outros',
+}
+
+MOTIVOS_DESONERACAO = {
+    '1' : 'Táxi',
+    '3' : 'Produtor Agropecuário',
+    '4' : 'Frotista Locadora',
+    '5' : 'Diplomático Consular',
+    '6' : 'Utilitários Motocicletas Amazônia Ocidental Áreas Livre Comércio',
+    '7' : 'Suframa',
+    '8' : 'Venda Órgãos Públicos',
+    '9' : 'Outros',
+    '10': 'Deficiente Condutor',
+    '11': 'Deficiente Não Condutor',
+    '12': 'Órgão de Fomento Desenvolvimento Agropecuário',
+    '90': 'Solicitado pelo Fisco',
+}
+
+SITUACOES_TRIBUTARIAS_ICMS = {
+    '00' : 'Tributada integralmente',
+    '10' : 'Tributada com cobrança de ICMS por ST',
+    '20' : 'Com redução da base de cálculo',
+    '30' : 'Isenta ou não tributada com cobrança de ICMS por ST',
+    '40' : 'Isenta',
+    '41' : 'Não tributada',
+    '50' : 'Suspensão',
+    '51' : 'Diferimento',
+    '60' : 'ICMS cobrado anteriormente por ST',
+    '70' : 'Com redução da base de cálculo/Cobrança ICMS por ST/ICMS ST',
+    '90' : 'Outros',
+    '101': 'Tributada pelo Simples Nacional com permissão de crédito',
+    '102': 'Tributada pelo Simples Nacional sem permissão de crédito',
+    '103': 'Isenção do ICMS no Simples Nacional para faixa de receita bruta',
+    '201': 'Tributada pelo Simples Nacional com permissão de crédito e com cobrança do ICMS por substituição tributária',
+    '202': 'Tributada pelo Simples Nacional sem permissão de crédito e com cobrança do ICMS por substituição tributária',
+    '203': 'Isenção do ICMS no Simples Nacional para faixa de receita bruta e com cobrança do ICMS por substituição tributária',
+    '300': 'Imune',
+    '400': 'Não tributada pelo Simples Nacional',
+    '500': 'ICMS cobrado anteriormente por substituição tributária (substituído) ou por antecipação',
+    '900': 'Outros',
+}
+
+SITUACOES_TRIBUTARIAS_IPI = {
+    '00': 'Entrada com Recuperação de Crédito',
+    '01': 'Entrada Tributada com Alíquota Zero',
+    '02': 'Entrada Isenta',
+    '03': 'Entrada Não Tributada',
+    '04': 'Entrada Imune',
+    '05': 'Entrada com Suspensão',
+    '49': 'Outras Entradas',
+    '50': 'Saída Tributada',
+    '51': 'Saída Tributável com Alíquota Zero',
+    '52': 'Saída Isenta',
+    '53': 'Saída Não Tributada',
+    '54': 'Saída Imune',
+    '55': 'Saída com Suspensão',
+    '99': 'Outras Saídas',
+}
+
+SITUACOES_TRIBUTARIAS_PIS_COFINS = {
+    '01': 'Operação Tributável com Alíquota Básica',
+    '02': 'Operação Tributável com Alíquota por Unidade de Medida de Produto',
+    '03': 'Operação Tributável com Alíquota por Unidade de Medida de Produto',
+    '04': 'Operação Tributável Monofásica - Revenda a Alíquota Zero',
+    '05': 'Operação Tributável por Substituição Tributária',
+    '06': 'Operação Tributável a Alíquota Zero',
+    '07': 'Operação Isenta da Contribuição',
+    '08': 'Operação sem Incidência da Contribuição',
+    '09': 'Operação com Suspensão da Contribuição',
+    '49': 'Outras Operações de Saída',
+    '50': 'Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno',
+    '51': 'Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno',
+    '52': 'Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação',
+    '53': 'Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno',
+    '54': 'Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação',
+    '55': 'Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação',
+    '56': 'Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação',
+    '60': 'Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno',
+    '61': 'Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno',
+    '62': 'Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação',
+    '63': 'Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno',
+    '64': 'Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação',
+    '65': 'Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação',
+    '66': 'Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação',
+    '67': 'Crédito Presumido - Outras Operações',
+    '70': 'Operação de Aquisição sem Direito a Crédito',
+    '71': 'Operação de Aquisição com Isenção',
+    '72': 'Operação de Aquisição com Suspensão',
+    '73': 'Operação de Aquisição a Alíquota Zero',
+    '74': 'Operação de Aquisição sem Incidência da Contribuição',
+    '75': 'Operação de Aquisição por Substituição Tributária',
+    '98': 'Outras Operações de Entrada',
+    '99': 'Outras Operações',
+}
+
+TIPOS_CONSUMIDOR_FINAL = {
+    '0': 'Não',
+    '1': 'Sim',
+} # TODO: Sugerir utilização de Boolean
+
+TIPOS_CONTRIBUINTES = {
+    '1': 'Contribuinte ICMS',
+    '2': 'Contribuinte isento',
+    '9': 'Não contribuinte',
 }
 
 UNIDADES = [
@@ -94,139 +229,6 @@ UNIDADES = [
     'VASIL',
     'VIDRO',
 ]
-
-FORMAS_PAGAMENTO = {
-    '0': 'À Vista',
-    '1': 'À Prazo',
-}
-
-MEIOS_PAGAMENTO = {
-    '01': 'Dinheiro',
-    '02': 'Cheque',
-    '03': 'Cartão de crédito',
-    '04': 'Cartão de débito',
-    '05': 'Cartão da loja',
-    '10': 'Vale alimentação',
-    '11': 'Vale refeição',
-    '12': 'Vale presente',
-    '13': 'Vale combustível',
-    '14': 'Duplicata mercantil',
-    '15': 'Boleto bancário',
-    '16': 'Depósito bancário',
-    '17': 'Pagamento Instantaneo (PIX)',
-    '18': 'Transferência bancária',
-    '19': 'Programa de fidelidade (Cashback)',
-    '90': 'Sem pagamento',
-    '99': 'Outros',
-}
-
-SITUACOES_TRIBUTARIAS_PIS_COFINS = {
-    '01': 'Operação Tributável com Alíquota Básica',
-    '02': 'Operação Tributável com Alíquota por Unidade de Medida de Produto',
-    '03': 'Operação Tributável com Alíquota por Unidade de Medida de Produto',
-    '04': 'Operação Tributável Monofásica - Revenda a Alíquota Zero',
-    '05': 'Operação Tributável por Substituição Tributária',
-    '06': 'Operação Tributável a Alíquota Zero',
-    '07': 'Operação Isenta da Contribuição',
-    '08': 'Operação sem Incidência da Contribuição',
-    '09': 'Operação com Suspensão da Contribuição',
-    '49': 'Outras Operações de Saída',
-    '50': 'Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno',
-    '51': 'Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno',
-    '52': 'Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação',
-    '53': 'Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno',
-    '54': 'Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação',
-    '55': 'Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação',
-    '56': 'Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação',
-    '60': 'Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno',
-    '61': 'Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno',
-    '62': 'Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação',
-    '63': 'Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno',
-    '64': 'Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação',
-    '65': 'Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação',
-    '66': 'Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação',
-    '67': 'Crédito Presumido - Outras Operações',
-    '70': 'Operação de Aquisição sem Direito a Crédito',
-    '71': 'Operação de Aquisição com Isenção',
-    '72': 'Operação de Aquisição com Suspensão',
-    '73': 'Operação de Aquisição a Alíquota Zero',
-    '74': 'Operação de Aquisição sem Incidência da Contribuição',
-    '75': 'Operação de Aquisição por Substituição Tributária',
-    '98': 'Outras Operações de Entrada',
-    '99': 'Outras Operações',
-}
-
-SITUACOES_TRIBUTARIAS_IPI = {
-    '00': 'Entrada com Recuperação de Crédito',
-    '01': 'Entrada Tributada com Alíquota Zero',
-    '02': 'Entrada Isenta',
-    '03': 'Entrada Não Tributada',
-    '04': 'Entrada Imune',
-    '05': 'Entrada com Suspensão',
-    '49': 'Outras Entradas',
-    '50': 'Saída Tributada',
-    '51': 'Saída Tributável com Alíquota Zero',
-    '52': 'Saída Isenta',
-    '53': 'Saída Não Tributada',
-    '54': 'Saída Imune',
-    '55': 'Saída com Suspensão',
-    '99': 'Outras Saídas',
-}
-
-SITUACOES_TRIBUTARIAS_ICMS = {
-    '00' : 'Tributada integralmente',
-    '10' : 'Tributada com cobrança de ICMS por ST',
-    '20' : 'Com redução da base de cálculo',
-    '30' : 'Isenta ou não tributada com cobrança de ICMS por ST',
-    '40' : 'Isenta',
-    '41' : 'Não tributada',
-    '50' : 'Suspensão',
-    '51' : 'Diferimento',
-    '60' : 'ICMS cobrado anteriormente por ST',
-    '70' : 'Com redução da base de cálculo/Cobrança ICMS por ST/ICMS ST',
-    '90' : 'Outros',
-    '101': 'Tributada pelo Simples Nacional com permissão de crédito',
-    '102': 'Tributada pelo Simples Nacional sem permissão de crédito',
-    '103': 'Isenção do ICMS no Simples Nacional para faixa de receita bruta',
-    '201': 'Tributada pelo Simples Nacional com permissão de crédito e com cobrança do ICMS por substituição tributária',
-    '202': 'Tributada pelo Simples Nacional sem permissão de crédito e com cobrança do ICMS por substituição tributária',
-    '203': 'Isenção do ICMS no Simples Nacional para faixa de receita bruta e com cobrança do ICMS por substituição tributária',
-    '300': 'Imune',
-    '400': 'Não tributada pelo Simples Nacional',
-    '500': 'ICMS cobrado anteriormente por substituição tributária (substituído) ou por antecipação',
-    '900': 'Outros',
-}
-
-MOTIVOS_DESONERACAO = {
-    '1' : 'Táxi',
-    '3' : 'Produtor Agropecuário',
-    '4' : 'Frotista Locadora',
-    '5' : 'Diplomático Consular',
-    '6' : 'Utilitários Motocicletas Amazônia Ocidental Áreas Livre Comércio',
-    '7' : 'Suframa',
-    '8' : 'Venda Órgãos Públicos',
-    '9' : 'Outros',
-    '10': 'Deficiente Condutor',
-    '11': 'Deficiente Não Condutor',
-    '12': 'Órgão de Fomento Desenvolvimento Agropecuário',
-    '90': 'Solicitado pelo Fisco',
-}
-
-TIPOS_CONTRIBUINTES = {
-    '1': 'Contribuinte ICMS',
-    '2': 'Contribuinte isento',
-    '9': 'Não contribuinte',
-}
-
-TIPOS_CONSUMIDOR_FINAL = {
-    '0': 'Não',
-    '1': 'Sim',
-} # TODO: Sugerir utilização de Boolean
-
-AMBIENTES = {
-    '1': 'Produção',
-    '2': 'Homologação',
-}
 
 # ======================================================================================================================
 # Decorators:

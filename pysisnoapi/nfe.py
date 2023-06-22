@@ -38,11 +38,28 @@ CSV_HEADERS = [
     'COMPLEMENTO ENDEREÇO'
 ]
 
-TIPOS_OPERACAO = {
-    '0': 'Outros',
-    '1': 'Venda concessionária',
-    '2': 'Faturamento direto consumidor final',
-    '3': 'Venda direta grandes consumidores',
+BANDEIRAS = {
+    '01': 'Visa / Visa Electron',
+    '02': 'Mastercard / Maestro',
+    '03': 'American Express',
+    '04': 'Sorocred',
+    '05': 'Diners Club',
+    '06': 'Elo',
+    '07': 'Hipercard',
+    '08': 'Aura',
+    '09': 'Cabal',
+    '99': 'Outros',
+}
+
+CONDICOES_CHASSI = {
+    'N': 'Normal',
+    'R': 'Remarcado',
+}
+
+CONDICOES_VEICULO = {
+    '1': 'Acabado',
+    '2': 'Inacabado',
+    '3': 'Semi-acabado',
 }
 
 CORES = {
@@ -62,6 +79,78 @@ CORES = {
     '14': 'Verde',
     '15': 'Vermelha',
     '16': 'Fantasia',
+}
+
+ESPECIES_VEICULO = {
+    '1': 'Passageiro',
+    '2': 'Carga',
+    '3': 'Misto',
+    '4': 'Corrida',
+    '5': 'Tração',
+    '6': 'Especial',
+    '7': 'Coleção',
+}
+
+FINALIDADES = {
+    '1': 'Normal',
+    '2': 'Complementar',
+    '3': 'Ajuste',
+    '4': 'Devolução ou Retorno',
+}
+
+INDICATIVOS_ESCALA = {
+    'S': 'Produzido em escala relevante',
+    'N': 'Produzido em escala não relevante',
+} # TODO: Sugerir utilização de Boolean.
+
+MODALIDADES_FRETE = {
+    '9': 'Sem ocorrência de transporte',
+    '0': 'Contratação do frete por conta do remetente (CIF)',
+    '1': 'Contratação do frete por conta do destinatário (FOB)',
+    '2': 'Contratação do frete por conta de terceiros',
+    '3': 'Transporte próprio por conta do remetente',
+    '4': 'Transporte próprio por conta do destinatário',
+}
+
+MODELOS = {
+    '55': 'NF-e',
+    '65': 'NFC-e',
+}
+
+OPERACOES = {
+    '0': 'Entrada',
+    '1': 'Saída',
+}
+
+ORIGENS = {
+    '0': 'Nacional',
+    '1': 'Estrangeira importação direta',
+    '2': 'Estrangeira adquirida mercado interno',
+    '3': 'Nacional mercadoria ou bem conteúdo importação superior 40 P',
+    '4': 'Nacional produção em conformidade com processos produtivos básicos',
+    '5': 'Nacional mercadoria ou bem conteúdo importação inferior 40 P',
+    '6': 'Estrangeira importação direta sem similar nacional constante em lista Camex',
+    '7': 'Estrangeira adquirida mercado interno sem similar nacional constante em lista Camex',
+    '8': 'Nacional mercadoria ou bem conteúdo importação superior 70 P',
+}
+
+PRESENCAS = {
+    '0': 'Não se aplica',
+    '1': 'Operação presencial',
+    '2': 'Operação não presencial - Internet',
+    '3': 'Operação não presencial - Teleatendimento',
+    '4': 'NFC-e em operação com entrega a domicílio',
+    '5': 'Operação presencial fora do estabelecimento',
+    '9': 'Operação não presencial - Outros',
+}
+
+RESTRICOES = {
+    '0': 'Não Há',
+    '1': 'Alienação Fiduciária',
+    '2': 'Arrendamento Mercantil',
+    '3': 'Reserva Domínio',
+    '4': 'Penhor',
+    '9': 'Outras',
 }
 
 TIPOS_COMBUSTIVEL = {
@@ -85,6 +174,13 @@ TIPOS_COMBUSTIVEL = {
     '18': 'Gasolina/Elétrico',
 }
 
+TIPOS_OPERACAO = {
+    '0': 'Outros',
+    '1': 'Venda concessionária',
+    '2': 'Faturamento direto consumidor final',
+    '3': 'Venda direta grandes consumidores',
+}
+
 TIPOS_VEICULO = {
     '06': 'Automóvel',
     '14': 'Caminhão',
@@ -100,102 +196,6 @@ TIPOS_VEICULO = {
     '10': 'Reboque',
     '05': 'Triciclo',
     '17': 'Trator',
-}
-
-ESPECIES_VEICULO = {
-    '1': 'Passageiro',
-    '2': 'Carga',
-    '3': 'Misto',
-    '4': 'Corrida',
-    '5': 'Tração',
-    '6': 'Especial',
-    '7': 'Coleção',
-}
-
-CONDICOES_VEICULO = {
-    '1': 'Acabado',
-    '2': 'Inacabado',
-    '3': 'Semi-acabado',
-}
-
-RESTRICOES = {
-    '0': 'Não Há',
-    '1': 'Alienação Fiduciária',
-    '2': 'Arrendamento Mercantil',
-    '3': 'Reserva Domínio',
-    '4': 'Penhor',
-    '9': 'Outras',
-}
-
-CONDICOES_CHASSI = {
-    'N': 'Normal',
-    'R': 'Remarcado',
-}
-
-MODALIDADES_FRETE = {
-    '9': 'Sem ocorrência de transporte',
-    '0': 'Contratação do frete por conta do remetente (CIF)',
-    '1': 'Contratação do frete por conta do destinatário (FOB)',
-    '2': 'Contratação do frete por conta de terceiros',
-    '3': 'Transporte próprio por conta do remetente',
-    '4': 'Transporte próprio por conta do destinatário',
-}
-
-PRESENCAS = {
-    '0': 'Não se aplica',
-    '1': 'Operação presencial',
-    '2': 'Operação não presencial - Internet',
-    '3': 'Operação não presencial - Teleatendimento',
-    '4': 'NFC-e em operação com entrega a domicílio',
-    '5': 'Operação presencial fora do estabelecimento',
-    '9': 'Operação não presencial - Outros',
-}
-
-ORIGENS = {
-    '0': 'Nacional',
-    '1': 'Estrangeira importação direta',
-    '2': 'Estrangeira adquirida mercado interno',
-    '3': 'Nacional mercadoria ou bem conteúdo importação superior 40 P',
-    '4': 'Nacional produção em conformidade com processos produtivos básicos',
-    '5': 'Nacional mercadoria ou bem conteúdo importação inferior 40 P',
-    '6': 'Estrangeira importação direta sem similar nacional constante em lista Camex',
-    '7': 'Estrangeira adquirida mercado interno sem similar nacional constante em lista Camex',
-    '8': 'Nacional mercadoria ou bem conteúdo importação superior 70 P',
-}
-
-INDICATIVOS_ESCALA = {
-    'S': 'Produzido em escala relevante',
-    'N': 'Produzido em escala não relevante',
-} # TODO: Sugerir utilização de Boolean.
-
-OPERACOES = {
-    '0': 'Entrada',
-    '1': 'Saída',
-}
-
-MODELOS = {
-    '55': 'NF-e',
-    '65': 'NFC-e',
-}
-
-FINALIDADES = {
-    '1': 'Normal',
-    '2': 'Complementar',
-    '3': 'Ajuste',
-    '4': 'Devolução ou Retorno',
-}
-
-BANDEIRAS = {
-    '01': 'Visa / Visa Electron',
-    '02': 'Mastercard / Maestro',
-    '03': 'American Express',
-    '04': 'Sorocred',
-    '05': 'Diners Club',
-    '06': 'Elo',
-    '07': 'Hipercard',
-    '08': 'Aura',
-    '09': 'Cabal',
-    '99': 'Outros',
 }
 
 # =====================================================================
