@@ -1,9 +1,9 @@
-""" 
+''' 
     Módulo específico para geração de Notas Fiscais de Serviço.
     
     Para utilizar esse módulo basta importá-lo da seguinte forma:  
     `from pysisnoapi import nfse`
-"""
+'''
 
 # =====================================================================
 from . import *
@@ -36,27 +36,27 @@ CSV_HEADERS = [
 # =====================================================================
 @dataclass
 class Servico:
-    """_summary_
+    '''_summary_
 
     Returns:
         _type_: _description_
-    """
+    '''
     valor_servicos            : str
     discriminacao             : str
-    impostos                  : "ImpostosServico"
+    impostos                  : 'ImpostosServico'
     
     iss_retido                : Optional[str]         = 2 # 1: Sim, 2: Não
     responsavel_retencao_iss  : Optional[str]         = 1 # 1: Tomador, 2: Intermediário
     
-    intermediario             : Optional["Cliente"]   = None
+    intermediario             : Optional['Cliente']   = None
     deducoes                  : Optional[str]         = None
     desconto_incondicionado   : Optional[str]         = None
     desconto_condicionado     : Optional[str]         = None
     outras_retencoes          : Optional[str]         = None
     informacoes_complementares: Optional[str]         = None
     data_competencia          : Optional[str]         = None
-    uf_local_prestacao        : Optional["Uf"]        = None
-    municipio_local_prestacao : Optional["Municipio"] = None
+    uf_local_prestacao        : Optional['Uf']        = None
+    municipio_local_prestacao : Optional['Municipio'] = None
 
 @dataclass
 class ConstrucaoCivil:
@@ -65,10 +65,10 @@ class ConstrucaoCivil:
     
 @dataclass
 class ObjetoEmissaoNFSe(BaseClass):
-    cliente: "Cliente"
-    servico: "Servico"
+    cliente: 'Cliente'
+    servico: 'Servico'
     
-    construcao_civil: Optional["ConstrucaoCivil"] = None
+    construcao_civil: Optional['ConstrucaoCivil'] = None
 
 @dataclass
 class NotaFiscalServico:
@@ -112,17 +112,17 @@ class PaginaNotasServico:
     total           : Optional[str]                       = None
     itens_por_pagina: Optional[str]                       = None
     pagina_atual    : Optional[str]                       = None
-    itens           : Optional[List["NotaFiscalServico"]] = None
+    itens           : Optional[List['NotaFiscalServico']] = None
     
 @dataclass
 class ImpostosServico(Impostos):
-    issqn: "Issqn"
+    issqn: 'Issqn'
 
 # =====================================================================
 @requires_emissor
 @requires_empresa
 def emitir(objetoNfse: ObjetoEmissaoNFSe, *args, **kwargs):
-    """Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
+    '''Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
     
     Args:
         obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe "ObjetoEmissaoNFSe" que contém todos os dados necessários
@@ -130,7 +130,7 @@ def emitir(objetoNfse: ObjetoEmissaoNFSe, *args, **kwargs):
     Returns:
         dict: Dicionário com os dados da requisição
         str: Com o response.text em caso de falha da requisição
-    """
+    '''
 
     json_str = jsonpickle.encode(objetoNfse.as_filtered_dict(), unpicklable=False)
     
@@ -155,7 +155,7 @@ def buscar_notas(cnpj:str=None,
     qtd_por_pagina:str=None, 
     ordencao:str=None, 
     tipo_ordenacao:str=None, *args, **kwargs) -> List[NotaFiscalServico]:
-    """Recupera as notas fiscais de serviço.
+    '''Recupera as notas fiscais de serviço.
 
     Args:
         cnpj (str): CNPJ Empresa (apenas números).
@@ -197,16 +197,16 @@ def buscar_notas(cnpj:str=None,
     
     Returns:
         List[NotaFiscalServico]: Lista com todas as NFSe
-    """
+    '''
     
     headers = HEADERS.copy()
     
     if cnpj:
         headers['CNPJ Empresa'] = cnpj
     if data_inicio:
-        headers['dataInicio'] = data_inicio.strftime("%d/%m/%Y %H:%M:%S")
+        headers['dataInicio'] = data_inicio.strftime('%d/%m/%Y %H:%M:%S')
     if data_fim:
-        headers['dataFim'] = data_fim.strftime("%d/%m/%Y %H:%M:%S")
+        headers['dataFim'] = data_fim.strftime('%d/%m/%Y %H:%M:%S')
     if ambiente:
         headers['ambiente'] = ambiente
     if status:
@@ -245,7 +245,7 @@ def recuperar_dados(id_nfse:int, *args, **kwargs):
     # TODO: Essa função deveria estar atrelada as chaves de API, uma vez que será através delas que emitiremos as notas por uma empresa ou por outra ?
 
     if not isinstance(id_nfse, int):
-        raise ValueError("Necessário informar um ID de NFSe válido.")
+        raise ValueError('Necessário informar um ID de NFSe válido.')
     
     headers  = HEADERS.copy()
     url      = f'{BASE_URL}/nfse/{id_nfse}'
