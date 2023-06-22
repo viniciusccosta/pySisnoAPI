@@ -267,16 +267,14 @@ class Cofins:
     aliquota_st         : Optional[str] = None
     aliquota_retencao   : Optional[str] = None
 
+@dataclass
 class DeclaracaoImportacaoAdicao:
-    # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
-
+    numero_sequencial: Optional[str] = None
+    numero           : Optional[str] = None
+    cod_fabricante   : Optional[str] = None
+    desconto         : Optional[str] = None
+    drawback         : Optional[str] = None
+    
 @dataclass
 class Empresa:
     """
@@ -493,18 +491,11 @@ class NotaFiscal:
             **kwargs
         )
 
+@dataclass
 class Observacao:
-    # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
+    campo: Optional[str] = None
+    texto: Optional[str] = None
     
-    def __init__(self, **kwargs):
-        self.campo                   = kwargs.get("campo", None)                                # string
-        self.texto                   = kwargs.get("texto", None)                                # string
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
-
 @dataclass
 class PessoaFisica:
     """Classe `Pessoa Física`
@@ -584,17 +575,16 @@ class Pis:
     aliquota           : Optional[str] = None
     aliquota_st        : Optional[str] = None
     aliquota_retencao  : Optional[str] = None
-    
+
+@dataclass
 class RetencaoIcmsTransporte:
-    # TODO: Até o dia 10/05/2023 essa classe só está sendo usada na classe "Transporte", que não está sendo usada
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
-
+    valor_servico                                           : Optional[str] = None
+    valor_icms_retido                                       : Optional[str] = None
+    cfop                                                    : Optional[str] = None
+    codigo_municipio_ocorrencia_fato_gerador_icms_transporte: Optional[str] = None
+    base_calculo_retencao_icms                              : Optional[str] = None
+    aliquota_retencao                                       : Optional[str] = None
+    
 @dataclass
 class Transporte:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
