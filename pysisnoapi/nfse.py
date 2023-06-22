@@ -58,6 +58,14 @@ RESPONSAVEIS_RETENCAO_ISS = {
     '2': 'Intermediário',
 }
 
+STATUS = [
+    'aprovado',
+    'reprovado',
+    'contingencia',
+    'cancelado',
+    'Em digitação',
+]
+
 # =====================================================================
 @dataclass
 class Servico:
@@ -208,7 +216,7 @@ def emitir(objetoNfse: ObjetoEmissaoNFSe, *args, **kwargs):
             return response.text
 
 @requires_emissor
-def buscar_notas(cnpj:str=None, 
+def buscar_notas(cnpjEmpresa:str=None, 
     data_inicio:datetime=None, 
     data_fim:datetime=None, 
     ambiente:str=None, 
@@ -262,17 +270,26 @@ def buscar_notas(cnpj:str=None,
         List[NotaFiscalServico]: Lista com todas as NFSe
     '''
     
+    # TODO: o parâmetro cnpjEmpresa está errado na documentação ('CNPJ Empresa')
+    # TODO: o endpoint ignora o parâmetro cnpjEmpresa em alguns casos, descrir quais os casos.
+    # TODO: textoBusca é case sensitive e leva em consideração acentos.
+    # TODO: dataFim não precisa de dataInicio
+    
     headers = HEADERS.copy()
     
-    if cnpj:
-        headers['CNPJ Empresa'] = cnpj
+    if cnpjEmpresa:
+        headers['cnpjEmpresa'] = cnpjEmpresa
     if data_inicio:
         headers['dataInicio'] = data_inicio.strftime('%d/%m/%Y %H:%M:%S')
     if data_fim:
         headers['dataFim'] = data_fim.strftime('%d/%m/%Y %H:%M:%S')
     if ambiente:
-        headers['ambiente'] = ambiente
+        if ambiente not in AMBIENTES:
+            raise ValueError(f'Ambiente {ambiente} inválido.')
+        headers['ambiente'] = ambiente      
     if status:
+        if status not in STATUS:
+            raise ValueError(f'Status {status} inválido.')
         headers['status'] = status
     if texto:
         headers['textoBusca'] = texto
