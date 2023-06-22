@@ -120,6 +120,114 @@ MEIOS_PAGAMENTO = {
     '99': 'Outros',
 }
 
+SITUACOES_TRIBUTARIAS_PIS_COFINS = {
+    '01': 'Operação Tributável com Alíquota Básica',
+    '02': 'Operação Tributável com Alíquota por Unidade de Medida de Produto',
+    '03': 'Operação Tributável com Alíquota por Unidade de Medida de Produto',
+    '04': 'Operação Tributável Monofásica - Revenda a Alíquota Zero',
+    '05': 'Operação Tributável por Substituição Tributária',
+    '06': 'Operação Tributável a Alíquota Zero',
+    '07': 'Operação Isenta da Contribuição',
+    '08': 'Operação sem Incidência da Contribuição',
+    '09': 'Operação com Suspensão da Contribuição',
+    '49': 'Outras Operações de Saída',
+    '50': 'Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno',
+    '51': 'Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno',
+    '52': 'Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação',
+    '53': 'Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno',
+    '54': 'Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação',
+    '55': 'Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação',
+    '56': 'Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação',
+    '60': 'Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno',
+    '61': 'Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno',
+    '62': 'Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação',
+    '63': 'Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno',
+    '64': 'Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação',
+    '65': 'Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação',
+    '66': 'Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação',
+    '67': 'Crédito Presumido - Outras Operações',
+    '70': 'Operação de Aquisição sem Direito a Crédito',
+    '71': 'Operação de Aquisição com Isenção',
+    '72': 'Operação de Aquisição com Suspensão',
+    '73': 'Operação de Aquisição a Alíquota Zero',
+    '74': 'Operação de Aquisição sem Incidência da Contribuição',
+    '75': 'Operação de Aquisição por Substituição Tributária',
+    '98': 'Outras Operações de Entrada',
+    '99': 'Outras Operações',
+}
+
+SITUACOES_TRIBUTARIAS_IPI = {
+    '00': 'Entrada com Recuperação de Crédito',
+    '01': 'Entrada Tributada com Alíquota Zero',
+    '02': 'Entrada Isenta',
+    '03': 'Entrada Não Tributada',
+    '04': 'Entrada Imune',
+    '05': 'Entrada com Suspensão',
+    '49': 'Outras Entradas',
+    '50': 'Saída Tributada',
+    '51': 'Saída Tributável com Alíquota Zero',
+    '52': 'Saída Isenta',
+    '53': 'Saída Não Tributada',
+    '54': 'Saída Imune',
+    '55': 'Saída com Suspensão',
+    '99': 'Outras Saídas',
+}
+
+SITUACOES_TRIBUTARIAS_ICMS = {
+    '00' : 'Tributada integralmente',
+    '10' : 'Tributada com cobrança de ICMS por ST',
+    '20' : 'Com redução da base de cálculo',
+    '30' : 'Isenta ou não tributada com cobrança de ICMS por ST',
+    '40' : 'Isenta',
+    '41' : 'Não tributada',
+    '50' : 'Suspensão',
+    '51' : 'Diferimento',
+    '60' : 'ICMS cobrado anteriormente por ST',
+    '70' : 'Com redução da base de cálculo/Cobrança ICMS por ST/ICMS ST',
+    '90' : 'Outros',
+    '101': 'Tributada pelo Simples Nacional com permissão de crédito',
+    '102': 'Tributada pelo Simples Nacional sem permissão de crédito',
+    '103': 'Isenção do ICMS no Simples Nacional para faixa de receita bruta',
+    '201': 'Tributada pelo Simples Nacional com permissão de crédito e com cobrança do ICMS por substituição tributária',
+    '202': 'Tributada pelo Simples Nacional sem permissão de crédito e com cobrança do ICMS por substituição tributária',
+    '203': 'Isenção do ICMS no Simples Nacional para faixa de receita bruta e com cobrança do ICMS por substituição tributária',
+    '300': 'Imune',
+    '400': 'Não tributada pelo Simples Nacional',
+    '500': 'ICMS cobrado anteriormente por substituição tributária (substituído) ou por antecipação',
+    '900': 'Outros',
+}
+
+MOTIVOS_DESONERACAO = {
+    '1' : 'Táxi',
+    '3' : 'Produtor Agropecuário',
+    '4' : 'Frotista Locadora',
+    '5' : 'Diplomático Consular',
+    '6' : 'Utilitários Motocicletas Amazônia Ocidental Áreas Livre Comércio',
+    '7' : 'Suframa',
+    '8' : 'Venda Órgãos Públicos',
+    '9' : 'Outros',
+    '10': 'Deficiente Condutor',
+    '11': 'Deficiente Não Condutor',
+    '12': 'Órgão de Fomento Desenvolvimento Agropecuário',
+    '90': 'Solicitado pelo Fisco',
+}
+
+TIPOS_CONTRIBUINTES = {
+    '1': 'Contribuinte ICMS',
+    '2': 'Contribuinte isento',
+    '9': 'Não contribuinte',
+}
+
+TIPOS_CONSUMIDOR_FINAL = {
+    '0': 'Não',
+    '1': 'Sim',
+} # TODO: Sugerir utilização de Boolean
+
+AMBIENTES = {
+    '1': 'Produção',
+    '2': 'Homologação',
+}
+
 # ======================================================================================================================
 # Decorators:
 def requires_emissor(func):
@@ -208,11 +316,11 @@ class Cliente:
             raise ValueError('Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica')
     
     def validate_consumidor_final(self):
-        if self.consumidor_final not in ['1', '2',]:
+        if self.consumidor_final not in TIPOS_CONSUMIDOR_FINAL:
             raise ValueError(f'Consumidor Final {self.consumidor_final} inválido')
     
     def validate_contribuinte(self):
-        if self.contribuinte not in ['1', '2', '9']:
+        if self.contribuinte not in TIPOS_CONTRIBUINTES:
             raise ValueError(f'Contribuinte {self.contribuinte} inválido')
 
 @dataclass
@@ -266,6 +374,13 @@ class Cofins:
     aliquota            : Optional[str] = None
     aliquota_st         : Optional[str] = None
     aliquota_retencao   : Optional[str] = None
+    
+    def __post_init__(self, *args, **kwargs):
+        self.validate_situacao_tributaria()
+        
+    def validate_situacao_tributaria(self, *args, **kwargs):
+        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
+            raise ValueError(f'Situação tributária {self.situacao_tributaria} inválida.')
 
 @dataclass
 class DeclaracaoImportacaoAdicao:
@@ -368,21 +483,34 @@ class Icms:
     '''
     situacao_tributaria                       : str
     
-    codigo_cfop                               : Optional[str] = None
-    aliquota_icms                             : Optional[str] = None
-    percentual_reducao_bc_icms                : Optional[str] = None
-    aliquota_fcp                              : Optional[str] = None
-    percentual_reducao_bc_icms_st             : Optional[str] = None
-    aliquota_aplicavel_calculo_credito        : Optional[str] = None
-    aliquota_icms_st                          : Optional[str] = None
-    aliquota_fcp_st                           : Optional[str] = None
-    percentual_margem_valor_agregado_icms_st  : Optional[str] = None
-    percentual_diferimento                    : Optional[str] = None
-    percentual_desonerado                     : Optional[str] = None
-    motivo_desoneracao                        : Optional[str] = None
-    percentual_icms_st_retido                 : Optional[str] = None
-    utilizar_tabela_aliquotas_interestaduais  : Optional[str] = None
-    utilizar_aliquota_interestadual_importacao: Optional[str] = None
+    codigo_cfop                               : Optional[str]  = None
+    aliquota_icms                             : Optional[str]  = None
+    percentual_reducao_bc_icms                : Optional[str]  = None
+    aliquota_fcp                              : Optional[str]  = None
+    percentual_reducao_bc_icms_st             : Optional[str]  = None
+    aliquota_aplicavel_calculo_credito        : Optional[str]  = None
+    aliquota_icms_st                          : Optional[str]  = None
+    aliquota_fcp_st                           : Optional[str]  = None
+    percentual_margem_valor_agregado_icms_st  : Optional[str]  = None
+    percentual_diferimento                    : Optional[str]  = None
+    percentual_desonerado                     : Optional[str]  = None
+    motivo_desoneracao                        : Optional[str]  = None
+    percentual_icms_st_retido                 : Optional[str]  = None
+    utilizar_tabela_aliquotas_interestaduais  : Optional[bool] = None
+    utilizar_aliquota_interestadual_importacao: Optional[bool] = None
+    
+    def __post_init__(self, *args, **kwargs):
+        self.validate_situacao_tributaria()
+        self.validate_motivo_desoneracao()
+        
+    def validate_situacao_tributaria(self, *args, **kwargs):
+        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_ICMS:
+            raise ValueError(f'Situação tributária {self.situacao_tributaria} inválida.')
+    
+    def validate_motivo_desoneracao(self, *args, **kwargs):
+        if self.motivo_desoneracao:
+            if self.motivo_desoneracao not in MOTIVOS_DESONERACAO:
+                raise ValueError(f'Motivo de Desoneração {self.motivo_desoneracao} inválido.')
 
 @dataclass
 class Impostos:
@@ -417,20 +545,13 @@ class Ipi:
     codigo_enquadramento: Optional[str] = None
     codigo_selo         : Optional[str] = None
     qtd_selo            : Optional[str] = None
-
-@dataclass
-class Issqn:
-    indicador_exigibilidade_iss: str    # string [ 1, 2, 3, 4, 5, 6, 7 ]
-    indicador_incentivo_fiscal : str    # string (1: Não, 2: Sim)
-    item_lista_servicos        : str    # string - Item da lista de serviços no Padrão ABRASF (Formato NN.NN)
-    aliquota                   : str    # string ($0.0000)
     
-    numero_processo            : Optional[str] = None
-    codigo_servico             : Optional[str] = None
-    aliquota_retencao          : Optional[str] = None
-    aliquota_irrf              : Optional[str] = None
-    aliquota_csll              : Optional[str] = None
-    aliquota_previdencia_social: Optional[str] = None
+    def __post_init__(self, *args, **kwargs):
+        self.validate_situacao_tributaria()
+    
+    def validate_situacao_tributaria(self, *args, **kwargs):
+        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_IPI:
+            raise ValueError(f'Situação tributária {self.situacao_tributaria} inválida.')
 
 @dataclass
 class Municipio:
@@ -575,6 +696,13 @@ class Pis:
     aliquota           : Optional[str] = None
     aliquota_st        : Optional[str] = None
     aliquota_retencao  : Optional[str] = None
+
+    def __post_init__(self, *args, **kwargs):
+        self.validate_situacao_tributaria()
+        
+    def validate_situacao_tributaria(self, *args, **kwargs):
+        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
+            raise ValueError(f'Situação tributária {self.situacao_tributaria} inválida.')
 
 @dataclass
 class RetencaoIcmsTransporte:

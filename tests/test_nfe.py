@@ -605,8 +605,8 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 ncm                    = "62069000",
                 quantidade             = "2.0",
                 unidade                = "UNID",
-                subtotal               = "2.0",
-                total                  = "2.0",
+                subtotal               = "5.0",
+                total                  = "10.0",
                 impostos               = self.impostos,
                 informacoes_adicionais = "Emitido pelo pySisnoAPI",
             ),
@@ -1057,8 +1057,8 @@ class ProdutoUnitTest(unittest.TestCase):
             ncm        = "62069000",
             quantidade = "2.0",
             unidade    = "UNID",
-            subtotal   = "2.0",
-            total      = "2.0",
+            subtotal   = "5.0",
+            total      = "10.0",
             impostos   = self.impostos,
         )
     
@@ -1069,8 +1069,8 @@ class ProdutoUnitTest(unittest.TestCase):
         self.assertEqual(produto.ncm       , '62069000')
         self.assertEqual(produto.quantidade, '2.0')
         self.assertEqual(produto.unidade   , 'UNID')
-        self.assertEqual(produto.subtotal  , '2.0')
-        self.assertEqual(produto.total     , '2.0')
+        self.assertEqual(produto.subtotal  , '5.0')
+        self.assertEqual(produto.total     , '10.0')
         self.assertEqual(produto.impostos  , self.impostos)
         
     def test_campo_obrigatorio_item(self):
@@ -1083,8 +1083,8 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = "62069000",
                 quantidade = "2.0",
                 unidade    = "UNID",
-                subtotal   = "2.0",
-                total      = "2.0",
+                subtotal   = "5.0",
+                total      = "10.0",
                 impostos   = self.impostos,
             )
         
@@ -1098,8 +1098,8 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = "62069000",
                 quantidade = "2.0",
                 unidade    = "UNID",
-                subtotal   = "2.0",
-                total      = "2.0",
+                subtotal   = "5.0",
+                total      = "10.0",
                 impostos   = self.impostos,
             )
             
@@ -1113,8 +1113,8 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = "62069000",
                 quantidade = "2.0",
                 unidade    = "UNID",
-                subtotal   = "2.0",
-                total      = "2.0",
+                subtotal   = "5.0",
+                total      = "10.0",
                 impostos   = self.impostos,
             )
             
@@ -1128,8 +1128,8 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = "62069000",
                 quantidade = "2.0",
                 unidade    = "UNID",
-                subtotal   = "2.0",
-                total      = "2.0",
+                subtotal   = "5.0",
+                total      = "10.0",
                 impostos   = self.impostos,
             )
             
@@ -1143,8 +1143,8 @@ class ProdutoUnitTest(unittest.TestCase):
                 
                 quantidade = "2.0",
                 unidade    = "UNID",
-                subtotal   = "2.0",
-                total      = "2.0",
+                subtotal   = "5.0",
+                total      = "10.0",
                 impostos   = self.impostos,
             )
             
@@ -1158,8 +1158,8 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = "62069000",
                 
                 unidade    = "UNID",
-                subtotal   = "2.0",
-                total      = "2.0",
+                subtotal   = "5.0",
+                total      = "10.0",
                 impostos   = self.impostos,
             )
             
@@ -1173,8 +1173,8 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = "62069000",
                 quantidade = "2.0",
                 
-                subtotal   = "2.0",
-                total      = "2.0",
+                subtotal   = "5.0",
+                total      = "10.0",
                 impostos   = self.impostos,
             )
             
@@ -1189,7 +1189,7 @@ class ProdutoUnitTest(unittest.TestCase):
                 quantidade = "2.0",
                 unidade    = "UNID",
                 
-                total      = "2.0",
+                total      = "10.0",
                 impostos   = self.impostos,
             )
 
@@ -1203,7 +1203,7 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = "62069000",
                 quantidade = "2.0",
                 unidade    = "UNID",
-                subtotal   = "2.0",
+                subtotal   = "5.0",
                 
                 impostos   = self.impostos,
             )
@@ -1218,8 +1218,8 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = "62069000",
                 quantidade = "2.0",
                 unidade    = "UNID",
-                subtotal   = "2.0",
-                total      = "2.0",
+                subtotal   = "5.0",
+                total      = "10.0",
                 
             )
 

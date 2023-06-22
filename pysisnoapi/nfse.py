@@ -33,6 +33,31 @@ CSV_HEADERS = [
     'Informações Complementares',
 ]
 
+INDICADORES_EXIGIBILIDADE_ISS = {
+    '1': 'Exigível',
+    '2': 'Não incidência',
+    '3': 'Isenção',
+    '4': 'Exportação',
+    '5': 'Imunidade',
+    '6': 'Exigibilidade suspensa por decisão judicial',
+    '7': 'Exigibilidade suspensa por processo administrativo',
+}
+
+INDICADORES_INCENTIVO_FISCAL = {
+    '1': 'Não',
+    '2': 'Sim',
+}
+
+INDICADORES_ISS_RETIDO = {
+    '1': 'Sim',
+    '2': 'Não',
+} # TODO: Sugerir a utilização de Boolean.
+
+RESPONSAVEIS_RETENCAO_ISS = {
+    '1': 'Tomador',
+    '2': 'Intermediário',
+}
+
 # =====================================================================
 @dataclass
 class Servico:
@@ -45,8 +70,8 @@ class Servico:
     discriminacao             : str
     impostos                  : 'ImpostosServico'
     
-    iss_retido                : Optional[str]         = 2 # 1: Sim, 2: Não
-    responsavel_retencao_iss  : Optional[str]         = 1 # 1: Tomador, 2: Intermediário
+    iss_retido                : Optional[str]         = '2'
+    responsavel_retencao_iss  : Optional[str]         = '1'
     
     intermediario             : Optional['Cliente']   = None
     deducoes                  : Optional[str]         = None
@@ -57,6 +82,18 @@ class Servico:
     data_competencia          : Optional[str]         = None
     uf_local_prestacao        : Optional['Uf']        = None
     municipio_local_prestacao : Optional['Municipio'] = None
+    
+    def __post_init__(self, *args, **kwargs):
+        self.validate_iss_retido()
+        self.validate_responsavel_retencao_iss()
+    
+    def validate_iss_retido(self, *args, **kwargs):
+        if self.iss_retido not in INDICADORES_ISS_RETIDO:
+            raise ValueError(f'Indicador de ISS retido {self.iss_retido} inválido.')
+    
+    def validate_responsavel_retencao_iss(self, *args, **kwargs):
+        if self.responsavel_retencao_iss not in RESPONSAVEIS_RETENCAO_ISS:
+            raise ValueError(f'Responsável pela retenção do ISS {self.responsavel_retencao_iss} inválido.')
 
 @dataclass
 class ConstrucaoCivil:
@@ -118,6 +155,32 @@ class PaginaNotasServico:
 class ImpostosServico(Impostos):
     issqn: 'Issqn'
 
+@dataclass
+class Issqn:
+    indicador_exigibilidade_iss: str
+    indicador_incentivo_fiscal : str
+    item_lista_servicos        : str
+    aliquota                   : str
+    
+    numero_processo            : Optional[str] = None
+    codigo_servico             : Optional[str] = None
+    aliquota_retencao          : Optional[str] = None
+    aliquota_irrf              : Optional[str] = None
+    aliquota_csll              : Optional[str] = None
+    aliquota_previdencia_social: Optional[str] = None
+    
+    def __post_init__(self, *args, **kwargs):
+        self.validate_indicador_exigibilidade_iss()
+        self.validate_indicador_incentivo_fiscal()
+    
+    def validate_indicador_exigibilidade_iss(self, *args, **kwargs):
+        if self.indicador_exigibilidade_iss not in INDICADORES_EXIGIBILIDADE_ISS:
+            raise ValueError(f'Indicador de Exigibilidade Fiscal {self.indicador_exigibilidade_iss} inválido.')
+    
+    def validate_indicador_incentivo_fiscal(self, *args, **kwargs):
+        if self.indicador_incentivo_fiscal not in INDICADORES_INCENTIVO_FISCAL:
+            raise ValueError(f'Indicador de Incentivo Fiscal {self.indicador_incentivo_fiscal} inválido.')
+    
 # =====================================================================
 @requires_emissor
 @requires_empresa

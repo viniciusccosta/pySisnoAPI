@@ -39,7 +39,7 @@ class NfseTestCase(unittest.TestCase):
                 situacao_tributaria = '99',
                 aliquota            = '3.5',
             ),
-            issqn = Issqn(
+            issqn = nfse.Issqn(
                 aliquota                    = "3.5",
                 item_lista_servicos         = "08.02",
                 indicador_incentivo_fiscal  = "1",
@@ -214,7 +214,7 @@ class ServicoTestCase(unittest.TestCase):
                 situacao_tributaria = '99',
                 aliquota            = '3.5',
             ),
-            issqn = Issqn(
+            issqn = nfse.Issqn(
                 aliquota                    = "3.5",
                 item_lista_servicos         = "08.02",
                 indicador_incentivo_fiscal  = "1",
