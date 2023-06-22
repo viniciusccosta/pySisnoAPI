@@ -1,4 +1,4 @@
-"""
+'''
     Package criado para integração com a API da plataforma SISNO.
 
     Para utilizar esse package basta importá-lo da seguinte forma:  
@@ -6,7 +6,7 @@
     
     Ou também poderá importar apenas os módulos necessários, como por exemplo:  
     `from pysisnoapi import nfe` 
-"""
+'''
 
 # ======================================================================================================================
 # Imports:
@@ -23,14 +23,14 @@ from dateutil    import parser
 # Globals:
 load_dotenv()
 
-BASE_URL = "https://homolog.arkaonline.com.br/nfe-service"               # TODO: Provisório, em breve voltará para 'https://homolog.sisno.com.br/nfe-service/'
+BASE_URL = 'https://homolog.arkaonline.com.br/nfe-service'               # TODO: Provisório, em breve voltará para 'https://homolog.sisno.com.br/nfe-service/'
 HEADERS  = {
-    "token-emissor"         : os.getenv("token-emissor"       , ""),
-    "token-secret-emissor"  : os.getenv("token-secret-emissor", ""),
-    "token-empresa"         : os.getenv("token-empresa"       , ""),
-    "token-secret-empresa"  : os.getenv("token-secret-empresa", ""),
-    "accept"                : "application/json",
-    "Content-Type"          : "application/json",
+    'token-emissor'         : os.getenv('token-emissor'       , ''),
+    'token-secret-emissor'  : os.getenv('token-secret-emissor', ''),
+    'token-empresa'         : os.getenv('token-empresa'       , ''),
+    'token-secret-empresa'  : os.getenv('token-secret-empresa', ''),
+    'accept'                : 'application/json',
+    'Content-Type'          : 'application/json',
 }
 
 UNIDADES = [
@@ -123,41 +123,41 @@ MEIOS_PAGAMENTO = {
 # ======================================================================================================================
 # Decorators:
 def requires_emissor(func):
-    """Esse decorador é utilizado para garantir que as chaves de API do emissor estão presentes no HEADERS antes da função ser executada."""
+    '''Esse decorador é utilizado para garantir que as chaves de API do emissor estão presentes no HEADERS antes da função ser executada.'''
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        for key in ["token-emissor", "token-secret-emissor"]:
+        for key in ['token-emissor', 'token-secret-emissor']:
             if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
                 return func(*args, **kwargs)
             else:
-                raise ValueError(f"Chave '{key}' não configurada.")
+                raise ValueError(f'Chave "{key}" não configurada.')
     return wrapper
 
 def requires_empresa(func):
-    """Esse decorador é utilizado para garantir que as chaves de API da empresa estão presentes no HEADERS antes da função ser executada."""
+    '''Esse decorador é utilizado para garantir que as chaves de API da empresa estão presentes no HEADERS antes da função ser executada.'''
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        for key in ["token-empresa", "token-secret-empresa"]:
+        for key in ['token-empresa', 'token-secret-empresa']:
             if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
                 return func(*args, **kwargs)
             else:
-                raise ValueError(f"Chave '{key}' não configurada.")
+                raise ValueError(f'Chave "{key}" não configurada.')
     return wrapper
 
 # ======================================================================================================================
 # Classes:
 @dataclass
 class BaseClass:
-    """Classe genérica utilizada como base para as demais classes neste package.
+    '''Classe genérica utilizada como base para as demais classes neste package.
     
     A principal finalidade desta classe é fornecer o método `as_filtered_dict` para filtrar e retornar um dicionário com os atributos relevantes da instância.
     Para maiores informações consulte a documentação do método [aqui](#pysisnoapi.BaseClass.as_filtered_dict).
-    """
+    '''
     
     def as_filtered_dict(self)-> dict[str:str]:
-        """
+        '''
         Retorna um dicionário contendo os campos/atributos da classe com valores não nulos.
 
         O dicionário resultante possui chaves (str) correspondentes aos nomes dos campos
@@ -166,13 +166,13 @@ class BaseClass:
         
         Returns:
             dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
-        """
+        '''
         return asdict(self, dict_factory=_dict_factory)
 
 @dataclass
 class Cfop:
-    """Classe `CFOP` (Código Fiscal de Operações e Prestações)
-    """
+    '''Classe `CFOP` (Código Fiscal de Operações e Prestações)
+    '''
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo: Optional[str] = None
     descricao: Optional[str] = None
@@ -180,15 +180,15 @@ class Cfop:
 
 @dataclass
 class Cliente:
-    """Classe `Cliente`
+    '''Classe `Cliente`
     Geralmente é o destinatário da NFe.
-    """
+    '''
     consumidor_final: str
     contribuinte    : str
-    endereco        : "Endereco"
+    endereco        : 'Endereco'
     
-    pessoa_fisica   : Optional["PessoaFisica"]   = None
-    pessoa_juridica : Optional["PessoaJuridica"] = None
+    pessoa_fisica   : Optional['PessoaFisica']   = None
+    pessoa_juridica : Optional['PessoaJuridica'] = None
     
     id              : Optional[int] = None
     ie              : Optional[str] = None
@@ -203,21 +203,21 @@ class Cliente:
     
     def validate_pessoa(self):
         if self.pessoa_fisica and self.pessoa_juridica:
-            raise ValueError("Informe apenas um dos campos pessoa_fisica ou pessoa_juridica")
+            raise ValueError('Informe apenas um dos campos pessoa_fisica ou pessoa_juridica')
         if not self.pessoa_fisica and not self.pessoa_juridica:
-            raise ValueError("Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica")
+            raise ValueError('Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica')
     
     def validate_consumidor_final(self):
         if self.consumidor_final not in ['1', '2',]:
-            raise ValueError(f"Consumidor Final {self.consumidor_final} inválido")
+            raise ValueError(f'Consumidor Final {self.consumidor_final} inválido')
     
     def validate_contribuinte(self):
         if self.contribuinte not in ['1', '2', '9']:
-            raise ValueError(f"Contribuinte {self.contribuinte} inválido")
+            raise ValueError(f'Contribuinte {self.contribuinte} inválido')
 
 @dataclass
 class Cofins:
-    """Contribuição para Financiamento da Seguridade Social.
+    '''Contribuição para Financiamento da Seguridade Social.
 
     situacao_tributaria:  
         01: Operação Tributável com Alíquota Básica  
@@ -260,7 +260,7 @@ class Cofins:
     aliquota_st	(str): $0.0000
     
     aliquota_retencao (str): $0.0000
-    """
+    '''
     situacao_tributaria : str
     
     aliquota            : Optional[str] = None
@@ -277,11 +277,11 @@ class DeclaracaoImportacaoAdicao:
     
 @dataclass
 class Empresa:
-    """
+    '''
         Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
         Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
         Em resumo: não há necessidade de se preocupar com os campos, caso não saiba algum deles, pois, eles serão preenchidos automaticamente com aquilo que vier do endpoint.
-    """
+    '''
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                                          : Optional[str]         = None
     token                                       : Optional[str]         = None
@@ -316,8 +316,8 @@ class Empresa:
 
 @dataclass
 class Endereco:
-    """Classe `Endereço`
-    """
+    '''Classe `Endereço`
+    '''
     
     codigo_pais        : str
     descricao_pais     : str
@@ -338,8 +338,8 @@ class Endereco:
     
 @dataclass
 class Ibpt:
-    """Classe `IBPT` (Impostos sobre Produtos e Serviços)
-    """
+    '''Classe `IBPT` (Impostos sobre Produtos e Serviços)
+    '''
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo            : Optional[str]  = None
     ex                : Optional[str]  = None
@@ -364,8 +364,8 @@ class Ibpt:
 
 @dataclass
 class Icms:
-    """Classe `ICMS` (Imposto sobre Circulação de Mercadorias e Serviços)
-    """
+    '''Classe `ICMS` (Imposto sobre Circulação de Mercadorias e Serviços)
+    '''
     situacao_tributaria                       : str
     
     codigo_cfop                               : Optional[str] = None
@@ -386,14 +386,14 @@ class Icms:
 
 @dataclass
 class Impostos:
-    """Classe Base para as Classes de Impostos de Produtos e Serviços.
-    """
-    pis   : "Pis"
-    cofins: "Cofins"
+    '''Classe Base para as Classes de Impostos de Produtos e Serviços.
+    '''
+    pis   : 'Pis'
+    cofins: 'Cofins'
 
 @dataclass
 class Ipi:
-    """Classe `IPI` (Imposto Sobre Produtos Industrializados)
+    '''Classe `IPI` (Imposto Sobre Produtos Industrializados)
 
     situacao_tributaria:  
         00: Entrada com Recuperação de Crédito  
@@ -410,7 +410,7 @@ class Ipi:
         54: Saída Imune  
         55: Saída com Suspensão  
         99: Outras Saídas  
-    """
+    '''
     situacao_tributaria : str
     
     aliquota            : Optional[str] = None
@@ -434,8 +434,8 @@ class Issqn:
 
 @dataclass
 class Municipio:
-    """Classe `Município`
-    """
+    '''Classe `Município`
+    '''
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo_ibge : Optional[int] = None
     descricao   : Optional[str] = None
@@ -446,10 +446,10 @@ class Municipio:
 
 @dataclass
 class NotaFiscal:
-    """Classe `Nota Fiscal`.
+    '''Classe `Nota Fiscal`.
     
     Até 01/2023 essa classe também era usada para Notas Fiscais de Serviço (NFSe).
-    """
+    '''
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                      : Optional[int]         = None
     empresa                 : Optional['Empresa']   = None
@@ -498,10 +498,10 @@ class Observacao:
     
 @dataclass
 class PessoaFisica:
-    """Classe `Pessoa Física`
+    '''Classe `Pessoa Física`
     
     Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
-    """
+    '''
     nome_completo: str
     
     cpf           : Optional[str] = None
@@ -509,14 +509,14 @@ class PessoaFisica:
     
     def __post_init__(self):
         if self.cpf and self.id_estrangeiro:
-            raise ValueError("Informe somente um dos campos: cpf ou id_estrangeiro")
+            raise ValueError('Informe somente um dos campos: cpf ou id_estrangeiro')
         if not self.cpf and not self.id_estrangeiro:
-            raise ValueError("Informe um dos campos: cpf ou id_estrangeiro")
+            raise ValueError('Informe um dos campos: cpf ou id_estrangeiro')
 
 @dataclass
 class PessoaJuridica:
-    """Classe `Pessoa Jurídica`
-    """
+    '''Classe `Pessoa Jurídica`
+    '''
     cnpj        : str
     razao_social: str
     
@@ -525,7 +525,7 @@ class PessoaJuridica:
 
 @dataclass
 class Pis:
-    """Classe `PIS` (Programas de Integração Social)
+    '''Classe `PIS` (Programas de Integração Social)
 
     situacao_tributaria (str): Situação Tributária  
         01: Operação Tributável com Alíquota Básica  
@@ -569,7 +569,7 @@ class Pis:
     
     aliquota_retencao (str): $0.0000
     
-    """
+    '''
     situacao_tributaria: str
     
     aliquota           : Optional[str] = None
@@ -592,11 +592,11 @@ class Transporte:
 
 @dataclass
 class Uf:
-    """Classe `UF`(Unidade Federativa)
+    '''Classe `UF`(Unidade Federativa)
 
     Returns:
         _type_: _description_
-    """
+    '''
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     # TODO: Até o dia 01/06/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
     codigo_ibge: Optional[str]  = None
@@ -609,7 +609,7 @@ class Uf:
 
 # ======================================================================================================================
 def alterar_empresa(token_empresa:str, token_secret_empresa:str):
-    """
+    '''
     Altera as chaves de API utilizadas para a emissão de notas fiscais na plataforma SISNO.
 
     Esse método é responsável por modificar as chaves de API, necessárias para a emissão de notas fiscais em empresas distintas.
@@ -621,7 +621,7 @@ def alterar_empresa(token_empresa:str, token_secret_empresa:str):
 
     Raises:
         Exception: Lançada caso alguma das chaves seja inválida.
-    """
+    '''
     
     # TODO: Realizar melhores validações
     
@@ -630,11 +630,11 @@ def alterar_empresa(token_empresa:str, token_secret_empresa:str):
     if not isinstance(token_secret_empresa, str) or len(token_secret_empresa) != 166:
         raise Exception('Token Secret Empresa inválido')
     
-    HEADERS["token-empresa"]        = token_empresa
-    HEADERS["token-secret-empresa"] = token_secret_empresa
+    HEADERS['token-empresa']        = token_empresa
+    HEADERS['token-secret-empresa'] = token_secret_empresa
 
 def _dict_factory(x: List[Tuple]) -> Optional[Dict]:
-    """Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.
+    '''Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.
 
     Essa função é chamada automaticamente durante a conversão de uma classe para um dicionário usando `dataclasses.asdict`, 
     quando é atribuída a opção `dict_factory` como seu valor. 
@@ -648,7 +648,7 @@ def _dict_factory(x: List[Tuple]) -> Optional[Dict]:
 
     Returns:
         dict ou None: Um dicionário filtrado com as chaves cujos valores são diferentes de None ou retorna None se o dicionário resultante estiver vazio.
-    """
+    '''
     dic = {k: v for (k, v) in x if v is not None}
     return dic if len(dic) > 0 else None
 
