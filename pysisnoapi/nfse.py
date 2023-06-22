@@ -58,17 +58,11 @@ class Servico:
     uf_local_prestacao        : Optional["Uf"]        = None
     municipio_local_prestacao : Optional["Municipio"] = None
 
+@dataclass
 class ConstrucaoCivil:
-    def __init__(self, *args, **kwargs):
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-        self.codigo_obra = kwargs.get("codigo_obra", '')
-        self.art         = kwargs.get("art", '')
-
-    def asdict(self,):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
-
+    codigo_obra: Optional[str] = None
+    art        : Optional[str] = None
+    
 @dataclass
 class ObjetoEmissaoNFSe(BaseClass):
     cliente: "Cliente"
@@ -112,18 +106,14 @@ class NotaFiscalServico:
         municipio = Municipio.from_json(**municipio_dict)
         
         return cls(empresa=empresa, uf_prestacao=uf, municipio_prestacao=municipio, **kwargs)
-        
-class PaginaNotaServico:
-    def __init__(self, *args, **kwargs):
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-        self.total              = kwargs.get("total", 0)
-        self.itens_por_pagina   = kwargs.get("itens_por_pagina", 0)
-        self.pagina_atual       = kwargs.get("pagina_atual", 0)
-        self.itens              = kwargs.get("art", [])
-    
-    def asdict(self,):
-        return self.__dict__
 
+@dataclass
+class PaginaNotasServico:
+    total           : Optional[str]                       = None
+    itens_por_pagina: Optional[str]                       = None
+    pagina_atual    : Optional[str]                       = None
+    itens           : Optional[List["NotaFiscalServico"]] = None
+    
 @dataclass
 class ImpostosServico(Impostos):
     issqn: "Issqn"
@@ -155,8 +145,7 @@ def emitir(objetoNfse: ObjetoEmissaoNFSe, *args, **kwargs):
             return response.text
 
 @requires_emissor
-def buscar_notas(
-    cnpj:str=None, 
+def buscar_notas(cnpj:str=None, 
     data_inicio:datetime=None, 
     data_fim:datetime=None, 
     ambiente:str=None, 
