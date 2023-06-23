@@ -1,4 +1,4 @@
-"""
+'''
     Package criado para integração com a API da plataforma SISNO.
 
     Para utilizar esse package basta importá-lo da seguinte forma:  
@@ -6,71 +6,268 @@
     
     Ou também poderá importar apenas os módulos necessários, como por exemplo:  
     `from pysisnoapi import nfe` 
-"""
+'''
 
 # ======================================================================================================================
 # Imports:
 import os
 import functools
-from dotenv import load_dotenv
+
+from dotenv      import load_dotenv
 from dataclasses import dataclass, asdict
-from typing import Optional, List, Tuple, Dict
-from datetime import datetime
-from dateutil import parser
-# from pydantic import BaseModel, validator
+from typing      import Optional, List, Tuple, Dict
+from datetime    import datetime
+from dateutil    import parser
 
 # ======================================================================================================================
 # Globals:
 load_dotenv()
 
-URL     = "https://homolog.arkaonline.com.br/nfe-service"               # TODO: Provisório, em breve voltará para 'https://homolog.sisno.com.br/nfe-service/'
-HEADERS = {
-    "token-emissor"         : os.getenv("token-emissor", ""),
-    "token-secret-emissor"  : os.getenv("token-secret-emissor", ""),
-    "token-empresa"         : os.getenv("token-empresa", ""),
-    "token-secret-empresa"  : os.getenv("token-secret-empresa", ""),
-    "accept"                : "application/json",
-    "Content-Type"          : "application/json",
+BASE_URL = 'https://homolog.arkaonline.com.br/nfe-service'               # TODO: Provisório, em breve voltará para 'https://homolog.sisno.com.br/nfe-service/'
+
+HEADERS  = {
+    'token-emissor'         : os.getenv('token-emissor'       , ''),
+    'token-secret-emissor'  : os.getenv('token-secret-emissor', ''),
+    'token-empresa'         : os.getenv('token-empresa'       , ''),
+    'token-secret-empresa'  : os.getenv('token-secret-empresa', ''),
+    'accept'                : 'application/json',
+    'Content-Type'          : 'application/json',
 }
+
+# -------------------------------------------
+AMBIENTES = {
+    '1': 'Produção',
+    '2': 'Homologação',
+}
+
+FORMAS_PAGAMENTO = {
+    '0': 'À Vista',
+    '1': 'À Prazo',
+}
+
+MEIOS_PAGAMENTO = {
+    '01': 'Dinheiro',
+    '02': 'Cheque',
+    '03': 'Cartão de crédito',
+    '04': 'Cartão de débito',
+    '05': 'Cartão da loja',
+    '10': 'Vale alimentação',
+    '11': 'Vale refeição',
+    '12': 'Vale presente',
+    '13': 'Vale combustível',
+    '14': 'Duplicata mercantil',
+    '15': 'Boleto bancário',
+    '16': 'Depósito bancário',
+    '17': 'Pagamento Instantaneo (PIX)',
+    '18': 'Transferência bancária',
+    '19': 'Programa de fidelidade (Cashback)',
+    '90': 'Sem pagamento',
+    '99': 'Outros',
+}
+
+MOTIVOS_DESONERACAO = {
+    '1' : 'Táxi',
+    '3' : 'Produtor Agropecuário',
+    '4' : 'Frotista Locadora',
+    '5' : 'Diplomático Consular',
+    '6' : 'Utilitários Motocicletas Amazônia Ocidental Áreas Livre Comércio',
+    '7' : 'Suframa',
+    '8' : 'Venda Órgãos Públicos',
+    '9' : 'Outros',
+    '10': 'Deficiente Condutor',
+    '11': 'Deficiente Não Condutor',
+    '12': 'Órgão de Fomento Desenvolvimento Agropecuário',
+    '90': 'Solicitado pelo Fisco',
+}
+
+SITUACOES_TRIBUTARIAS_ICMS = {
+    '00' : 'Tributada integralmente',
+    '10' : 'Tributada com cobrança de ICMS por ST',
+    '20' : 'Com redução da base de cálculo',
+    '30' : 'Isenta ou não tributada com cobrança de ICMS por ST',
+    '40' : 'Isenta',
+    '41' : 'Não tributada',
+    '50' : 'Suspensão',
+    '51' : 'Diferimento',
+    '60' : 'ICMS cobrado anteriormente por ST',
+    '70' : 'Com redução da base de cálculo/Cobrança ICMS por ST/ICMS ST',
+    '90' : 'Outros',
+    '101': 'Tributada pelo Simples Nacional com permissão de crédito',
+    '102': 'Tributada pelo Simples Nacional sem permissão de crédito',
+    '103': 'Isenção do ICMS no Simples Nacional para faixa de receita bruta',
+    '201': 'Tributada pelo Simples Nacional com permissão de crédito e com cobrança do ICMS por substituição tributária',
+    '202': 'Tributada pelo Simples Nacional sem permissão de crédito e com cobrança do ICMS por substituição tributária',
+    '203': 'Isenção do ICMS no Simples Nacional para faixa de receita bruta e com cobrança do ICMS por substituição tributária',
+    '300': 'Imune',
+    '400': 'Não tributada pelo Simples Nacional',
+    '500': 'ICMS cobrado anteriormente por substituição tributária (substituído) ou por antecipação',
+    '900': 'Outros',
+}
+
+SITUACOES_TRIBUTARIAS_IPI = {
+    '00': 'Entrada com Recuperação de Crédito',
+    '01': 'Entrada Tributada com Alíquota Zero',
+    '02': 'Entrada Isenta',
+    '03': 'Entrada Não Tributada',
+    '04': 'Entrada Imune',
+    '05': 'Entrada com Suspensão',
+    '49': 'Outras Entradas',
+    '50': 'Saída Tributada',
+    '51': 'Saída Tributável com Alíquota Zero',
+    '52': 'Saída Isenta',
+    '53': 'Saída Não Tributada',
+    '54': 'Saída Imune',
+    '55': 'Saída com Suspensão',
+    '99': 'Outras Saídas',
+}
+
+SITUACOES_TRIBUTARIAS_PIS_COFINS = {
+    '01': 'Operação Tributável com Alíquota Básica',
+    '02': 'Operação Tributável com Alíquota por Unidade de Medida de Produto',
+    '03': 'Operação Tributável com Alíquota por Unidade de Medida de Produto',
+    '04': 'Operação Tributável Monofásica - Revenda a Alíquota Zero',
+    '05': 'Operação Tributável por Substituição Tributária',
+    '06': 'Operação Tributável a Alíquota Zero',
+    '07': 'Operação Isenta da Contribuição',
+    '08': 'Operação sem Incidência da Contribuição',
+    '09': 'Operação com Suspensão da Contribuição',
+    '49': 'Outras Operações de Saída',
+    '50': 'Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno',
+    '51': 'Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno',
+    '52': 'Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação',
+    '53': 'Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno',
+    '54': 'Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação',
+    '55': 'Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação',
+    '56': 'Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação',
+    '60': 'Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno',
+    '61': 'Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno',
+    '62': 'Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação',
+    '63': 'Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno',
+    '64': 'Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação',
+    '65': 'Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação',
+    '66': 'Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação',
+    '67': 'Crédito Presumido - Outras Operações',
+    '70': 'Operação de Aquisição sem Direito a Crédito',
+    '71': 'Operação de Aquisição com Isenção',
+    '72': 'Operação de Aquisição com Suspensão',
+    '73': 'Operação de Aquisição a Alíquota Zero',
+    '74': 'Operação de Aquisição sem Incidência da Contribuição',
+    '75': 'Operação de Aquisição por Substituição Tributária',
+    '98': 'Outras Operações de Entrada',
+    '99': 'Outras Operações',
+}
+
+TIPOS_CONSUMIDOR_FINAL = {
+    '0': 'Não',
+    '1': 'Sim',
+} # TODO: Sugerir utilização de Boolean
+
+TIPOS_CONTRIBUINTES = {
+    '1': 'Contribuinte ICMS',
+    '2': 'Contribuinte isento',
+    '9': 'Não contribuinte',
+}
+
+UNIDADES = [
+    'AMPOLA',
+    'BALDE'
+    'BANDEJ',
+    'BARRA',
+    'BISNAG',
+    'BLOCO',
+    'BOBINA',
+    'BOMB',
+    'CAPS',
+    'CART',
+    'CENTO',
+    'CJ',
+    'CM',
+    'CM2',
+    'CX',
+    'CX2',
+    'CX3',
+    'CX5',
+    'CX10',
+    'CX15',
+    'CX20',
+    'CX25',
+    'CX50',
+    'CX100',
+    'DISP',
+    'DUZIA',
+    'EMBAL',
+    'FARDO',
+    'FOLHA',
+    'FRASCO',
+    'GALAO',
+    'JOGO',
+    'KG',
+    'KIT',
+    'LATA',
+    'LITRO',
+    'M',
+    'M2',
+    'M3',
+    'MILHEI',
+    'ML',
+    'MWH',
+    'PACOTE',
+    'PALETE',
+    'PARES',
+    'PC',
+    'POTE',
+    'K',
+    'RESMA',
+    'ROLO',
+    'SACO',
+    'SACOLA',
+    'TAMBOR',
+    'TANQUE',
+    'TON',
+    'TUBO',
+    'UNID',
+    'VASIL',
+    'VIDRO',
+]
 
 # ======================================================================================================================
 # Decorators:
 def requires_emissor(func):
-    """Esse decorador é utilizado para garantir que as chaves de API do emissor estão presentes no HEADERS antes da função ser executada."""
+    '''Esse decorador é utilizado para garantir que as chaves de API do emissor estão presentes no HEADERS antes da função ser executada.'''
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        for key in ["token-emissor", "token-secret-emissor"]:
+        for key in ['token-emissor', 'token-secret-emissor']:
             if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
                 return func(*args, **kwargs)
             else:
-                raise ValueError(f"Chave '{key}' não configurada.")
+                raise ValueError(f'Chave "{key}" não configurada.')
     return wrapper
 
 def requires_empresa(func):
-    """Esse decorador é utilizado para garantir que as chaves de API da empresa estão presentes no HEADERS antes da função ser executada."""
+    '''Esse decorador é utilizado para garantir que as chaves de API da empresa estão presentes no HEADERS antes da função ser executada.'''
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        for key in ["token-empresa", "token-secret-empresa"]:
+        for key in ['token-empresa', 'token-secret-empresa']:
             if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
                 return func(*args, **kwargs)
             else:
-                raise ValueError(f"Chave '{key}' não configurada.")
+                raise ValueError(f'Chave "{key}" não configurada.')
     return wrapper
 
 # ======================================================================================================================
 # Classes:
 @dataclass
 class BaseClass:
-    """Classe genérica utilizada como base para as demais classes neste package.
+    '''Classe genérica utilizada como base para as demais classes neste package.
     
     A principal finalidade desta classe é fornecer o método `as_filtered_dict` para filtrar e retornar um dicionário com os atributos relevantes da instância.
     Para maiores informações consulte a documentação do método [aqui](#pysisnoapi.BaseClass.as_filtered_dict).
-    """
+    '''
     
     def as_filtered_dict(self)-> dict[str:str]:
-        """
+        '''
         Retorna um dicionário contendo os campos/atributos da classe com valores não nulos.
 
         O dicionário resultante possui chaves (str) correspondentes aos nomes dos campos
@@ -79,13 +276,13 @@ class BaseClass:
         
         Returns:
             dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
-        """
-        return asdict(self, dict_factory=dict_factory)
+        '''
+        return asdict(self, dict_factory=_dict_factory)
 
 @dataclass
 class Cfop:
-    """CFOP (Código Fiscal de Operações e Prestações)
-    """
+    '''Classe `CFOP` (Código Fiscal de Operações e Prestações)
+    '''
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo: Optional[str] = None
     descricao: Optional[str] = None
@@ -93,116 +290,115 @@ class Cfop:
 
 @dataclass
 class Cliente:
-    """Geralmente é o destinatário da NFe.
-    """
+    '''Classe `Cliente`
+    Geralmente é o destinatário da NFe.
+    '''
     consumidor_final: str
     contribuinte    : str
-    endereco        : "Endereco"
+    endereco        : 'Endereco'
     
-    pessoa_fisica   : Optional["PessoaFisica"] = None
-    pessoa_juridica : Optional["PessoaJuridica"] = None
+    pessoa_fisica   : Optional['PessoaFisica']   = None
+    pessoa_juridica : Optional['PessoaJuridica'] = None
     
     id              : Optional[int] = None
     ie              : Optional[str] = None
     telefone        : Optional[str] = None
     email           : Optional[str] = None
     faz_retencao    : Optional[str] = None
+        
+    def __post_init__(self):        
+        self.validate_pessoa()
+        self.validate_consumidor_final()
+        self.validate_contribuinte()
     
-    # @validator('pessoa_juridica')
-    # def validate_pessoa_juridica(cls, value, values):
-    #     if not isinstance(value, PessoaJuridica):
-    #         raise TypeError("Pessoa Juridica deve ser um objeto da classe PessoaJuridica")
-    #     if value and values.get('pessoa_fisica'):
-    #         raise ValueError("Informe apenas um dos campos PessoaFisica ou PessoaJuridica")
-    #     if not value and not values.get('pessoa_fisica'):
-    #         raise ValueError("Informe pelo menos um dos campos PessoaFisica ou PessoaJuridica")
-    #     return value
+    def validate_pessoa(self):
+        if self.pessoa_fisica and self.pessoa_juridica:
+            raise ValueError('Informe apenas um dos campos pessoa_fisica ou pessoa_juridica')
+        if not self.pessoa_fisica and not self.pessoa_juridica:
+            raise ValueError('Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica')
     
-    # @validator('consumidor_final')
-    # def validate_consumidor_final(cls, consumidor_final):
-    #     if not isinstance(consumidor_final, str):
-    #         raise TypeError("Consumidor Final tem que ser uma string")
-    #     if consumidor_final not in ['1', '2',]:
-    #         raise ValueError(f"Consumidor Final {consumidor_final} inválido")
-    #     return consumidor_final
+    def validate_consumidor_final(self):
+        if self.consumidor_final not in TIPOS_CONSUMIDOR_FINAL:
+            raise ValueError(f'Consumidor Final {self.consumidor_final} inválido')
     
-    # @validator('contribuinte')
-    # def validate_contribuinte(cls, contribuinte):
-    #     if not isinstance(contribuinte, str):
-    #         raise TypeError("Contribuinte tem que ser uma string")
-    #     if contribuinte not in ['1', '2', '9']:
-    #         raise ValueError(f"Contribuinte {contribuinte} inválido")
-    #     return contribuinte
+    def validate_contribuinte(self):
+        if self.contribuinte not in TIPOS_CONTRIBUINTES:
+            raise ValueError(f'Contribuinte {self.contribuinte} inválido')
 
 @dataclass
 class Cofins:
-    """Contribuição para Financiamento da Seguridade Social.
+    '''Contribuição para Financiamento da Seguridade Social.
 
-    situacao_tributaria:
-        01: Operação Tributável com Alíquota Básica
-        02: Operação Tributável com Alíquota por Unidade de Medida de Produto
-        03: Operação Tributável com Alíquota por Unidade de Medida de Produto
-        04: Operação Tributável Monofásica - Revenda a Alíquota Zero
-        05: Operação Tributável por Substituição Tributária
-        06: Operação Tributável a Alíquota Zero
-        07: Operação Isenta da Contribuição
-        08: Operação sem Incidência da Contribuição
-        09: Operação com Suspensão da Contribuição
-        49: Outras Operações de Saída
-        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno
-        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno
-        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação
-        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno
-        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação
-        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação
-        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação
-        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno
-        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno
-        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação
-        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno
-        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação
-        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação
-        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação
-        67: Crédito Presumido - Outras Operações
-        70: Operação de Aquisição sem Direito a Crédito
-        71: Operação de Aquisição com Isenção
-        72: Operação de Aquisição com Suspensão
-        73: Operação de Aquisição a Alíquota Zero
-        74: Operação de Aquisição sem Incidência da Contribuição
-        75: Operação de Aquisição por Substituição Tributária
-        98: Outras Operações de Entrada
-        99: Outras Operações
-        
-    aliquota (str): $0.0000 
+    situacao_tributaria:  
+        01: Operação Tributável com Alíquota Básica  
+        02: Operação Tributável com Alíquota por Unidade de Medida de Produto  
+        03: Operação Tributável com Alíquota por Unidade de Medida de Produto  
+        04: Operação Tributável Monofásica - Revenda a Alíquota Zero  
+        05: Operação Tributável por Substituição Tributária  
+        06: Operação Tributável a Alíquota Zero  
+        07: Operação Isenta da Contribuição  
+        08: Operação sem Incidência da Contribuição  
+        09: Operação com Suspensão da Contribuição  
+        49: Outras Operações de Saída  
+        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno  
+        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno  
+        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação  
+        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno  
+        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação  
+        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação  
+        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação  
+        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno  
+        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno  
+        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação  
+        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno  
+        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação  
+        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação  
+        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação  
+        67: Crédito Presumido - Outras Operações  
+        70: Operação de Aquisição sem Direito a Crédito  
+        71: Operação de Aquisição com Isenção  
+        72: Operação de Aquisição com Suspensão  
+        73: Operação de Aquisição a Alíquota Zero  
+        74: Operação de Aquisição sem Incidência da Contribuição  
+        75: Operação de Aquisição por Substituição Tributária  
+        98: Outras Operações de Entrada  
+        99: Outras Operações  
+    
+    aliquota (str): $0.0000  
         Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
     
     aliquota_st	(str): $0.0000
     
     aliquota_retencao (str): $0.0000
-    """
+    '''
     situacao_tributaria : str
     
     aliquota            : Optional[str] = None
     aliquota_st         : Optional[str] = None
     aliquota_retencao   : Optional[str] = None
-
-class DeclaracaoImportacaoAdicao:
-    # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+    
+    def __post_init__(self, *args, **kwargs):
+        self.validate_situacao_tributaria()
+        
+    def validate_situacao_tributaria(self, *args, **kwargs):
+        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
+            raise ValueError(f'Situação tributária {self.situacao_tributaria} inválida.')
 
 @dataclass
+class DeclaracaoImportacaoAdicao:
+    numero_sequencial: Optional[str] = None
+    numero           : Optional[str] = None
+    cod_fabricante   : Optional[str] = None
+    desconto         : Optional[str] = None
+    drawback         : Optional[str] = None
+    
+@dataclass
 class Empresa:
-    """
+    '''
         Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
         Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
         Em resumo: não há necessidade de se preocupar com os campos, caso não saiba algum deles, pois, eles serão preenchidos automaticamente com aquilo que vier do endpoint.
-    """
+    '''
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                                          : Optional[str]         = None
     token                                       : Optional[str]         = None
@@ -237,6 +433,9 @@ class Empresa:
 
 @dataclass
 class Endereco:
+    '''Classe `Endereço`
+    '''
+    
     codigo_pais        : str
     descricao_pais     : str
     bairro             : str
@@ -256,8 +455,8 @@ class Endereco:
     
 @dataclass
 class Ibpt:
-    """Classe `IBPT` (Impostos sobre Produtos e Serviços)
-    """
+    '''Classe `IBPT` (Impostos sobre Produtos e Serviços)
+    '''
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo            : Optional[str]  = None
     ex                : Optional[str]  = None
@@ -282,36 +481,49 @@ class Ibpt:
 
 @dataclass
 class Icms:
-    """Imposto sobre Circulação de Mercadorias e Serviços
-    """
+    '''Classe `ICMS` (Imposto sobre Circulação de Mercadorias e Serviços)
+    '''
     situacao_tributaria                       : str
     
-    codigo_cfop                               : Optional[str] = None
-    aliquota_icms                             : Optional[str] = None
-    percentual_reducao_bc_icms                : Optional[str] = None
-    aliquota_fcp                              : Optional[str] = None
-    percentual_reducao_bc_icms_st             : Optional[str] = None
-    aliquota_aplicavel_calculo_credito        : Optional[str] = None
-    aliquota_icms_st                          : Optional[str] = None
-    aliquota_fcp_st                           : Optional[str] = None
-    percentual_margem_valor_agregado_icms_st  : Optional[str] = None
-    percentual_diferimento                    : Optional[str] = None
-    percentual_desonerado                     : Optional[str] = None
-    motivo_desoneracao                        : Optional[str] = None
-    percentual_icms_st_retido                 : Optional[str] = None
-    utilizar_tabela_aliquotas_interestaduais  : Optional[str] = None
-    utilizar_aliquota_interestadual_importacao: Optional[str] = None
+    codigo_cfop                               : Optional[str]  = None
+    aliquota_icms                             : Optional[str]  = None
+    percentual_reducao_bc_icms                : Optional[str]  = None
+    aliquota_fcp                              : Optional[str]  = None
+    percentual_reducao_bc_icms_st             : Optional[str]  = None
+    aliquota_aplicavel_calculo_credito        : Optional[str]  = None
+    aliquota_icms_st                          : Optional[str]  = None
+    aliquota_fcp_st                           : Optional[str]  = None
+    percentual_margem_valor_agregado_icms_st  : Optional[str]  = None
+    percentual_diferimento                    : Optional[str]  = None
+    percentual_desonerado                     : Optional[str]  = None
+    motivo_desoneracao                        : Optional[str]  = None
+    percentual_icms_st_retido                 : Optional[str]  = None
+    utilizar_tabela_aliquotas_interestaduais  : Optional[bool] = None
+    utilizar_aliquota_interestadual_importacao: Optional[bool] = None
+    
+    def __post_init__(self, *args, **kwargs):
+        self.validate_situacao_tributaria()
+        self.validate_motivo_desoneracao()
+        
+    def validate_situacao_tributaria(self, *args, **kwargs):
+        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_ICMS:
+            raise ValueError(f'Situação tributária {self.situacao_tributaria} inválida.')
+    
+    def validate_motivo_desoneracao(self, *args, **kwargs):
+        if self.motivo_desoneracao:
+            if self.motivo_desoneracao not in MOTIVOS_DESONERACAO:
+                raise ValueError(f'Motivo de Desoneração {self.motivo_desoneracao} inválido.')
 
 @dataclass
 class Impostos:
-    """Classe Base para as Classes de Impostos de Produtos e Serviços.
-    """
-    pis   : "Pis"
-    cofins: "Cofins"
+    '''Classe Base para as Classes de Impostos de Produtos e Serviços.
+    '''
+    pis   : 'Pis'
+    cofins: 'Cofins'
 
 @dataclass
 class Ipi:
-    """Imposto Sobre Produtos Industrializados
+    '''Classe `IPI` (Imposto Sobre Produtos Industrializados)
 
     situacao_tributaria:  
         00: Entrada com Recuperação de Crédito  
@@ -328,41 +540,25 @@ class Ipi:
         54: Saída Imune  
         55: Saída com Suspensão  
         99: Outras Saídas  
-    """
+    '''
     situacao_tributaria : str
     
     aliquota            : Optional[str] = None
     codigo_enquadramento: Optional[str] = None
     codigo_selo         : Optional[str] = None
     qtd_selo            : Optional[str] = None
-
-class Issqn:
-    def __init__(self, **kwargs):
-        """
-            Indicador_exigibilidade_iss  
-                1. Exigível  
-                2. Não incidência  
-                3. Isenção  
-                4. Exportação  
-                5. Imunidade  
-                6. Exigibilidade suspensa por decisão judicial  
-                7. Exigibilidade suspensa por processo administrativo  
-        """
-        
-        self.indicador_exigibilidade_iss     = kwargs.get("indicador_exigibilidade_iss", None)   # string [ 1, 2, 3, 4, 5, 6, 7 ]
-        self.indicador_incentivo_fiscal      = kwargs.get("indicador_incentivo_fiscal", None)    # string (1: Não, 2: Sim)
-        self.item_lista_servicos             = kwargs.get("item_lista_servicos", None)           # string - Item da lista de serviços no Padrão ABRASF (Formato NN.NN)
-        self.aliquota                        = kwargs.get("aliquota", None)                      # string ($0.0000)
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+    
+    def __post_init__(self, *args, **kwargs):
+        self.validate_situacao_tributaria()
+    
+    def validate_situacao_tributaria(self, *args, **kwargs):
+        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_IPI:
+            raise ValueError(f'Situação tributária {self.situacao_tributaria} inválida.')
 
 @dataclass
 class Municipio:
-    """Classe Município
-    """
+    '''Classe `Município`
+    '''
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo_ibge : Optional[int] = None
     descricao   : Optional[str] = None
@@ -373,6 +569,10 @@ class Municipio:
 
 @dataclass
 class NotaFiscal:
+    '''Classe `Nota Fiscal`.
+    
+    Até 01/2023 essa classe também era usada para Notas Fiscais de Serviço (NFSe).
+    '''
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                      : Optional[int]         = None
     empresa                 : Optional['Empresa']   = None
@@ -414,44 +614,41 @@ class NotaFiscal:
             **kwargs
         )
 
+@dataclass
 class Observacao:
-    # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
+    campo: Optional[str] = None
+    texto: Optional[str] = None
     
-    def __init__(self, **kwargs):
-        self.campo                   = kwargs.get("campo", None)                                # string
-        self.texto                   = kwargs.get("texto", None)                                # string
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
-
 @dataclass
 class PessoaFisica:
-    """Classe Pessoa Física
+    '''Classe `Pessoa Física`
     
     Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
-    """
+    '''
     nome_completo: str
     
     cpf           : Optional[str] = None
     id_estrangeiro: Optional[str] = None
     
-    # TODO: Só pode passar um dos dois: "cpf" ou "id_estrangeiro"
+    def __post_init__(self):
+        if self.cpf and self.id_estrangeiro:
+            raise ValueError('Informe somente um dos campos: cpf ou id_estrangeiro')
+        if not self.cpf and not self.id_estrangeiro:
+            raise ValueError('Informe um dos campos: cpf ou id_estrangeiro')
 
 @dataclass
 class PessoaJuridica:
-    """Classe Pessoa Jurídica
-    """
+    '''Classe `Pessoa Jurídica`
+    '''
     cnpj        : str
     razao_social: str
     
-    im          : Optional[str]
-    suframa     : Optional[str]
+    im          : Optional[str] = None
+    suframa     : Optional[str] = None
 
 @dataclass
 class Pis:
-    """Programas de Integração Social e de Formação do Patrimônio do Servidor Público (PIS/PASEP)
+    '''Classe `PIS` (Programas de Integração Social)
 
     situacao_tributaria (str): Situação Tributária  
         01: Operação Tributável com Alíquota Básica  
@@ -491,39 +688,45 @@ class Pis:
     aliquota (str): $0.0000 
         Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
     
-    aliquota_st	(str): $0.0000
+    aliquota_st	(str): $0.0000  
     
     aliquota_retencao (str): $0.0000
     
-    """
+    '''
     situacao_tributaria: str
     
     aliquota           : Optional[str] = None
     aliquota_st        : Optional[str] = None
     aliquota_retencao  : Optional[str] = None
-    
+
+    def __post_init__(self, *args, **kwargs):
+        self.validate_situacao_tributaria()
+        
+    def validate_situacao_tributaria(self, *args, **kwargs):
+        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
+            raise ValueError(f'Situação tributária {self.situacao_tributaria} inválida.')
+
+@dataclass
 class RetencaoIcmsTransporte:
-    # TODO: Até o dia 10/05/2023 essa classe só está sendo usada na classe "Transporte", que não está sendo usada
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
-
+    valor_servico                                           : Optional[str] = None
+    valor_icms_retido                                       : Optional[str] = None
+    cfop                                                    : Optional[str] = None
+    codigo_municipio_ocorrencia_fato_gerador_icms_transporte: Optional[str] = None
+    base_calculo_retencao_icms                              : Optional[str] = None
+    aliquota_retencao                                       : Optional[str] = None
+    
+@dataclass
 class Transporte:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+    ...
 
 @dataclass
 class Uf:
+    '''Classe `UF`(Unidade Federativa)
+
+    Returns:
+        _type_: _description_
+    '''
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     # TODO: Até o dia 01/06/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
     codigo_ibge: Optional[str]  = None
@@ -536,7 +739,7 @@ class Uf:
 
 # ======================================================================================================================
 def alterar_empresa(token_empresa:str, token_secret_empresa:str):
-    """
+    '''
     Altera as chaves de API utilizadas para a emissão de notas fiscais na plataforma SISNO.
 
     Esse método é responsável por modificar as chaves de API, necessárias para a emissão de notas fiscais em empresas distintas.
@@ -548,7 +751,7 @@ def alterar_empresa(token_empresa:str, token_secret_empresa:str):
 
     Raises:
         Exception: Lançada caso alguma das chaves seja inválida.
-    """
+    '''
     
     # TODO: Realizar melhores validações
     
@@ -557,11 +760,11 @@ def alterar_empresa(token_empresa:str, token_secret_empresa:str):
     if not isinstance(token_secret_empresa, str) or len(token_secret_empresa) != 166:
         raise Exception('Token Secret Empresa inválido')
     
-    HEADERS["token-empresa"]        = token_empresa
-    HEADERS["token-secret-empresa"] = token_secret_empresa
+    HEADERS['token-empresa']        = token_empresa
+    HEADERS['token-secret-empresa'] = token_secret_empresa
 
-def dict_factory(x: List[Tuple]) -> Optional[Dict]:
-    """Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.
+def _dict_factory(x: List[Tuple]) -> Optional[Dict]:
+    '''Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.
 
     Essa função é chamada automaticamente durante a conversão de uma classe para um dicionário usando `dataclasses.asdict`, 
     quando é atribuída a opção `dict_factory` como seu valor. 
@@ -575,7 +778,7 @@ def dict_factory(x: List[Tuple]) -> Optional[Dict]:
 
     Returns:
         dict ou None: Um dicionário filtrado com as chaves cujos valores são diferentes de None ou retorna None se o dicionário resultante estiver vazio.
-    """
+    '''
     dic = {k: v for (k, v) in x if v is not None}
     return dic if len(dic) > 0 else None
 

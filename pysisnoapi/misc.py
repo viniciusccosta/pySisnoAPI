@@ -1,4 +1,4 @@
-""" 
+''' 
     O módulo misc.py contém funções genéricas que não se enquadram em outros módulos.
     
     Um exemplo é a função para realizar uma requisição à API a fim de consultar informações sobre municípios. 
@@ -6,7 +6,7 @@
 
     Para utilizar as funções deste módulo, basta importá-lo da seguinte forma:  
     `from pysisnoapi import misc`
-"""
+'''
 
 # ======================================================================================================================
 from . import *
@@ -17,7 +17,7 @@ from typing import List
 # ======================================================================================================================
 @requires_emissor
 def get_municipios(uf: str, *args, **kwargs) -> List[Municipio]:
-    """Consulta os municípios de um determinado estado através de uma requisição à API.
+    '''Consulta os municípios de um determinado estado através de uma requisição à API.
 
     Essa função permite consultar os municípios de um estado específico através de uma requisição à API.
     Ela retorna uma lista de objetos Municipio contendo informações sobre cada município.
@@ -27,10 +27,10 @@ def get_municipios(uf: str, *args, **kwargs) -> List[Municipio]:
 
     Returns:
         List[Municipio]: Uma lista de objetos Municipio, representando os municípios do estado consultado.
-    """
+    '''
 
     headers  = HEADERS.copy()
-    url      = f'{URL}/unidades-federativas/{uf}/municipios'
+    url      = f'{BASE_URL}/unidades-federativas/{uf}/municipios'
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
@@ -45,16 +45,16 @@ def get_municipios(uf: str, *args, **kwargs) -> List[Municipio]:
 
 @requires_emissor
 def get_cfops(*args, **kwargs) -> List[Cfop]:
-    """Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
+    '''Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
 
     Essa função permite obter a lista completa de CFOPs (Código Fiscal de Operações e Prestações) disponíveis através de uma requisição à API.
 
     Returns:
         List[Cfop]: Uma lista de objetos Cfop, representando os CFOPs disponíveis.
-    """
+    '''
 
     headers  = HEADERS.copy()
-    url      = f'{URL}/cfops'
+    url      = f'{BASE_URL}/cfops'
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
@@ -68,8 +68,10 @@ def get_cfops(*args, **kwargs) -> List[Cfop]:
             return
 
 @requires_emissor
-def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> List[Ibpt]:
-    """
+def get_ibpts(
+    cod_desc: str, 
+    uf: str, *args, **kwargs) -> List[Ibpt]:
+    '''
     Obtém os IBPTs através de uma requisição à API.
 
     Essa função permite obter os dados de IBPTs (Impostos sobre Produtos e Serviços) para um determinado item ou código, em uma determinada UF (Unidade Federativa)
@@ -83,16 +85,16 @@ def get_ibpts(cod_desc: str, uf: str, *args, **kwargs) -> List[Ibpt]:
 
     Returns:
         List[Ibpt]: Uma lista de objetos Ibpt representando os IBPTs.
-    """
+    '''
 
     if len(cod_desc) < 4:
-        raise Exception("Código ou Descrição precisa ter no mínimo 4 caracteres")
+        raise Exception('Código ou Descrição precisa ter no mínimo 4 caracteres')
     
     headers  = HEADERS.copy()
-    headers["codigo-ou-descricao"] = cod_desc
-    headers["uf"] = uf
+    headers['codigo-ou-descricao'] = cod_desc
+    headers['uf'] = uf
 
-    url      = f'{URL}/ibpts'
+    url      = f'{BASE_URL}/ibpts'
     response = requests.get(url, headers=headers)
 
     match (response.status_code):

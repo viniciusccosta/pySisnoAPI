@@ -192,7 +192,6 @@ class PaginaNotaServico:
     def asdict(self,):
         return self.__dict__
 
-@dataclass
 class ImpostosServico(Impostos):
     issqn: &#34;Issqn&#34;
 
@@ -213,7 +212,7 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
     json_obj = json.dumps(obj_emissao_nfse, default=lambda o: o.asdict())
     
     headers = HEADERS.copy()
-    url     = f&#39;{URL}/nfse&#39;
+    url     = f&#39;{BASE_URL}/nfse&#39;
     response = requests.post(url, data=json_obj, headers=headers)
 
     match (response.status_code):
@@ -223,7 +222,17 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
             return response.text
 
 @requires_emissor
-def buscar_notas(cnpj:str=None, data_inicio:datetime=None, data_fim:datetime=None, ambiente:str=None, status:str=None, texto:str=None, pagina:str=None, qtd_por_pagina:str=None, ordencao:str=None, tipo_ordenacao:str=None, *args, **kwargs) -&gt; List[NotaFiscalServico]:
+def buscar_notas(
+    cnpj:str=None, 
+    data_inicio:datetime=None, 
+    data_fim:datetime=None, 
+    ambiente:str=None, 
+    status:str=None, 
+    texto:str=None, 
+    pagina:str=None, 
+    qtd_por_pagina:str=None, 
+    ordencao:str=None, 
+    tipo_ordenacao:str=None, *args, **kwargs) -&gt; List[NotaFiscalServico]:
     &#34;&#34;&#34;Recupera as notas fiscais de serviço.
 
     Args:
@@ -291,7 +300,7 @@ def buscar_notas(cnpj:str=None, data_inicio:datetime=None, data_fim:datetime=Non
     if tipo_ordenacao:
         headers[&#39;tipoOrdenacao&#39;] = tipo_ordenacao
 
-    url = f&#39;{URL}/nfse&#39;
+    url = f&#39;{BASE_URL}/nfse&#39;
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
@@ -317,7 +326,7 @@ def recuperar_dados(id_nfse:int, *args, **kwargs):
         raise ValueError(&#34;Necessário informar um ID de NFSe válido.&#34;)
     
     headers  = HEADERS.copy()
-    url      = f&#39;{URL}/nfse/{id_nfse}&#39;
+    url      = f&#39;{BASE_URL}/nfse/{id_nfse}&#39;
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
@@ -399,7 +408,17 @@ def cancelar(*args, **kwargs):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@requires_emissor
-def buscar_notas(cnpj:str=None, data_inicio:datetime=None, data_fim:datetime=None, ambiente:str=None, status:str=None, texto:str=None, pagina:str=None, qtd_por_pagina:str=None, ordencao:str=None, tipo_ordenacao:str=None, *args, **kwargs) -&gt; List[NotaFiscalServico]:
+def buscar_notas(
+    cnpj:str=None, 
+    data_inicio:datetime=None, 
+    data_fim:datetime=None, 
+    ambiente:str=None, 
+    status:str=None, 
+    texto:str=None, 
+    pagina:str=None, 
+    qtd_por_pagina:str=None, 
+    ordencao:str=None, 
+    tipo_ordenacao:str=None, *args, **kwargs) -&gt; List[NotaFiscalServico]:
     &#34;&#34;&#34;Recupera as notas fiscais de serviço.
 
     Args:
@@ -467,7 +486,7 @@ def buscar_notas(cnpj:str=None, data_inicio:datetime=None, data_fim:datetime=Non
     if tipo_ordenacao:
         headers[&#39;tipoOrdenacao&#39;] = tipo_ordenacao
 
-    url = f&#39;{URL}/nfse&#39;
+    url = f&#39;{BASE_URL}/nfse&#39;
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
@@ -531,7 +550,7 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
     json_obj = json.dumps(obj_emissao_nfse, default=lambda o: o.asdict())
     
     headers = HEADERS.copy()
-    url     = f&#39;{URL}/nfse&#39;
+    url     = f&#39;{BASE_URL}/nfse&#39;
     response = requests.post(url, data=json_obj, headers=headers)
 
     match (response.status_code):
@@ -560,7 +579,7 @@ def recuperar_dados(id_nfse:int, *args, **kwargs):
         raise ValueError(&#34;Necessário informar um ID de NFSe válido.&#34;)
     
     headers  = HEADERS.copy()
-    url      = f&#39;{URL}/nfse/{id_nfse}&#39;
+    url      = f&#39;{BASE_URL}/nfse/{id_nfse}&#39;
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
@@ -634,16 +653,15 @@ def retransmitir(*args, **kwargs):
 </dd>
 <dt id="pysisnoapi.nfse.ImpostosServico"><code class="flex name class">
 <span>class <span class="ident">ImpostosServico</span></span>
-<span>(</span><span>pis: Pis, cofins: Cofins, issqn: Issqn)</span>
+<span>(</span><span>pis: Pis, cofins: Cofins)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>ImpostosServico(pis: 'Pis', cofins: 'Cofins', issqn: 'Issqn')</p></div>
+<div class="desc"><p>Classe Base para as Classes de Impostos de Produtos e Serviços.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class ImpostosServico(Impostos):
+<pre><code class="python">class ImpostosServico(Impostos):
     issqn: &#34;Issqn&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>

@@ -46,25 +46,112 @@
 # Imports:
 import os
 import functools
-from dotenv import load_dotenv
+
+from dotenv      import load_dotenv
 from dataclasses import dataclass, asdict
-from typing import Optional, List, Tuple, Dict
-from datetime import datetime
-from dateutil import parser
-# from pydantic import BaseModel, validator
+from typing      import Optional, List, Tuple, Dict
+from datetime    import datetime
+from dateutil    import parser
 
 # ======================================================================================================================
 # Globals:
 load_dotenv()
 
-URL     = &#34;https://homolog.arkaonline.com.br/nfe-service&#34;               # TODO: Provisório, em breve voltará para &#39;https://homolog.sisno.com.br/nfe-service/&#39;
-HEADERS = {
-    &#34;token-emissor&#34;         : os.getenv(&#34;token-emissor&#34;, &#34;&#34;),
+BASE_URL = &#34;https://homolog.arkaonline.com.br/nfe-service&#34;               # TODO: Provisório, em breve voltará para &#39;https://homolog.sisno.com.br/nfe-service/&#39;
+HEADERS  = {
+    &#34;token-emissor&#34;         : os.getenv(&#34;token-emissor&#34;       , &#34;&#34;),
     &#34;token-secret-emissor&#34;  : os.getenv(&#34;token-secret-emissor&#34;, &#34;&#34;),
-    &#34;token-empresa&#34;         : os.getenv(&#34;token-empresa&#34;, &#34;&#34;),
+    &#34;token-empresa&#34;         : os.getenv(&#34;token-empresa&#34;       , &#34;&#34;),
     &#34;token-secret-empresa&#34;  : os.getenv(&#34;token-secret-empresa&#34;, &#34;&#34;),
     &#34;accept&#34;                : &#34;application/json&#34;,
     &#34;Content-Type&#34;          : &#34;application/json&#34;,
+}
+
+UNIDADES = [
+    &#39;AMPOLA&#39;,
+    &#39;BALDE&#39;
+    &#39;BANDEJ&#39;,
+    &#39;BARRA&#39;,
+    &#39;BISNAG&#39;,
+    &#39;BLOCO&#39;,
+    &#39;BOBINA&#39;,
+    &#39;BOMB&#39;,
+    &#39;CAPS&#39;,
+    &#39;CART&#39;,
+    &#39;CENTO&#39;,
+    &#39;CJ&#39;,
+    &#39;CM&#39;,
+    &#39;CM2&#39;,
+    &#39;CX&#39;,
+    &#39;CX2&#39;,
+    &#39;CX3&#39;,
+    &#39;CX5&#39;,
+    &#39;CX10&#39;,
+    &#39;CX15&#39;,
+    &#39;CX20&#39;,
+    &#39;CX25&#39;,
+    &#39;CX50&#39;,
+    &#39;CX100&#39;,
+    &#39;DISP&#39;,
+    &#39;DUZIA&#39;,
+    &#39;EMBAL&#39;,
+    &#39;FARDO&#39;,
+    &#39;FOLHA&#39;,
+    &#39;FRASCO&#39;,
+    &#39;GALAO&#39;,
+    &#39;JOGO&#39;,
+    &#39;KG&#39;,
+    &#39;KIT&#39;,
+    &#39;LATA&#39;,
+    &#39;LITRO&#39;,
+    &#39;M&#39;,
+    &#39;M2&#39;,
+    &#39;M3&#39;,
+    &#39;MILHEI&#39;,
+    &#39;ML&#39;,
+    &#39;MWH&#39;,
+    &#39;PACOTE&#39;,
+    &#39;PALETE&#39;,
+    &#39;PARES&#39;,
+    &#39;PC&#39;,
+    &#39;POTE&#39;,
+    &#39;K&#39;,
+    &#39;RESMA&#39;,
+    &#39;ROLO&#39;,
+    &#39;SACO&#39;,
+    &#39;SACOLA&#39;,
+    &#39;TAMBOR&#39;,
+    &#39;TANQUE&#39;,
+    &#39;TON&#39;,
+    &#39;TUBO&#39;,
+    &#39;UNID&#39;,
+    &#39;VASIL&#39;,
+    &#39;VIDRO&#39;,
+]
+
+FORMAS_PAGAMENTO = {
+    &#39;0&#39;: &#39;À Vista&#39;,
+    &#39;1&#39;: &#39;À Prazo&#39;,
+}
+
+MEIOS_PAGAMENTO = {
+    &#39;01&#39;: &#39;Dinheiro&#39;,
+    &#39;02&#39;: &#39;Cheque&#39;,
+    &#39;03&#39;: &#39;Cartão de crédito&#39;,
+    &#39;04&#39;: &#39;Cartão de débito&#39;,
+    &#39;05&#39;: &#39;Cartão da loja&#39;,
+    &#39;10&#39;: &#39;Vale alimentação&#39;,
+    &#39;11&#39;: &#39;Vale refeição&#39;,
+    &#39;12&#39;: &#39;Vale presente&#39;,
+    &#39;13&#39;: &#39;Vale combustível&#39;,
+    &#39;14&#39;: &#39;Duplicata mercantil&#39;,
+    &#39;15&#39;: &#39;Boleto bancário&#39;,
+    &#39;16&#39;: &#39;Depósito bancário&#39;,
+    &#39;17&#39;: &#39;Pagamento Instantaneo (PIX)&#39;,
+    &#39;18&#39;: &#39;Transferência bancária&#39;,
+    &#39;19&#39;: &#39;Programa de fidelidade (Cashback)&#39;,
+    &#39;90&#39;: &#39;Sem pagamento&#39;,
+    &#39;99&#39;: &#39;Outros&#39;,
 }
 
 # ======================================================================================================================
@@ -114,11 +201,11 @@ class BaseClass:
         Returns:
             dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
         &#34;&#34;&#34;
-        return asdict(self, dict_factory=dict_factory)
+        return asdict(self, dict_factory=_dict_factory)
 
 @dataclass
 class Cfop:
-    &#34;&#34;&#34;CFOP (Código Fiscal de Operações e Prestações)
+    &#34;&#34;&#34;Classe `CFOP` (Código Fiscal de Operações e Prestações)
     &#34;&#34;&#34;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo: Optional[str] = None
@@ -127,13 +214,14 @@ class Cfop:
 
 @dataclass
 class Cliente:
-    &#34;&#34;&#34;Geralmente é o destinatário da NFe.
+    &#34;&#34;&#34;Classe `Cliente`
+    Geralmente é o destinatário da NFe.
     &#34;&#34;&#34;
     consumidor_final: str
     contribuinte    : str
     endereco        : &#34;Endereco&#34;
     
-    pessoa_fisica   : Optional[&#34;PessoaFisica&#34;] = None
+    pessoa_fisica   : Optional[&#34;PessoaFisica&#34;]   = None
     pessoa_juridica : Optional[&#34;PessoaJuridica&#34;] = None
     
     id              : Optional[int] = None
@@ -141,73 +229,66 @@ class Cliente:
     telefone        : Optional[str] = None
     email           : Optional[str] = None
     faz_retencao    : Optional[str] = None
+        
+    def __post_init__(self):        
+        self.validate_pessoa()
+        self.validate_consumidor_final()
+        self.validate_contribuinte()
     
-    # @validator(&#39;pessoa_juridica&#39;)
-    # def validate_pessoa_juridica(cls, value, values):
-    #     if not isinstance(value, PessoaJuridica):
-    #         raise TypeError(&#34;Pessoa Juridica deve ser um objeto da classe PessoaJuridica&#34;)
-    #     if value and values.get(&#39;pessoa_fisica&#39;):
-    #         raise ValueError(&#34;Informe apenas um dos campos PessoaFisica ou PessoaJuridica&#34;)
-    #     if not value and not values.get(&#39;pessoa_fisica&#39;):
-    #         raise ValueError(&#34;Informe pelo menos um dos campos PessoaFisica ou PessoaJuridica&#34;)
-    #     return value
+    def validate_pessoa(self):
+        if self.pessoa_fisica and self.pessoa_juridica:
+            raise ValueError(&#34;Informe apenas um dos campos pessoa_fisica ou pessoa_juridica&#34;)
+        if not self.pessoa_fisica and not self.pessoa_juridica:
+            raise ValueError(&#34;Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica&#34;)
     
-    # @validator(&#39;consumidor_final&#39;)
-    # def validate_consumidor_final(cls, consumidor_final):
-    #     if not isinstance(consumidor_final, str):
-    #         raise TypeError(&#34;Consumidor Final tem que ser uma string&#34;)
-    #     if consumidor_final not in [&#39;1&#39;, &#39;2&#39;,]:
-    #         raise ValueError(f&#34;Consumidor Final {consumidor_final} inválido&#34;)
-    #     return consumidor_final
+    def validate_consumidor_final(self):
+        if self.consumidor_final not in [&#39;1&#39;, &#39;2&#39;,]:
+            raise ValueError(f&#34;Consumidor Final {self.consumidor_final} inválido&#34;)
     
-    # @validator(&#39;contribuinte&#39;)
-    # def validate_contribuinte(cls, contribuinte):
-    #     if not isinstance(contribuinte, str):
-    #         raise TypeError(&#34;Contribuinte tem que ser uma string&#34;)
-    #     if contribuinte not in [&#39;1&#39;, &#39;2&#39;, &#39;9&#39;]:
-    #         raise ValueError(f&#34;Contribuinte {contribuinte} inválido&#34;)
-    #     return contribuinte
+    def validate_contribuinte(self):
+        if self.contribuinte not in [&#39;1&#39;, &#39;2&#39;, &#39;9&#39;]:
+            raise ValueError(f&#34;Contribuinte {self.contribuinte} inválido&#34;)
 
 @dataclass
 class Cofins:
     &#34;&#34;&#34;Contribuição para Financiamento da Seguridade Social.
 
-    situacao_tributaria:
-        01: Operação Tributável com Alíquota Básica
-        02: Operação Tributável com Alíquota por Unidade de Medida de Produto
-        03: Operação Tributável com Alíquota por Unidade de Medida de Produto
-        04: Operação Tributável Monofásica - Revenda a Alíquota Zero
-        05: Operação Tributável por Substituição Tributária
-        06: Operação Tributável a Alíquota Zero
-        07: Operação Isenta da Contribuição
-        08: Operação sem Incidência da Contribuição
-        09: Operação com Suspensão da Contribuição
-        49: Outras Operações de Saída
-        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno
-        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno
-        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação
-        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno
-        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação
-        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação
-        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação
-        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno
-        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno
-        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação
-        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno
-        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação
-        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação
-        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação
-        67: Crédito Presumido - Outras Operações
-        70: Operação de Aquisição sem Direito a Crédito
-        71: Operação de Aquisição com Isenção
-        72: Operação de Aquisição com Suspensão
-        73: Operação de Aquisição a Alíquota Zero
-        74: Operação de Aquisição sem Incidência da Contribuição
-        75: Operação de Aquisição por Substituição Tributária
-        98: Outras Operações de Entrada
-        99: Outras Operações
-        
-    aliquota (str): $0.0000 
+    situacao_tributaria:  
+        01: Operação Tributável com Alíquota Básica  
+        02: Operação Tributável com Alíquota por Unidade de Medida de Produto  
+        03: Operação Tributável com Alíquota por Unidade de Medida de Produto  
+        04: Operação Tributável Monofásica - Revenda a Alíquota Zero  
+        05: Operação Tributável por Substituição Tributária  
+        06: Operação Tributável a Alíquota Zero  
+        07: Operação Isenta da Contribuição  
+        08: Operação sem Incidência da Contribuição  
+        09: Operação com Suspensão da Contribuição  
+        49: Outras Operações de Saída  
+        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno  
+        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno  
+        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação  
+        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno  
+        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação  
+        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação  
+        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação  
+        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno  
+        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno  
+        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação  
+        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno  
+        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação  
+        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação  
+        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação  
+        67: Crédito Presumido - Outras Operações  
+        70: Operação de Aquisição sem Direito a Crédito  
+        71: Operação de Aquisição com Isenção  
+        72: Operação de Aquisição com Suspensão  
+        73: Operação de Aquisição a Alíquota Zero  
+        74: Operação de Aquisição sem Incidência da Contribuição  
+        75: Operação de Aquisição por Substituição Tributária  
+        98: Outras Operações de Entrada  
+        99: Outras Operações  
+    
+    aliquota (str): $0.0000  
         Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
     
     aliquota_st (str): $0.0000
@@ -271,6 +352,9 @@ class Empresa:
 
 @dataclass
 class Endereco:
+    &#34;&#34;&#34;Classe `Endereço`
+    &#34;&#34;&#34;
+    
     codigo_pais        : str
     descricao_pais     : str
     bairro             : str
@@ -316,7 +400,7 @@ class Ibpt:
 
 @dataclass
 class Icms:
-    &#34;&#34;&#34;Imposto sobre Circulação de Mercadorias e Serviços
+    &#34;&#34;&#34;Classe `ICMS` (Imposto sobre Circulação de Mercadorias e Serviços)
     &#34;&#34;&#34;
     situacao_tributaria                       : str
     
@@ -345,7 +429,7 @@ class Impostos:
 
 @dataclass
 class Ipi:
-    &#34;&#34;&#34;Imposto Sobre Produtos Industrializados
+    &#34;&#34;&#34;Classe `IPI` (Imposto Sobre Produtos Industrializados)
 
     situacao_tributaria:  
         00: Entrada com Recuperação de Crédito  
@@ -395,7 +479,7 @@ class Issqn:
 
 @dataclass
 class Municipio:
-    &#34;&#34;&#34;Classe Município
+    &#34;&#34;&#34;Classe `Município`
     &#34;&#34;&#34;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo_ibge : Optional[int] = None
@@ -407,6 +491,10 @@ class Municipio:
 
 @dataclass
 class NotaFiscal:
+    &#34;&#34;&#34;Classe `Nota Fiscal`.
+    
+    Até 01/2023 essa classe também era usada para Notas Fiscais de Serviço (NFSe).
+    &#34;&#34;&#34;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                      : Optional[int]         = None
     empresa                 : Optional[&#39;Empresa&#39;]   = None
@@ -462,7 +550,7 @@ class Observacao:
 
 @dataclass
 class PessoaFisica:
-    &#34;&#34;&#34;Classe Pessoa Física
+    &#34;&#34;&#34;Classe `Pessoa Física`
     
     Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
     &#34;&#34;&#34;
@@ -471,21 +559,25 @@ class PessoaFisica:
     cpf           : Optional[str] = None
     id_estrangeiro: Optional[str] = None
     
-    # TODO: Só pode passar um dos dois: &#34;cpf&#34; ou &#34;id_estrangeiro&#34;
+    def __post_init__(self):
+        if self.cpf and self.id_estrangeiro:
+            raise ValueError(&#34;Informe somente um dos campos: cpf ou id_estrangeiro&#34;)
+        if not self.cpf and not self.id_estrangeiro:
+            raise ValueError(&#34;Informe um dos campos: cpf ou id_estrangeiro&#34;)
 
 @dataclass
 class PessoaJuridica:
-    &#34;&#34;&#34;Classe Pessoa Jurídica
+    &#34;&#34;&#34;Classe `Pessoa Jurídica`
     &#34;&#34;&#34;
     cnpj        : str
     razao_social: str
     
-    im          : Optional[str]
-    suframa     : Optional[str]
+    im          : Optional[str] = None
+    suframa     : Optional[str] = None
 
 @dataclass
 class Pis:
-    &#34;&#34;&#34;Programas de Integração Social e de Formação do Patrimônio do Servidor Público (PIS/PASEP)
+    &#34;&#34;&#34;Classe `PIS` (Programas de Integração Social)
 
     situacao_tributaria (str): Situação Tributária  
         01: Operação Tributável com Alíquota Básica  
@@ -525,7 +617,7 @@ class Pis:
     aliquota (str): $0.0000 
         Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
     
-    aliquota_st (str): $0.0000
+    aliquota_st (str): $0.0000  
     
     aliquota_retencao (str): $0.0000
     
@@ -546,18 +638,18 @@ class RetencaoIcmsTransporte:
         dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
         return dados if len(dados) &gt; 0 else None
 
+@dataclass
 class Transporte:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
+    ...
 
 @dataclass
 class Uf:
+    &#34;&#34;&#34;Classe `UF`(Unidade Federativa)
+
+    Returns:
+        _type_: _description_
+    &#34;&#34;&#34;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     # TODO: Até o dia 01/06/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
     codigo_ibge: Optional[str]  = None
@@ -594,7 +686,7 @@ def alterar_empresa(token_empresa:str, token_secret_empresa:str):
     HEADERS[&#34;token-empresa&#34;]        = token_empresa
     HEADERS[&#34;token-secret-empresa&#34;] = token_secret_empresa
 
-def dict_factory(x: List[Tuple]) -&gt; Optional[Dict]:
+def _dict_factory(x: List[Tuple]) -&gt; Optional[Dict]:
     &#34;&#34;&#34;Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.
 
     Essa função é chamada automaticamente durante a conversão de uma classe para um dicionário usando `dataclasses.asdict`, 
@@ -687,49 +779,6 @@ As chaves de API são utilizadas pela plataforma SISNO para identificar a empres
     HEADERS[&#34;token-secret-empresa&#34;] = token_secret_empresa</code></pre>
 </details>
 </dd>
-<dt id="pysisnoapi.dict_factory"><code class="name flex">
-<span>def <span class="ident">dict_factory</span></span>(<span>x: List[Tuple]) ‑> Optional[Dict]</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.</p>
-<p>Essa função é chamada automaticamente durante a conversão de uma classe para um dicionário usando <code>dataclasses.asdict</code>,
-quando é atribuída a opção <code><a title="pysisnoapi.dict_factory" href="#pysisnoapi.dict_factory">dict_factory()</a></code> como seu valor. </p>
-<p>No caso, estamos usando essa função no método <code>as_filtered_dict</code> da classe <code><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></code>.</p>
-<p>A função recebe uma lista de tuplas contendo pares chave-valor e retorna um dicionário contendo apenas as chaves cujos valores são diferentes de None.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>List[Tuple]</code></dt>
-<dd>Uma lista de tuplas contendo pares chave-valor.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>dict ou None</code></dt>
-<dd>Um dicionário filtrado com as chaves cujos valores são diferentes de None ou retorna None se o dicionário resultante estiver vazio.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def dict_factory(x: List[Tuple]) -&gt; Optional[Dict]:
-    &#34;&#34;&#34;Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.
-
-    Essa função é chamada automaticamente durante a conversão de uma classe para um dicionário usando `dataclasses.asdict`, 
-    quando é atribuída a opção `dict_factory` como seu valor. 
-    
-    No caso, estamos usando essa função no método `as_filtered_dict` da classe `BaseClass`.
-    
-    A função recebe uma lista de tuplas contendo pares chave-valor e retorna um dicionário contendo apenas as chaves cujos valores são diferentes de None.
-
-    Args:
-        x (List[Tuple]): Uma lista de tuplas contendo pares chave-valor.
-
-    Returns:
-        dict ou None: Um dicionário filtrado com as chaves cujos valores são diferentes de None ou retorna None se o dicionário resultante estiver vazio.
-    &#34;&#34;&#34;
-    dic = {k: v for (k, v) in x if v is not None}
-    return dic if len(dic) &gt; 0 else None</code></pre>
-</details>
-</dd>
 <dt id="pysisnoapi.requires_emissor"><code class="name flex">
 <span>def <span class="ident">requires_emissor</span></span>(<span>func)</span>
 </code></dt>
@@ -809,7 +858,7 @@ class BaseClass:
         Returns:
             dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
         &#34;&#34;&#34;
-        return asdict(self, dict_factory=dict_factory)</code></pre>
+        return asdict(self, dict_factory=_dict_factory)</code></pre>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -845,7 +894,7 @@ desde que esses valores não sejam nulos (None).</p>
     Returns:
         dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
     &#34;&#34;&#34;
-    return asdict(self, dict_factory=dict_factory)</code></pre>
+    return asdict(self, dict_factory=_dict_factory)</code></pre>
 </details>
 </dd>
 </dl>
@@ -855,14 +904,14 @@ desde que esses valores não sejam nulos (None).</p>
 <span>(</span><span>codigo: Optional[str] = None, descricao: Optional[str] = None, aplicacao: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>CFOP (Código Fiscal de Operações e Prestações)</p></div>
+<div class="desc"><p>Classe <code>CFOP</code> (Código Fiscal de Operações e Prestações)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
 class Cfop:
-    &#34;&#34;&#34;CFOP (Código Fiscal de Operações e Prestações)
+    &#34;&#34;&#34;Classe `CFOP` (Código Fiscal de Operações e Prestações)
     &#34;&#34;&#34;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo: Optional[str] = None
@@ -890,20 +939,22 @@ class Cfop:
 <span>(</span><span>consumidor_final: str, contribuinte: str, endereco: <a title="pysisnoapi.Endereco" href="#pysisnoapi.Endereco">Endereco</a>, pessoa_fisica: Optional[ForwardRef('<a title="pysisnoapi.PessoaFisica" href="#pysisnoapi.PessoaFisica">PessoaFisica</a>')] = None, pessoa_juridica: Optional[ForwardRef('<a title="pysisnoapi.PessoaJuridica" href="#pysisnoapi.PessoaJuridica">PessoaJuridica</a>')] = None, id: Optional[int] = None, ie: Optional[str] = None, telefone: Optional[str] = None, email: Optional[str] = None, faz_retencao: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Geralmente é o destinatário da NFe.</p></div>
+<div class="desc"><p>Classe <code><a title="pysisnoapi.Cliente" href="#pysisnoapi.Cliente">Cliente</a></code>
+Geralmente é o destinatário da NFe.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
 class Cliente:
-    &#34;&#34;&#34;Geralmente é o destinatário da NFe.
+    &#34;&#34;&#34;Classe `Cliente`
+    Geralmente é o destinatário da NFe.
     &#34;&#34;&#34;
     consumidor_final: str
     contribuinte    : str
     endereco        : &#34;Endereco&#34;
     
-    pessoa_fisica   : Optional[&#34;PessoaFisica&#34;] = None
+    pessoa_fisica   : Optional[&#34;PessoaFisica&#34;]   = None
     pessoa_juridica : Optional[&#34;PessoaJuridica&#34;] = None
     
     id              : Optional[int] = None
@@ -911,32 +962,25 @@ class Cliente:
     telefone        : Optional[str] = None
     email           : Optional[str] = None
     faz_retencao    : Optional[str] = None
+        
+    def __post_init__(self):        
+        self.validate_pessoa()
+        self.validate_consumidor_final()
+        self.validate_contribuinte()
     
-    # @validator(&#39;pessoa_juridica&#39;)
-    # def validate_pessoa_juridica(cls, value, values):
-    #     if not isinstance(value, PessoaJuridica):
-    #         raise TypeError(&#34;Pessoa Juridica deve ser um objeto da classe PessoaJuridica&#34;)
-    #     if value and values.get(&#39;pessoa_fisica&#39;):
-    #         raise ValueError(&#34;Informe apenas um dos campos PessoaFisica ou PessoaJuridica&#34;)
-    #     if not value and not values.get(&#39;pessoa_fisica&#39;):
-    #         raise ValueError(&#34;Informe pelo menos um dos campos PessoaFisica ou PessoaJuridica&#34;)
-    #     return value
+    def validate_pessoa(self):
+        if self.pessoa_fisica and self.pessoa_juridica:
+            raise ValueError(&#34;Informe apenas um dos campos pessoa_fisica ou pessoa_juridica&#34;)
+        if not self.pessoa_fisica and not self.pessoa_juridica:
+            raise ValueError(&#34;Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica&#34;)
     
-    # @validator(&#39;consumidor_final&#39;)
-    # def validate_consumidor_final(cls, consumidor_final):
-    #     if not isinstance(consumidor_final, str):
-    #         raise TypeError(&#34;Consumidor Final tem que ser uma string&#34;)
-    #     if consumidor_final not in [&#39;1&#39;, &#39;2&#39;,]:
-    #         raise ValueError(f&#34;Consumidor Final {consumidor_final} inválido&#34;)
-    #     return consumidor_final
+    def validate_consumidor_final(self):
+        if self.consumidor_final not in [&#39;1&#39;, &#39;2&#39;,]:
+            raise ValueError(f&#34;Consumidor Final {self.consumidor_final} inválido&#34;)
     
-    # @validator(&#39;contribuinte&#39;)
-    # def validate_contribuinte(cls, contribuinte):
-    #     if not isinstance(contribuinte, str):
-    #         raise TypeError(&#34;Contribuinte tem que ser uma string&#34;)
-    #     if contribuinte not in [&#39;1&#39;, &#39;2&#39;, &#39;9&#39;]:
-    #         raise ValueError(f&#34;Contribuinte {contribuinte} inválido&#34;)
-    #     return contribuinte</code></pre>
+    def validate_contribuinte(self):
+        if self.contribuinte not in [&#39;1&#39;, &#39;2&#39;, &#39;9&#39;]:
+            raise ValueError(f&#34;Contribuinte {self.contribuinte} inválido&#34;)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -981,6 +1025,53 @@ class Cliente:
 <div class="desc"></div>
 </dd>
 </dl>
+<h3>Methods</h3>
+<dl>
+<dt id="pysisnoapi.Cliente.validate_consumidor_final"><code class="name flex">
+<span>def <span class="ident">validate_consumidor_final</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_consumidor_final(self):
+    if self.consumidor_final not in [&#39;1&#39;, &#39;2&#39;,]:
+        raise ValueError(f&#34;Consumidor Final {self.consumidor_final} inválido&#34;)</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.Cliente.validate_contribuinte"><code class="name flex">
+<span>def <span class="ident">validate_contribuinte</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_contribuinte(self):
+    if self.contribuinte not in [&#39;1&#39;, &#39;2&#39;, &#39;9&#39;]:
+        raise ValueError(f&#34;Contribuinte {self.contribuinte} inválido&#34;)</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.Cliente.validate_pessoa"><code class="name flex">
+<span>def <span class="ident">validate_pessoa</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_pessoa(self):
+    if self.pessoa_fisica and self.pessoa_juridica:
+        raise ValueError(&#34;Informe apenas um dos campos pessoa_fisica ou pessoa_juridica&#34;)
+    if not self.pessoa_fisica and not self.pessoa_juridica:
+        raise ValueError(&#34;Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica&#34;)</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.Cofins"><code class="flex name class">
 <span>class <span class="ident">Cofins</span></span>
@@ -988,41 +1079,42 @@ class Cliente:
 </code></dt>
 <dd>
 <div class="desc"><p>Contribuição para Financiamento da Seguridade Social.</p>
-<p>situacao_tributaria:
-01: Operação Tributável com Alíquota Básica
-02: Operação Tributável com Alíquota por Unidade de Medida de Produto
-03: Operação Tributável com Alíquota por Unidade de Medida de Produto
-04: Operação Tributável Monofásica - Revenda a Alíquota Zero
-05: Operação Tributável por Substituição Tributária
-06: Operação Tributável a Alíquota Zero
-07: Operação Isenta da Contribuição
-08: Operação sem Incidência da Contribuição
-09: Operação com Suspensão da Contribuição
-49: Outras Operações de Saída
-50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno
-51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno
-52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação
-53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno
-54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação
-55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação
-56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação
-60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno
-61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno
-62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação
-63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno
-64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação
-65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação
-66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação
-67: Crédito Presumido - Outras Operações
-70: Operação de Aquisição sem Direito a Crédito
-71: Operação de Aquisição com Isenção
-72: Operação de Aquisição com Suspensão
-73: Operação de Aquisição a Alíquota Zero
-74: Operação de Aquisição sem Incidência da Contribuição
-75: Operação de Aquisição por Substituição Tributária
-98: Outras Operações de Entrada
-99: Outras Operações</p>
-<p>aliquota (str): $0.0000
+<p>situacao_tributaria:<br>
+01: Operação Tributável com Alíquota Básica<br>
+02: Operação Tributável com Alíquota por Unidade de Medida de Produto<br>
+03: Operação Tributável com Alíquota por Unidade de Medida de Produto<br>
+04: Operação Tributável Monofásica - Revenda a Alíquota Zero<br>
+05: Operação Tributável por Substituição Tributária<br>
+06: Operação Tributável a Alíquota Zero<br>
+07: Operação Isenta da Contribuição<br>
+08: Operação sem Incidência da Contribuição<br>
+09: Operação com Suspensão da Contribuição<br>
+49: Outras Operações de Saída<br>
+50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno<br>
+51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno<br>
+52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação<br>
+53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno<br>
+54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação<br>
+55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação<br>
+56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação<br>
+60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno<br>
+61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno<br>
+62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação<br>
+63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno<br>
+64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação<br>
+65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação<br>
+66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação<br>
+67: Crédito Presumido - Outras Operações<br>
+70: Operação de Aquisição sem Direito a Crédito<br>
+71: Operação de Aquisição com Isenção<br>
+72: Operação de Aquisição com Suspensão<br>
+73: Operação de Aquisição a Alíquota Zero<br>
+74: Operação de Aquisição sem Incidência da Contribuição<br>
+75: Operação de Aquisição por Substituição Tributária<br>
+98: Outras Operações de Entrada<br>
+99: Outras Operações
+</p>
+<p>aliquota (str): $0.0000<br>
 Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade
 </p>
 <p>aliquota_st (str): $0.0000</p>
@@ -1035,42 +1127,42 @@ Passar percentual quando tributado pela alíquota ou em reais quando tributado p
 class Cofins:
     &#34;&#34;&#34;Contribuição para Financiamento da Seguridade Social.
 
-    situacao_tributaria:
-        01: Operação Tributável com Alíquota Básica
-        02: Operação Tributável com Alíquota por Unidade de Medida de Produto
-        03: Operação Tributável com Alíquota por Unidade de Medida de Produto
-        04: Operação Tributável Monofásica - Revenda a Alíquota Zero
-        05: Operação Tributável por Substituição Tributária
-        06: Operação Tributável a Alíquota Zero
-        07: Operação Isenta da Contribuição
-        08: Operação sem Incidência da Contribuição
-        09: Operação com Suspensão da Contribuição
-        49: Outras Operações de Saída
-        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno
-        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno
-        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação
-        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno
-        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação
-        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação
-        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação
-        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno
-        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno
-        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação
-        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno
-        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação
-        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação
-        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação
-        67: Crédito Presumido - Outras Operações
-        70: Operação de Aquisição sem Direito a Crédito
-        71: Operação de Aquisição com Isenção
-        72: Operação de Aquisição com Suspensão
-        73: Operação de Aquisição a Alíquota Zero
-        74: Operação de Aquisição sem Incidência da Contribuição
-        75: Operação de Aquisição por Substituição Tributária
-        98: Outras Operações de Entrada
-        99: Outras Operações
-        
-    aliquota (str): $0.0000 
+    situacao_tributaria:  
+        01: Operação Tributável com Alíquota Básica  
+        02: Operação Tributável com Alíquota por Unidade de Medida de Produto  
+        03: Operação Tributável com Alíquota por Unidade de Medida de Produto  
+        04: Operação Tributável Monofásica - Revenda a Alíquota Zero  
+        05: Operação Tributável por Substituição Tributária  
+        06: Operação Tributável a Alíquota Zero  
+        07: Operação Isenta da Contribuição  
+        08: Operação sem Incidência da Contribuição  
+        09: Operação com Suspensão da Contribuição  
+        49: Outras Operações de Saída  
+        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno  
+        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno  
+        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação  
+        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno  
+        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação  
+        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação  
+        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação  
+        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno  
+        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno  
+        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação  
+        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno  
+        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação  
+        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação  
+        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação  
+        67: Crédito Presumido - Outras Operações  
+        70: Operação de Aquisição sem Direito a Crédito  
+        71: Operação de Aquisição com Isenção  
+        72: Operação de Aquisição com Suspensão  
+        73: Operação de Aquisição a Alíquota Zero  
+        74: Operação de Aquisição sem Incidência da Contribuição  
+        75: Operação de Aquisição por Substituição Tributária  
+        98: Outras Operações de Entrada  
+        99: Outras Operações  
+    
+    aliquota (str): $0.0000  
         Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
     
     aliquota_st (str): $0.0000
@@ -1314,13 +1406,16 @@ def from_json(cls, **kwargs):
 <span>(</span><span>codigo_pais: str, descricao_pais: str, bairro: str, logradouro: str, numero: str, id: Optional[int] = None, uf: Optional[str] = None, codigo_municipio: Optional[str] = None, descricao_municipio: Optional[str] = None, cep: Optional[str] = None, complemento: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Endereco(codigo_pais: str, descricao_pais: str, bairro: str, logradouro: str, numero: str, id: Optional[int] = None, uf: Optional[str] = None, codigo_municipio: Optional[str] = None, descricao_municipio: Optional[str] = None, cep: Optional[str] = None, complemento: Optional[str] = None)</p></div>
+<div class="desc"><p>Classe <code>Endereço</code></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
 class Endereco:
+    &#34;&#34;&#34;Classe `Endereço`
+    &#34;&#34;&#34;
+    
     codigo_pais        : str
     descricao_pais     : str
     bairro             : str
@@ -1523,14 +1618,14 @@ def from_json(cls, **kwargs):
 <span>(</span><span>situacao_tributaria: str, codigo_cfop: Optional[str] = None, aliquota_icms: Optional[str] = None, percentual_reducao_bc_icms: Optional[str] = None, aliquota_fcp: Optional[str] = None, percentual_reducao_bc_icms_st: Optional[str] = None, aliquota_aplicavel_calculo_credito: Optional[str] = None, aliquota_icms_st: Optional[str] = None, aliquota_fcp_st: Optional[str] = None, percentual_margem_valor_agregado_icms_st: Optional[str] = None, percentual_diferimento: Optional[str] = None, percentual_desonerado: Optional[str] = None, motivo_desoneracao: Optional[str] = None, percentual_icms_st_retido: Optional[str] = None, utilizar_tabela_aliquotas_interestaduais: Optional[str] = None, utilizar_aliquota_interestadual_importacao: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Imposto sobre Circulação de Mercadorias e Serviços</p></div>
+<div class="desc"><p>Classe <code>ICMS</code> (Imposto sobre Circulação de Mercadorias e Serviços)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
 class Icms:
-    &#34;&#34;&#34;Imposto sobre Circulação de Mercadorias e Serviços
+    &#34;&#34;&#34;Classe `ICMS` (Imposto sobre Circulação de Mercadorias e Serviços)
     &#34;&#34;&#34;
     situacao_tributaria                       : str
     
@@ -1657,7 +1752,7 @@ class Impostos:
 <span>(</span><span>situacao_tributaria: str, aliquota: Optional[str] = None, codigo_enquadramento: Optional[str] = None, codigo_selo: Optional[str] = None, qtd_selo: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Imposto Sobre Produtos Industrializados</p>
+<div class="desc"><p>Classe <code>IPI</code> (Imposto Sobre Produtos Industrializados)</p>
 <p>situacao_tributaria:<br>
 00: Entrada com Recuperação de Crédito<br>
 01: Entrada Tributada com Alíquota Zero<br>
@@ -1679,7 +1774,7 @@ class Impostos:
 </summary>
 <pre><code class="python">@dataclass
 class Ipi:
-    &#34;&#34;&#34;Imposto Sobre Produtos Industrializados
+    &#34;&#34;&#34;Classe `IPI` (Imposto Sobre Produtos Industrializados)
 
     situacao_tributaria:  
         00: Entrada com Recuperação de Crédito  
@@ -1792,14 +1887,14 @@ class Ipi:
 <span>(</span><span>codigo_ibge: Optional[int] = None, descricao: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Classe Município</p></div>
+<div class="desc"><p>Classe <code>Município</code></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
 class Municipio:
-    &#34;&#34;&#34;Classe Município
+    &#34;&#34;&#34;Classe `Município`
     &#34;&#34;&#34;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo_ibge : Optional[int] = None
@@ -1843,13 +1938,18 @@ def from_json(cls, **kwargs):
 <span>(</span><span>id: Optional[int] = None, empresa: Optional[ForwardRef('<a title="pysisnoapi.Empresa" href="#pysisnoapi.Empresa">Empresa</a>')] = None, tipo: Optional[str] = None, serie: Optional[str] = None, numero_nota: Optional[str] = None, chave_acesso: Optional[str] = None, protocolo: Optional[str] = None, nome_destinatario: Optional[str] = None, uf_destinatario: Optional[str] = None, cpf_cnpj_destinatario: Optional[str] = None, valor_total: Optional[str] = None, status: Optional[str] = None, motivo: Optional[str] = None, data_emissao: Optional[datetime.datetime] = None, data_autorizacao: Optional[datetime.datetime] = None, modelo: Optional[str] = None, ambiente: Optional[str] = None, xml: Optional[str] = None, json_objeto_nfe: Optional[str] = None, tipo_emissao: Optional[str] = None, numero_lote: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>NotaFiscal(id: Optional[int] = None, empresa: Optional[ForwardRef('Empresa')] = None, tipo: Optional[str] = None, serie: Optional[str] = None, numero_nota: Optional[str] = None, chave_acesso: Optional[str] = None, protocolo: Optional[str] = None, nome_destinatario: Optional[str] = None, uf_destinatario: Optional[str] = None, cpf_cnpj_destinatario: Optional[str] = None, valor_total: Optional[str] = None, status: Optional[str] = None, motivo: Optional[str] = None, data_emissao: Optional[datetime.datetime] = None, data_autorizacao: Optional[datetime.datetime] = None, modelo: Optional[str] = None, ambiente: Optional[str] = None, xml: Optional[str] = None, json_objeto_nfe: Optional[str] = None, tipo_emissao: Optional[str] = None, numero_lote: Optional[str] = None)</p></div>
+<div class="desc"><p>Classe <code>Nota Fiscal</code>.</p>
+<p>Até 01/2023 essa classe também era usada para Notas Fiscais de Serviço (NFSe).</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
 class NotaFiscal:
+    &#34;&#34;&#34;Classe `Nota Fiscal`.
+    
+    Até 01/2023 essa classe também era usada para Notas Fiscais de Serviço (NFSe).
+    &#34;&#34;&#34;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                      : Optional[int]         = None
     empresa                 : Optional[&#39;Empresa&#39;]   = None
@@ -2056,7 +2156,7 @@ def from_json(cls, **kwargs):
 <span>(</span><span>nome_completo: str, cpf: Optional[str] = None, id_estrangeiro: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Classe Pessoa Física</p>
+<div class="desc"><p>Classe <code>Pessoa Física</code></p>
 <p>Deve ser informado apenas um dos campos [cpf, id_estrangeiro]</p></div>
 <details class="source">
 <summary>
@@ -2064,7 +2164,7 @@ def from_json(cls, **kwargs):
 </summary>
 <pre><code class="python">@dataclass
 class PessoaFisica:
-    &#34;&#34;&#34;Classe Pessoa Física
+    &#34;&#34;&#34;Classe `Pessoa Física`
     
     Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
     &#34;&#34;&#34;
@@ -2073,7 +2173,11 @@ class PessoaFisica:
     cpf           : Optional[str] = None
     id_estrangeiro: Optional[str] = None
     
-    # TODO: Só pode passar um dos dois: &#34;cpf&#34; ou &#34;id_estrangeiro&#34;</code></pre>
+    def __post_init__(self):
+        if self.cpf and self.id_estrangeiro:
+            raise ValueError(&#34;Informe somente um dos campos: cpf ou id_estrangeiro&#34;)
+        if not self.cpf and not self.id_estrangeiro:
+            raise ValueError(&#34;Informe um dos campos: cpf ou id_estrangeiro&#34;)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -2093,23 +2197,23 @@ class PessoaFisica:
 </dd>
 <dt id="pysisnoapi.PessoaJuridica"><code class="flex name class">
 <span>class <span class="ident">PessoaJuridica</span></span>
-<span>(</span><span>cnpj: str, razao_social: str, im: Optional[str], suframa: Optional[str])</span>
+<span>(</span><span>cnpj: str, razao_social: str, im: Optional[str] = None, suframa: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Classe Pessoa Jurídica</p></div>
+<div class="desc"><p>Classe <code>Pessoa Jurídica</code></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
 class PessoaJuridica:
-    &#34;&#34;&#34;Classe Pessoa Jurídica
+    &#34;&#34;&#34;Classe `Pessoa Jurídica`
     &#34;&#34;&#34;
     cnpj        : str
     razao_social: str
     
-    im          : Optional[str]
-    suframa     : Optional[str]</code></pre>
+    im          : Optional[str] = None
+    suframa     : Optional[str] = None</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -2136,7 +2240,7 @@ class PessoaJuridica:
 <span>(</span><span>situacao_tributaria: str, aliquota: Optional[str] = None, aliquota_st: Optional[str] = None, aliquota_retencao: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Programas de Integração Social e de Formação do Patrimônio do Servidor Público (PIS/PASEP)</p>
+<div class="desc"><p>Classe <code>PIS</code> (Programas de Integração Social)</p>
 <p>situacao_tributaria (str): Situação Tributária<br>
 01: Operação Tributável com Alíquota Básica<br>
 02: Operação Tributável com Alíquota por Unidade de Medida de Produto<br>
@@ -2175,7 +2279,8 @@ class PessoaJuridica:
 <p>aliquota (str): $0.0000
 Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade
 </p>
-<p>aliquota_st (str): $0.0000</p>
+<p>aliquota_st (str): $0.0000
+</p>
 <p>aliquota_retencao (str): $0.0000</p></div>
 <details class="source">
 <summary>
@@ -2183,7 +2288,7 @@ Passar percentual quando tributado pela alíquota ou em reais quando tributado p
 </summary>
 <pre><code class="python">@dataclass
 class Pis:
-    &#34;&#34;&#34;Programas de Integração Social e de Formação do Patrimônio do Servidor Público (PIS/PASEP)
+    &#34;&#34;&#34;Classe `PIS` (Programas de Integração Social)
 
     situacao_tributaria (str): Situação Tributária  
         01: Operação Tributável com Alíquota Básica  
@@ -2223,7 +2328,7 @@ class Pis:
     aliquota (str): $0.0000 
         Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
     
-    aliquota_st (str): $0.0000
+    aliquota_st (str): $0.0000  
     
     aliquota_retencao (str): $0.0000
     
@@ -2295,55 +2400,41 @@ class Pis:
 </dd>
 <dt id="pysisnoapi.Transporte"><code class="flex name class">
 <span>class <span class="ident">Transporte</span></span>
-<span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Transporte()</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Transporte:
+<pre><code class="python">@dataclass
+class Transporte:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
+    ...</code></pre>
 </details>
-<h3>Methods</h3>
-<dl>
-<dt id="pysisnoapi.Transporte.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def asdict(self):
-    dados = self.__dict__
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
-</details>
-</dd>
-</dl>
 </dd>
 <dt id="pysisnoapi.Uf"><code class="flex name class">
 <span>class <span class="ident">Uf</span></span>
 <span>(</span><span>codigo_ibge: Optional[str] = None, sigla: Optional[str] = None, descricao: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Uf(codigo_ibge: Optional[str] = None, sigla: Optional[str] = None, descricao: Optional[str] = None)</p></div>
+<div class="desc"><p>Classe <code>UF</code>(Unidade Federativa)</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>_type_</code></dt>
+<dd><em>description</em></dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
 class Uf:
+    &#34;&#34;&#34;Classe `UF`(Unidade Federativa)
+
+    Returns:
+        _type_: _description_
+    &#34;&#34;&#34;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     # TODO: Até o dia 01/06/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
     codigo_ibge: Optional[str]  = None
@@ -2406,7 +2497,6 @@ def from_json(cls, **kwargs):
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="pysisnoapi.alterar_empresa" href="#pysisnoapi.alterar_empresa">alterar_empresa</a></code></li>
-<li><code><a title="pysisnoapi.dict_factory" href="#pysisnoapi.dict_factory">dict_factory</a></code></li>
 <li><code><a title="pysisnoapi.requires_emissor" href="#pysisnoapi.requires_emissor">requires_emissor</a></code></li>
 <li><code><a title="pysisnoapi.requires_empresa" href="#pysisnoapi.requires_empresa">requires_empresa</a></code></li>
 </ul>
@@ -2429,7 +2519,7 @@ def from_json(cls, **kwargs):
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Cliente" href="#pysisnoapi.Cliente">Cliente</a></code></h4>
-<ul class="two-column">
+<ul class="">
 <li><code><a title="pysisnoapi.Cliente.consumidor_final" href="#pysisnoapi.Cliente.consumidor_final">consumidor_final</a></code></li>
 <li><code><a title="pysisnoapi.Cliente.contribuinte" href="#pysisnoapi.Cliente.contribuinte">contribuinte</a></code></li>
 <li><code><a title="pysisnoapi.Cliente.email" href="#pysisnoapi.Cliente.email">email</a></code></li>
@@ -2440,6 +2530,9 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.Cliente.pessoa_fisica" href="#pysisnoapi.Cliente.pessoa_fisica">pessoa_fisica</a></code></li>
 <li><code><a title="pysisnoapi.Cliente.pessoa_juridica" href="#pysisnoapi.Cliente.pessoa_juridica">pessoa_juridica</a></code></li>
 <li><code><a title="pysisnoapi.Cliente.telefone" href="#pysisnoapi.Cliente.telefone">telefone</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.validate_consumidor_final" href="#pysisnoapi.Cliente.validate_consumidor_final">validate_consumidor_final</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.validate_contribuinte" href="#pysisnoapi.Cliente.validate_contribuinte">validate_contribuinte</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.validate_pessoa" href="#pysisnoapi.Cliente.validate_pessoa">validate_pessoa</a></code></li>
 </ul>
 </li>
 <li>
@@ -2642,9 +2735,6 @@ def from_json(cls, **kwargs):
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Transporte" href="#pysisnoapi.Transporte">Transporte</a></code></h4>
-<ul class="">
-<li><code><a title="pysisnoapi.Transporte.asdict" href="#pysisnoapi.Transporte.asdict">asdict</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Uf" href="#pysisnoapi.Uf">Uf</a></code></h4>

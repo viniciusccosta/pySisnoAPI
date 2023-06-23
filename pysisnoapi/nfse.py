@@ -1,9 +1,9 @@
-""" 
+''' 
     Módulo específico para geração de Notas Fiscais de Serviço.
     
     Para utilizar esse módulo basta importá-lo da seguinte forma:  
     `from pysisnoapi import nfse`
-"""
+'''
 
 # =====================================================================
 from . import *
@@ -11,6 +11,7 @@ from . import *
 import json
 import requests
 from datetime import datetime
+import jsonpickle
 
 # =====================================================================
 CSV_HEADERS = [
@@ -32,86 +33,87 @@ CSV_HEADERS = [
     'Informações Complementares',
 ]
 
+INDICADORES_EXIGIBILIDADE_ISS = {
+    '1': 'Exigível',
+    '2': 'Não incidência',
+    '3': 'Isenção',
+    '4': 'Exportação',
+    '5': 'Imunidade',
+    '6': 'Exigibilidade suspensa por decisão judicial',
+    '7': 'Exigibilidade suspensa por processo administrativo',
+}
+
+INDICADORES_INCENTIVO_FISCAL = {
+    '1': 'Não',
+    '2': 'Sim',
+}
+
+INDICADORES_ISS_RETIDO = {
+    '1': 'Sim',
+    '2': 'Não',
+} # TODO: Sugerir a utilização de Boolean.
+
+RESPONSAVEIS_RETENCAO_ISS = {
+    '1': 'Tomador',
+    '2': 'Intermediário',
+}
+
+STATUS = [
+    'aprovado',
+    'reprovado',
+    'contingencia',
+    'cancelado',
+    'Em digitação',
+]
+
 # =====================================================================
+@dataclass
 class Servico:
-    def __init__(self, valor_servicos, discriminacao, impostos, *args, **kwargs):
-        """
-        Construtor da classe Serviço.
+    '''_summary_
 
-        Args:
-            valor_servicos (str): Valor do Serviço no formato $0.00
-            
-            discriminacao (str): Descrição do Serviço
-            
-            impostos (Imposto): Instância da classe "Imposto"
-            
-            **intermediario (Cliente): Intermediário do Serviço
-            
-            **iss_retido (int):  
-                1. Sim  
-                2. Não
-                
-            **responsavel_retencao_iss (int):  
-                1. Tomador  
-                2. Intermediário
-                
-            **deducoes (str): Soma total das deduções/descontos gerais
-            
-            **desconto_incondicionado (str): Soma total dos descontos incondicionados
-            
-            **desconto_condicionado (str): Soma total dos descontos condicionados
-            
-            **outras_retencoes (str): Soma total de outras retenções
-            
-            **informacoes_complementares (str): Informações complementares
-            
-            **data_competencia (str): Data da competência do serviço
-            
-            **uf_local_prestacao (Uf): UF do local da prestação do serviço
-            
-            **municipio_local_prestacao (Municipio): Município do local da prestação do serviço
-        """
-        self.valor_servicos             = valor_servicos
-        self.discriminacao              = discriminacao
-        self.impostos                   = impostos                                      # Objeto "Imposto"
-        self.intermediario              = kwargs.get("intermediario", None)             # Objeto "Cliente"
-        self.iss_retido                 = kwargs.get("iss_retido", 2)                   # 1: Sim, 2: Não                # TODO: Campo obrigatório ?
-        self.responsavel_retencao_iss   = kwargs.get("responsavel_retencao_iss", 1)     # 1: Tomador, 2: Intermediário  # TODO: Campo obrigatório ?
-        self.deducoes                   = kwargs.get("deducoes", '')                    # TODO: $0.00
-        self.desconto_incondicionado    = kwargs.get("desconto_incondicionado", '')     # TODO: $0.00
-        self.desconto_condicionado      = kwargs.get("desconto_condicionado", '')       # TODO: $0.00
-        self.outras_retencoes           = kwargs.get("outras_retencoes", '')            # TODO: $0.00
-        self.informacoes_complementares = kwargs.get("informacoes_complementares", '')  # 
-        self.data_competencia           = kwargs.get("data_competencia", '')            # TODO: $dd/MM/yyyy HH:mm:ss.SSS = datetime.now().strftime("%d/%m/%Y %H:%m:%s.%f") ? # TODO: Campo obrigatório ?
-        self.uf_local_prestacao         = kwargs.get("uf_local_prestacao", '')          # Objeto "Uf"
-        self.municipio_local_prestacao  = kwargs.get("municipio_local_prestacao", '')   # Objeto "Municipio"
+    Returns:
+        _type_: _description_
+    '''
+    valor_servicos            : str
+    discriminacao             : str
+    impostos                  : 'ImpostosServico'
     
-    def asdict(self,):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+    iss_retido                : Optional[str]         = '2'
+    responsavel_retencao_iss  : Optional[str]         = '1'
     
+    intermediario             : Optional['Cliente']   = None
+    deducoes                  : Optional[str]         = None
+    desconto_incondicionado   : Optional[str]         = None
+    desconto_condicionado     : Optional[str]         = None
+    outras_retencoes          : Optional[str]         = None
+    informacoes_complementares: Optional[str]         = None
+    data_competencia          : Optional[str]         = None
+    uf_local_prestacao        : Optional['Uf']        = None
+    municipio_local_prestacao : Optional['Municipio'] = None
+    
+    def __post_init__(self, *args, **kwargs):
+        self.validate_iss_retido()
+        self.validate_responsavel_retencao_iss()
+    
+    def validate_iss_retido(self, *args, **kwargs):
+        if self.iss_retido not in INDICADORES_ISS_RETIDO:
+            raise ValueError(f'Indicador de ISS retido {self.iss_retido} inválido.')
+    
+    def validate_responsavel_retencao_iss(self, *args, **kwargs):
+        if self.responsavel_retencao_iss not in RESPONSAVEIS_RETENCAO_ISS:
+            raise ValueError(f'Responsável pela retenção do ISS {self.responsavel_retencao_iss} inválido.')
+
+@dataclass
 class ConstrucaoCivil:
-    def __init__(self, *args, **kwargs):
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-        self.codigo_obra = kwargs.get("codigo_obra", '')
-        self.art         = kwargs.get("art", '')
-
-    def asdict(self,):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
-
-class ObjetoEmissaoNFSe:
-    def __init__(self, cliente:Cliente, servico:Servico, *args, **kwargs):
-        self.cliente            = cliente
-        self.servico            = servico
-        self.construcao_civil   = kwargs.get("construcao_civil", None)                  # Objeto "ConstrucaoCivil"
-
-    def asdict(self,):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != '')}    # Removendo os dados que possuem valores vazios (None ou '')
-        return dados if len(dados) > 0 else None
+    codigo_obra: Optional[str] = None
+    art        : Optional[str] = None
+    
+@dataclass
+class ObjetoEmissaoNFSe(BaseClass):
+    cliente: 'Cliente'
+    servico: 'Servico'
+    
+    construcao_civil: Optional['ConstrucaoCivil'] = None
 
 @dataclass
 class NotaFiscalServico:
@@ -149,27 +151,49 @@ class NotaFiscalServico:
         municipio = Municipio.from_json(**municipio_dict)
         
         return cls(empresa=empresa, uf_prestacao=uf, municipio_prestacao=municipio, **kwargs)
-        
-class PaginaNotaServico:
-    def __init__(self, *args, **kwargs):
-        # TODO: Até o dia 10/05/2023, não consta na Documentação quais são os campos obrigatórios
-        self.total              = kwargs.get("total", 0)
-        self.itens_por_pagina   = kwargs.get("itens_por_pagina", 0)
-        self.pagina_atual       = kwargs.get("pagina_atual", 0)
-        self.itens              = kwargs.get("art", [])
-    
-    def asdict(self,):
-        return self.__dict__
 
 @dataclass
+class PaginaNotasServico:
+    total           : Optional[str]                       = None
+    itens_por_pagina: Optional[str]                       = None
+    pagina_atual    : Optional[str]                       = None
+    itens           : Optional[List['NotaFiscalServico']] = None
+    
+@dataclass
 class ImpostosServico(Impostos):
-    issqn: "Issqn"
+    issqn: 'Issqn'
 
+@dataclass
+class Issqn:
+    indicador_exigibilidade_iss: str
+    indicador_incentivo_fiscal : str
+    item_lista_servicos        : str
+    aliquota                   : str
+    
+    numero_processo            : Optional[str] = None
+    codigo_servico             : Optional[str] = None
+    aliquota_retencao          : Optional[str] = None
+    aliquota_irrf              : Optional[str] = None
+    aliquota_csll              : Optional[str] = None
+    aliquota_previdencia_social: Optional[str] = None
+    
+    def __post_init__(self, *args, **kwargs):
+        self.validate_indicador_exigibilidade_iss()
+        self.validate_indicador_incentivo_fiscal()
+    
+    def validate_indicador_exigibilidade_iss(self, *args, **kwargs):
+        if self.indicador_exigibilidade_iss not in INDICADORES_EXIGIBILIDADE_ISS:
+            raise ValueError(f'Indicador de Exigibilidade Fiscal {self.indicador_exigibilidade_iss} inválido.')
+    
+    def validate_indicador_incentivo_fiscal(self, *args, **kwargs):
+        if self.indicador_incentivo_fiscal not in INDICADORES_INCENTIVO_FISCAL:
+            raise ValueError(f'Indicador de Incentivo Fiscal {self.indicador_incentivo_fiscal} inválido.')
+    
 # =====================================================================
 @requires_emissor
 @requires_empresa
-def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
-    """Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
+def emitir(objetoNfse: ObjetoEmissaoNFSe, *args, **kwargs):
+    '''Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
     
     Args:
         obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe "ObjetoEmissaoNFSe" que contém todos os dados necessários
@@ -177,23 +201,32 @@ def emitir(obj_emissao_nfse: ObjetoEmissaoNFSe, *args, **kwargs):
     Returns:
         dict: Dicionário com os dados da requisição
         str: Com o response.text em caso de falha da requisição
-    """
+    '''
 
-    json_obj = json.dumps(obj_emissao_nfse, default=lambda o: o.asdict())
+    json_str = jsonpickle.encode(objetoNfse.as_filtered_dict(), unpicklable=False)
     
     headers = HEADERS.copy()
-    url     = f'{URL}/nfse'
-    response = requests.post(url, data=json_obj, headers=headers)
+    url     = f'{BASE_URL}/nfse'
+    response = requests.post(url, headers=headers, json=json.loads(json_str))
 
     match (response.status_code):
         case 200:
-            return response.json().get('dados')
+            return response.json()
         case _:
             return response.text
 
 @requires_emissor
-def buscar_notas(cnpj:str=None, data_inicio:datetime=None, data_fim:datetime=None, ambiente:str=None, status:str=None, texto:str=None, pagina:str=None, qtd_por_pagina:str=None, ordencao:str=None, tipo_ordenacao:str=None, *args, **kwargs) -> List[NotaFiscalServico]:
-    """Recupera as notas fiscais de serviço.
+def buscar_notas(cnpjEmpresa:str=None, 
+    data_inicio:datetime=None, 
+    data_fim:datetime=None, 
+    ambiente:str=None, 
+    status:str=None, 
+    texto:str=None, 
+    pagina:str=None, 
+    qtd_por_pagina:str=None, 
+    ordencao:str=None, 
+    tipo_ordenacao:str=None, *args, **kwargs) -> List[NotaFiscalServico]:
+    '''Recupera as notas fiscais de serviço.
 
     Args:
         cnpj (str): CNPJ Empresa (apenas números).
@@ -235,19 +268,28 @@ def buscar_notas(cnpj:str=None, data_inicio:datetime=None, data_fim:datetime=Non
     
     Returns:
         List[NotaFiscalServico]: Lista com todas as NFSe
-    """
+    '''
+    
+    # TODO: o parâmetro cnpjEmpresa está errado na documentação ('CNPJ Empresa')
+    # TODO: o endpoint ignora o parâmetro cnpjEmpresa em alguns casos, descrir quais os casos.
+    # TODO: textoBusca é case sensitive e leva em consideração acentos.
+    # TODO: dataFim não precisa de dataInicio
     
     headers = HEADERS.copy()
     
-    if cnpj:
-        headers['CNPJ Empresa'] = cnpj
+    if cnpjEmpresa:
+        headers['cnpjEmpresa'] = cnpjEmpresa
     if data_inicio:
-        headers['dataInicio'] = data_inicio.strftime("%d/%m/%Y %H:%M:%S")
+        headers['dataInicio'] = data_inicio.strftime('%d/%m/%Y %H:%M:%S')
     if data_fim:
-        headers['dataFim'] = data_fim.strftime("%d/%m/%Y %H:%M:%S")
+        headers['dataFim'] = data_fim.strftime('%d/%m/%Y %H:%M:%S')
     if ambiente:
-        headers['ambiente'] = ambiente
+        if ambiente not in AMBIENTES:
+            raise ValueError(f'Ambiente {ambiente} inválido.')
+        headers['ambiente'] = ambiente      
     if status:
+        if status not in STATUS:
+            raise ValueError(f'Status {status} inválido.')
         headers['status'] = status
     if texto:
         headers['textoBusca'] = texto
@@ -260,7 +302,7 @@ def buscar_notas(cnpj:str=None, data_inicio:datetime=None, data_fim:datetime=Non
     if tipo_ordenacao:
         headers['tipoOrdenacao'] = tipo_ordenacao
 
-    url = f'{URL}/nfse'
+    url = f'{BASE_URL}/nfse'
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
@@ -283,10 +325,10 @@ def recuperar_dados(id_nfse:int, *args, **kwargs):
     # TODO: Essa função deveria estar atrelada as chaves de API, uma vez que será através delas que emitiremos as notas por uma empresa ou por outra ?
 
     if not isinstance(id_nfse, int):
-        raise ValueError("Necessário informar um ID de NFSe válido.")
+        raise ValueError('Necessário informar um ID de NFSe válido.')
     
     headers  = HEADERS.copy()
-    url      = f'{URL}/nfse/{id_nfse}'
+    url      = f'{BASE_URL}/nfse/{id_nfse}'
     response = requests.get(url, headers=headers)
 
     match (response.status_code):
