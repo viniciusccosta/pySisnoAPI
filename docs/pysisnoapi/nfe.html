@@ -29,12 +29,12 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34; 
+<pre><code class="python">&#39;&#39;&#39; 
     Módulo específico para geração de Notas Fiscais de Produto.
     
     Para utilizar esse módulo basta importá-lo da seguinte forma:  
     `from pysisnoapi import nfe`
-&#34;&#34;&#34;
+&#39;&#39;&#39;
 
 # =====================================================================
 from . import *
@@ -69,6 +69,172 @@ CSV_HEADERS = [
     &#39;COMPLEMENTO ENDEREÇO&#39;
 ]
 
+BANDEIRAS = {
+    &#39;01&#39;: &#39;Visa / Visa Electron&#39;,
+    &#39;02&#39;: &#39;Mastercard / Maestro&#39;,
+    &#39;03&#39;: &#39;American Express&#39;,
+    &#39;04&#39;: &#39;Sorocred&#39;,
+    &#39;05&#39;: &#39;Diners Club&#39;,
+    &#39;06&#39;: &#39;Elo&#39;,
+    &#39;07&#39;: &#39;Hipercard&#39;,
+    &#39;08&#39;: &#39;Aura&#39;,
+    &#39;09&#39;: &#39;Cabal&#39;,
+    &#39;99&#39;: &#39;Outros&#39;,
+}
+
+CONDICOES_CHASSI = {
+    &#39;N&#39;: &#39;Normal&#39;,
+    &#39;R&#39;: &#39;Remarcado&#39;,
+}
+
+CONDICOES_VEICULO = {
+    &#39;1&#39;: &#39;Acabado&#39;,
+    &#39;2&#39;: &#39;Inacabado&#39;,
+    &#39;3&#39;: &#39;Semi-acabado&#39;,
+}
+
+CORES = {
+    &#39;01&#39;: &#39;Amarela&#39;,
+    &#39;02&#39;: &#39;Azul&#39;,
+    &#39;03&#39;: &#39;Bege&#39;,
+    &#39;04&#39;: &#39;Branca&#39;,
+    &#39;05&#39;: &#39;Cinza&#39;,
+    &#39;06&#39;: &#39;Dourada&#39;,
+    &#39;07&#39;: &#39;Grená&#39;,
+    &#39;08&#39;: &#39;Laranja&#39;,
+    &#39;09&#39;: &#39;Marrom&#39;,
+    &#39;10&#39;: &#39;Prata&#39;,
+    &#39;11&#39;: &#39;Preta&#39;,
+    &#39;12&#39;: &#39;Rosa&#39;,
+    &#39;13&#39;: &#39;Roxa&#39;,
+    &#39;14&#39;: &#39;Verde&#39;,
+    &#39;15&#39;: &#39;Vermelha&#39;,
+    &#39;16&#39;: &#39;Fantasia&#39;,
+}
+
+ESPECIES_VEICULO = {
+    &#39;1&#39;: &#39;Passageiro&#39;,
+    &#39;2&#39;: &#39;Carga&#39;,
+    &#39;3&#39;: &#39;Misto&#39;,
+    &#39;4&#39;: &#39;Corrida&#39;,
+    &#39;5&#39;: &#39;Tração&#39;,
+    &#39;6&#39;: &#39;Especial&#39;,
+    &#39;7&#39;: &#39;Coleção&#39;,
+}
+
+FINALIDADES = {
+    &#39;1&#39;: &#39;Normal&#39;,
+    &#39;2&#39;: &#39;Complementar&#39;,
+    &#39;3&#39;: &#39;Ajuste&#39;,
+    &#39;4&#39;: &#39;Devolução ou Retorno&#39;,
+}
+
+INDICATIVOS_ESCALA = {
+    &#39;S&#39;: &#39;Produzido em escala relevante&#39;,
+    &#39;N&#39;: &#39;Produzido em escala não relevante&#39;,
+} # TODO: Sugerir utilização de Boolean.
+
+MODALIDADES_FRETE = {
+    &#39;9&#39;: &#39;Sem ocorrência de transporte&#39;,
+    &#39;0&#39;: &#39;Contratação do frete por conta do remetente (CIF)&#39;,
+    &#39;1&#39;: &#39;Contratação do frete por conta do destinatário (FOB)&#39;,
+    &#39;2&#39;: &#39;Contratação do frete por conta de terceiros&#39;,
+    &#39;3&#39;: &#39;Transporte próprio por conta do remetente&#39;,
+    &#39;4&#39;: &#39;Transporte próprio por conta do destinatário&#39;,
+}
+
+MODELOS = {
+    &#39;55&#39;: &#39;NF-e&#39;,
+    &#39;65&#39;: &#39;NFC-e&#39;,
+}
+
+OPERACOES = {
+    &#39;0&#39;: &#39;Entrada&#39;,
+    &#39;1&#39;: &#39;Saída&#39;,
+}
+
+ORIGENS = {
+    &#39;0&#39;: &#39;Nacional&#39;,
+    &#39;1&#39;: &#39;Estrangeira importação direta&#39;,
+    &#39;2&#39;: &#39;Estrangeira adquirida mercado interno&#39;,
+    &#39;3&#39;: &#39;Nacional mercadoria ou bem conteúdo importação superior 40 P&#39;,
+    &#39;4&#39;: &#39;Nacional produção em conformidade com processos produtivos básicos&#39;,
+    &#39;5&#39;: &#39;Nacional mercadoria ou bem conteúdo importação inferior 40 P&#39;,
+    &#39;6&#39;: &#39;Estrangeira importação direta sem similar nacional constante em lista Camex&#39;,
+    &#39;7&#39;: &#39;Estrangeira adquirida mercado interno sem similar nacional constante em lista Camex&#39;,
+    &#39;8&#39;: &#39;Nacional mercadoria ou bem conteúdo importação superior 70 P&#39;,
+}
+
+PRESENCAS = {
+    &#39;0&#39;: &#39;Não se aplica&#39;,
+    &#39;1&#39;: &#39;Operação presencial&#39;,
+    &#39;2&#39;: &#39;Operação não presencial - Internet&#39;,
+    &#39;3&#39;: &#39;Operação não presencial - Teleatendimento&#39;,
+    &#39;4&#39;: &#39;NFC-e em operação com entrega a domicílio&#39;,
+    &#39;5&#39;: &#39;Operação presencial fora do estabelecimento&#39;,
+    &#39;9&#39;: &#39;Operação não presencial - Outros&#39;,
+}
+
+RESTRICOES = {
+    &#39;0&#39;: &#39;Não Há&#39;,
+    &#39;1&#39;: &#39;Alienação Fiduciária&#39;,
+    &#39;2&#39;: &#39;Arrendamento Mercantil&#39;,
+    &#39;3&#39;: &#39;Reserva Domínio&#39;,
+    &#39;4&#39;: &#39;Penhor&#39;,
+    &#39;9&#39;: &#39;Outras&#39;,
+}
+
+TIPOS_COMBUSTIVEL = {
+    &#39;01&#39;: &#39;Álcool&#39;,
+    &#39;02&#39;: &#39;Gasolina&#39;,
+    &#39;03&#39;: &#39;Diesel&#39;,
+    &#39;04&#39;: &#39;Gasogênio&#39;,
+    &#39;05&#39;: &#39;Gás Metano&#39;,
+    &#39;06&#39;: &#39;Elétrico (Fonte Interna)&#39;,
+    &#39;07&#39;: &#39;Elétrico (Fonte Externa)&#39;,
+    &#39;08&#39;: &#39;Gasol./Gás Natural/Combustível&#39;,
+    &#39;09&#39;: &#39;Álcool/Gás Natural&#39;,
+    &#39;10&#39;: &#39;Diesel/Gás Natural&#39;,
+    &#39;11&#39;: &#39;Vide Campo Observação&#39;,
+    &#39;12&#39;: &#39;Álcool/Gás Natural Veicular&#39;,
+    &#39;13&#39;: &#39;Gasolina/Gás Natural Veicular&#39;,
+    &#39;14&#39;: &#39;Diesel/Gás Natural Veicular&#39;,
+    &#39;15&#39;: &#39;Gás Natural Veicular&#39;,
+    &#39;16&#39;: &#39;Álcool/Gasolina&#39;,
+    &#39;17&#39;: &#39;Gasolina/Álcool/Gás natural&#39;,
+    &#39;18&#39;: &#39;Gasolina/Elétrico&#39;,
+}
+
+TIPOS_EMISSAO = {
+    &#39;1&#39;: &#39;Normal&#39;,
+    &#39;6&#39;: &#39;Contigência SNC-AN&#39;,
+    &#39;7&#39;: &#39;Contigência SVC-R&#39;,
+}
+
+TIPOS_OPERACAO = {
+    &#39;0&#39;: &#39;Outros&#39;,
+    &#39;1&#39;: &#39;Venda concessionária&#39;,
+    &#39;2&#39;: &#39;Faturamento direto consumidor final&#39;,
+    &#39;3&#39;: &#39;Venda direta grandes consumidores&#39;,
+}
+
+TIPOS_VEICULO = {
+    &#39;06&#39;: &#39;Automóvel&#39;,
+    &#39;14&#39;: &#39;Caminhão&#39;,
+    &#39;13&#39;: &#39;Caminhoneta&#39;,
+    &#39;24&#39;: &#39;Carga&#39;,
+    &#39;02&#39;: &#39;Ciclomotor&#39;,
+    &#39;22&#39;: &#39;Especial Ônibus&#39;,
+    &#39;07&#39;: &#39;Microônibus&#39;,
+    &#39;23&#39;: &#39;Misto&#39;,
+    &#39;04&#39;: &#39;Motociclo&#39;,
+    &#39;03&#39;: &#39;Motoneta&#39;,
+    &#39;08&#39;: &#39;Ônibus&#39;,
+    &#39;10&#39;: &#39;Reboque&#39;,
+    &#39;05&#39;: &#39;Triciclo&#39;,
+    &#39;17&#39;: &#39;Trator&#39;,
+}
+
 # =====================================================================
 @dataclass
 class ObjetoEmissaoNFe(BaseClass):
@@ -80,48 +246,55 @@ class ObjetoEmissaoNFe(BaseClass):
     finalidade              : str
     ambiente                : str
     cliente                 : Cliente
-    produtos                : List[&#34;Produto&#34;]
-    pedido                  : &#34;Pedido&#34;
+    produtos                : List[&#39;Produto&#39;]
+    pedido                  : &#39;Pedido&#39;
     data_entrada_saida      : datetime
     data_emissao            : datetime
     
     numero_pedido           : Optional[str]                       = None
-    transporte              : Optional[&#34;Transporte&#34;]              = None
-    fatura                  : Optional[&#34;Fatura&#34;]                  = None
-    parcelas                : Optional[List[&#34;Parcela&#34;]]           = None
-    exportacao              : Optional[&#34;Exportacao&#34;]              = None
+    transporte              : Optional[&#39;Transporte&#39;]              = None
+    fatura                  : Optional[&#39;Fatura&#39;]                  = None
+    parcelas                : Optional[List[&#39;Parcela&#39;]]           = None
+    exportacao              : Optional[&#39;Exportacao&#39;]              = None
     nfe_referenciada        : Optional[List[str]]                 = None
-    retirada                : Optional[&#34;Local&#34;]                   = None
-    entrega                 : Optional[&#34;Local&#34;]                   = None
-    compra                  : Optional[&#34;Compra&#34;]                  = None
+    retirada                : Optional[&#39;Local&#39;]                   = None
+    entrega                 : Optional[&#39;Local&#39;]                   = None
+    compra                  : Optional[&#39;Compra&#39;]                  = None
     indicador_intermediador : Optional[str]                       = None
-    informacao_intermediador: Optional[&#34;InformacaoIntermediador&#34;] = None
+    informacao_intermediador: Optional[&#39;InformacaoIntermediador&#39;] = None
     
     def __post_init__(self):
+        self.validate_numero_nota_sequencial()
         self.validate_operacao()
         self.validate_modelo()
         self.validate_finalidade()
         self.validate_ambiente()
     
+    def validate_numero_nota_sequencial(self):
+        if not isinstance(self.numero_nota_sequencial, str):
+            raise TypeError(f&#39;numero_nota_sequencialdeve ser string.&#39;)
+        if len(self.numero_nota_sequencial) &lt; 1 or len(self.numero_nota_sequencial) &gt; 9:
+            raise ValueError(f&#39;numero_nota_sequencial deve conter entre 1 e 9 caracteres.&#39;)
+    
     def validate_operacao(self):
-        if self.operacao not in [&#39;0&#39;, &#39;1&#39;]:
-            raise ValueError(f&#34;Operação {self.operacao} inválida&#34;)
+        if self.operacao not in OPERACOES:
+            raise ValueError(f&#39;Operação {self.operacao} inválida&#39;)
     
     def validate_modelo(self):
-        if self.modelo not in [&#39;55&#39;, &#39;65&#39;]:
-            raise ValueError(f&#34;Modelo {self.modelo} inválido&#34;)
+        if self.modelo not in MODELOS:
+            raise ValueError(f&#39;Modelo {self.modelo} inválido&#39;)
     
     def validate_finalidade(self):
-        if self.finalidade not in [&#39;1&#39;, &#39;2&#39;, &#39;3&#39;, &#39;4&#39;]:
-            raise ValueError(f&#34;Finalidade {self.finalidade} inválida&#34;)
+        if self.finalidade not in FINALIDADES:
+            raise ValueError(f&#39;Finalidade {self.finalidade} inválida&#39;)
     
     def validate_ambiente(self):
-        if self.ambiente not in [&#39;1&#39;, &#39;2&#39;,]:
-            raise ValueError(f&#34;Ambiente {self.ambiente} inválido&#34;)
+        if self.ambiente not in AMBIENTES:
+            raise ValueError(f&#39;Ambiente {self.ambiente} inválido&#39;)
 
 @dataclass
 class Pagamento:
-    formas_pagamento: List[&#34;FormaPagamento&#34;]
+    formas_pagamento: List[&#39;FormaPagamento&#39;]
 
 @dataclass
 class FormaPagamento:
@@ -139,17 +312,23 @@ class FormaPagamento:
     def __post_init__(self):
         self.validate_forma_pagamento()
         self.validate_meios_pagamento()
-        self.validate_descricao()
+        self.validate_bandeira()
+        self.validate_descricao_meio_pagamento()
     
-    def validate_forma_pagamento(self):
+    def validate_forma_pagamento(self, *args, **kwargs):
         if self.forma_pagamento not in FORMAS_PAGAMENTO:
             raise ValueError(f&#39;Forma de pagamento {self.forma_pagamento} inválido&#39;)
-        
-    def validate_meios_pagamento(self):
+
+    def validate_meios_pagamento(self, *args, **kwargs):
         if self.meio_pagamento not in MEIOS_PAGAMENTO:
             raise ValueError(f&#39;Meio de pagamento {self.meio_pagamento} inválido&#39;)
-        
-    def validate_descricao(self):
+
+    def validate_bandeira(self, *args, **kwargs):
+        if self.bandeira:
+            if self.bandeira not in BANDEIRAS:
+                raise ValueError(f&#39;Bandeira {self.bandeira} inválida.&#39;)
+
+    def validate_descricao_meio_pagamento(self, *args, **kwargs):
         if self.meio_pagamento == &#39;99&#39;:
             if self.descricao_meio_pagamento is None:
                 raise ValueError(f&#39;Necessário preencher &#34;descricao_meio_pagamento&#34; quando a forma de pagamento é &#34;(99) Outros&#34;.&#39;)
@@ -158,12 +337,12 @@ class FormaPagamento:
 
 @dataclass
 class Produto:
-    &#34;&#34;&#34;Classe Produto
+    &#39;&#39;&#39;Classe Produto
 
     Raises:
         ValueError: Caso o valor de algum atributo seja inválido.
         TypeError: Caso algum campo obrigatório não for informado.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     item                            : str   # Número incremental na lista de produtos
     
     cfop                            : str
@@ -200,27 +379,48 @@ class Produto:
     valor_desconto                  : Optional[str]                    = None
     valor_outras_despesas_acessorias: Optional[str]                    = None
     
-    def __post_init__(self):
+    def __post_init__(self, *args, **kwargs):
         self.validate_unidade()
         self.validate_impostos()
+        self.validate_origem()
+        self.validate_total()
+        self.validate_ind_escala()
         
-    def validate_unidade(self):
+    def validate_unidade(self, *args, **kwargs):
         if self.unidade not in UNIDADES:
-            raise ValueError(f&#34;Unidade {self.unidade} inválida.&#34;)
+            raise ValueError(f&#39;Unidade {self.unidade} inválida.&#39;)
         
-    def validate_impostos(self):
+    def validate_impostos(self, *args, **kwargs):
         if not isinstance(self.impostos, Impostos):
             raise TypeError(f&#39;Campo &#34;impostos&#34; deve ser {repr(Impostos)} e não {type(self.impostos)}&#39;)
 
+    def validate_origem(self, *args, **kwargs):
+        if self.origem:
+            if self.origem not in ORIGENS:
+                raise ValueError(f&#39;Origem {self.origem} inválida.&#39;)
+        
+    def validate_total(self, *args, **kwargs):
+        quantidade = float(self.quantidade)
+        subtotal   = float(self.subtotal)
+        total      = float(self.total)
+        
+        if f&#39;{total:.2f}&#39; != f&#39;{quantidade*subtotal:.2f}&#39;:
+            raise ValueError(f&#39;Total {total:.2f} é diferente de quantidade {quantidade:.2f} * subtotal {subtotal:.2f} = {quantidade*subtotal:.2f}&#39;)
+        
+    def validate_ind_escala(self, *args, **kwargs):
+        if self.ind_escala:
+            if self.ind_escala not in INDICATIVOS_ESCALA:
+                raise ValueError(f&#39;Indicativo de escala {self.ind_escala} inválido.&#39;)
+    
 @dataclass
 class ImpostosProduto(Impostos):
-    icms: &#34;Icms&#34;
-    ipi : &#34;Ipi&#34;
+    icms: &#39;Icms&#39;
+    ipi : &#39;Ipi&#39;
 
 @dataclass
 class Pedido:
     presenca                  : str
-    pagamento                 : &#34;Pagamento&#34;
+    pagamento                 : &#39;Pagamento&#39;
     
     modalidade_frete          : Optional[str] = None
     frete                     : Optional[str] = None
@@ -233,56 +433,181 @@ class Pedido:
     observacoes_fisco         : Optional[str] = None
     observacoes_contribuinte  : Optional[str] = None
     
+    def __post_init__(self):
+        self.validate_presenca()
+        self.validate_modalidade_frete()
+    
+    def validate_presenca(self, *args, **kwargs):
+        if self.presenca not in PRESENCAS:
+            raise ValueError(f&#39;Presença {self.presenca} inválida.&#39;)
+        
+    def validate_modalidade_frete(self, *args, **kwargs):
+        if self.modalidade_frete:
+            if self.modalidade_frete not in MODALIDADES_FRETE:
+                raise ValueError(f&#39;Modalidade de Frete {self.modalidade_frete} inválida.&#39;)
+
+@dataclass
 class VeiculoNovo:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
+    tipo_operacao   : str
+    chassi          : str
+    cor             : str
+    cor_descricao   : str
+    cilindrada      : str
+    peso_liquido    : str
+    peso_bruto      : str
+    serie           : str
+    tipo_combustivel: str
+    numero_motor    : str
+    dist            : str
+    ano_modelo      : str
+    ano_fabricacao  : str
+    tipo_pintura    : str
+    tipo_veiculo    : str
+    especie_veiculo : str
+    condicao_veiculo: str
+    marca_modelo    : str
+    cor_denatran    : str
+    lotacao         : str
+    restricao       : str
 
+    capacidade_maxima_tracao: Optional[str] = None
+    condicao_chassi         : Optional[str] = None
+    potencia                : Optional[str] = None
+   
+    def __post_init__(self):
+       self.validate_tipo_operacao()
+       self.validate_cor()
+       self.validate_tipo_combustivel()
+       self.validate_tipo_veiculo()
+       self.validate_especie_veiculo()
+       self.validate_condicao_veiculo()
+       self.validate_restricao()
+       self.validate_condicao_chassi()
+    
+    def validate_tipo_operacao(self, *args, **kwargs):
+        if self.tipo_operacao not in TIPOS_OPERACAO:
+            raise ValueError(f&#39;Tipo de operação {self.tipo_operacao} inválido.&#39;)
+    
+    def validate_cor(self, *args, **kwargs):
+        if self.cor not in CORES:
+            raise ValueError(f&#39;Cor {self.cor} inválida.&#39;)
+    
+    def validate_tipo_combustivel(self, *args, **kwargs):
+        if self.tipo_combustivel not in TIPOS_COMBUSTIVEL:
+            raise ValueError(f&#39;Tipo combustível {self.tipo_combustivel} inválido.&#39;)
+    
+    def validate_tipo_veiculo(self, *args, **kwargs):
+        if self.tipo_veiculo not in TIPOS_VEICULO:
+            raise ValueError(f&#39;Tipo de Veículo {self.tipo_veiculo} inválido.&#39;)
+    
+    def validate_especie_veiculo(self, *args, **kwargs):
+        if self.especie_veiculo not in ESPECIES_VEICULO:
+            raise ValueError(f&#39;Espécie de Veículo {self.especie_veiculo} inválida.&#39;)
+    
+    def validate_condicao_veiculo(self, *args, **kwargs):
+        if self.condicao_veiculo not in CONDICOES_VEICULO:
+            raise ValueError(f&#39;Condição do véiculo {self.condicao_veiculo} inválida.&#39;)
+    
+    def validate_restricao(self, *args, **kwargs):
+        if self.restricao not in RESTRICOES:
+            raise ValueError(f&#39;Restrição {self.restricao} inválida.&#39;)
+    
+    def validate_condicao_chassi(self, *args, **kwargs):
+        if self.condicao_chassi:
+            if self.condicao_chassi not in CONDICOES_CHASSI:
+                raise ValueError(f&#39;Condição do Chassi {self.condicao_chassi} inválida.&#39;)
+
+@dataclass
 class ExportacaoIndividual:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
+    drawback      : Optional[str] = None
+    reg_exportacao: Optional[str] = None
+    nfe_exportacao: Optional[str] = None
+    qtd_exportacao: Optional[str] = None
 
+@dataclass
 class ImportacaoIndividual:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
+    numero_registro                   : Optional[str]                                = None
+    data_registro                     : Optional[str]                                = None
+    cod_exportador                    : Optional[str]                                = None
+    cod_via_transporte_internacional  : Optional[str]                                = None
+    valor_afrmm                       : Optional[str]                                = None
+    cod_forma_importacao_intermediacao: Optional[str]                                = None
+    uf_desembaraco                    : Optional[str]                                = None
+    local_desembaraco                 : Optional[str]                                = None
+    data_desembaraco                  : Optional[str]                                = None
+    cnpj_terceiro                     : Optional[str]                                = None
+    uf_terceiro                       : Optional[str]                                = None
+    iof                               : Optional[str]                                = None
+    valor_despesas_aduaneiras         : Optional[str]                                = None
+    adicoes                           : Optional[List[&#39;DeclaracaoImportacaoAdicao&#39;]] = None
 
+@dataclass
 class Rastreamento:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
+    lote           : str
+    quantidade     : str
+    data_fabricacao: str
+    data_validade  : str
+    
+    codigo_agregacao: Optional[str] = None
 
+@dataclass
 class Fatura:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
+    numero       : str
+    valor        : str
+    desconto     : str
+    valor_liquido: str
 
+@dataclass
 class Parcela:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
+    vencimento: str
+    valor     : str
 
+@dataclass
 class Exportacao:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
+    uf_embarque   : str
+    local_embarque: str
+    
+    local_despacho: Optional[str] = None
 
+@dataclass
 class Local:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
+    uf                  : str
+    codigo_municipio    : str
+    descricao_municipio : str
+    bairro              : str
+    logradouro          : str
+    numero              : str
+    complemento         : str
+    
+    cpf : Optional[str] = None
+    cnpj: Optional[str] = None
 
+@dataclass
 class Compra:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
+    contrato    : Optional[str] = None
+    nota_empenho: Optional[str] = None
+    pedido      : Optional[str] = None
 
+@dataclass
 class InformacaoIntermediador:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
+    cnpj                                : Optional[str] = None
+    identificador_cadastro_intermediador: Optional[str] = None
 
+@dataclass
 class PaginaNotas:
-    def __init__(self, **kwargs):
-        raise NotImplementedError
+    total           : Optional[str]                = None
+    itens_por_pagina: Optional[str]                = None
+    pagina_atual    : Optional[str]                = None
+    itens           : Optional[List[&#39;NotaFiscal&#39;]] = None
 
 # =====================================================================
 @requires_emissor
-@requires_empresa
-def emitir(objetoNfe:ObjetoEmissaoNFe, 
-    tipo_emissao:str, *args, **kwargs) -&gt; str:
-    &#34;&#34;&#34;Endpoint utilizado para efetivamente emitir uma nota fiscal eletrônica.
+def emitir(objetoNfe: ObjetoEmissaoNFe,
+           tipo_emissao: str, 
+           token_empresa: str, 
+           token_secret_empresa: str,
+           *args, **kwargs):
+    &#39;&#39;&#39;Endpoint utilizado para efetivamente emitir uma nota fiscal eletrônica.
 
     Args:
         nfe (ObjetoEmissaoNFe): Nota Fiscal a ser emitida.
@@ -291,10 +616,22 @@ def emitir(objetoNfe:ObjetoEmissaoNFe,
             1: Normal  
             6: Contigência SNC-AN  
             7: Contigência SVC-RS  
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
 
     headers = HEADERS.copy()
-    headers[&#39;tipo-emissao&#39;] = tipo_emissao    # TODO: Validar antes
+    
+    # -----------------------------------------
+    validate_tokens(token_empresa, token_secret_empresa)
+    headers[&#39;token-empresa&#39;]        = token_empresa
+    headers[&#39;token-secret-empresa&#39;] = token_secret_empresa
+    
+    # -----------------------------------------
+    if not tipo_emissao or tipo_emissao not in TIPOS_EMISSAO:
+        raise ValueError(f&#39;Tipo de Emissão {tipo_emissao} inválido&#39;)
+    
+    headers[&#39;tipo-emissao&#39;] = tipo_emissao
+    
+    # -----------------------------------------
     json_str = jsonpickle.encode(objetoNfe.as_filtered_dict(), unpicklable=False)
     
     url = f&#39;{BASE_URL}/nfe&#39;
@@ -309,20 +646,24 @@ def emitir(objetoNfe:ObjetoEmissaoNFe,
             return response.text
     
 @requires_emissor
-@requires_empresa
-def corrigir(*args, **kwargs):
+def corrigir(token_empresa:str, 
+             token_secret_empresa:str, 
+             *args, **kwargs):
     raise NotImplementedError
 
 @requires_emissor
-@requires_empresa
-def cancelar(*args, **kwargs):
+def cancelar(token_empresa:str, 
+             token_secret_empresa:str, 
+             *args, **kwargs):
     raise NotImplementedError
 
 @requires_emissor
-@requires_empresa
 def validar(objetoNfe:ObjetoEmissaoNFe, 
-    tipo_emissao:str, *args, **kwargs) -&gt; str:
-    &#34;&#34;&#34;Endpoint utilizado para validar a nota fiscal eletrônica antes de emitir.
+            tipo_emissao:str,
+            token_empresa:str, 
+            token_secret_empresa:str, 
+            *args, **kwargs) -&gt; str:
+    &#39;&#39;&#39;Endpoint utilizado para validar a nota fiscal eletrônica antes de emitir.
 
     Args:
         nfe (ObjetoEmissaoNFe): Nota Fiscal a ser validada.
@@ -331,9 +672,20 @@ def validar(objetoNfe:ObjetoEmissaoNFe,
             1: Normal  
             6: Contigência SNC-AN  
             7: Contigência SVC-RS  
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
+    
     headers = HEADERS.copy()
-    headers[&#39;tipo-emissao&#39;] = tipo_emissao    # TODO: Validar antes
+    
+    # -----------------------------------------
+    validate_tokens(token_empresa, token_secret_empresa)
+    headers[&#39;token-empresa&#39;]        = token_empresa
+    headers[&#39;token-secret-empresa&#39;] = token_secret_empresa
+    
+    # -----------------------------------------
+    if not tipo_emissao or tipo_emissao not in TIPOS_EMISSAO:
+        raise ValueError(f&#39;Tipo de Emissão {tipo_emissao} inválido&#39;)
+    
+    headers[&#39;tipo-emissao&#39;] = tipo_emissao
     json_str = jsonpickle.encode(objetoNfe.as_filtered_dict(), unpicklable=False)
     
     url = f&#39;{BASE_URL}/nfe/validacao-nota&#39;
@@ -347,8 +699,9 @@ def validar(objetoNfe:ObjetoEmissaoNFe,
 
 @requires_emissor
 def listar(qtd:str = None, 
-    pagina:str = None, *args, **kwargs) -&gt; List[NotaFiscal]:
-    &#34;&#34;&#34;Recupera as notas fiscais.
+           pagina:str = None, 
+           *args, **kwargs) -&gt; List[NotaFiscal]:
+    &#39;&#39;&#39;Recupera as notas fiscais.
     
     No Distrito Federal (DF), antes de 01/2023, as notas fiscais de serviço eram emitidas como NFe.
 
@@ -358,14 +711,14 @@ def listar(qtd:str = None,
 
     Returns:
         List[NotaFiscal]: Lista contendo as notas fiscais.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     headers = HEADERS.copy()
     params   = {}
     
     if qtd:
-        params[&#34;qtd&#34;] = qtd
+        params[&#39;qtd&#39;] = qtd
     if pagina:
-        params[&#34;pagina&#34;] = pagina
+        params[&#39;pagina&#39;] = pagina
     
     url = f&#39;{BASE_URL}/nfe/lista-notas&#39;
     response = requests.get(url, params, headers=headers)
@@ -387,18 +740,21 @@ def get_nota(*args, **kwargs):
     raise NotImplementedError
 
 @requires_emissor
-@requires_empresa
-def inutilizar_numeracao(*args, **kwargs):
+def inutilizar_numeracao(token_empresa:str, 
+                         token_secret_empresa:str, 
+                         *args, **kwargs):
     raise NotImplementedError
 
 @requires_emissor
-@requires_empresa
-def get_pre_visualizacao(*args, **kwargs):
+def get_pre_visualizacao(token_empresa:str, 
+                         token_secret_empresa:str, 
+                         *args, **kwargs):
     raise NotImplementedError
 
 @requires_emissor
-@requires_empresa
-def get_danfe(*args, **kwargs):
+def get_danfe(token_empresa:str, 
+              token_secret_empresa:str, 
+              *args, **kwargs):
     raise NotImplementedError
 
 # =====================================================================</code></pre>
@@ -426,7 +782,7 @@ def buscar(*args, **kwargs):
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.cancelar"><code class="name flex">
-<span>def <span class="ident">cancelar</span></span>(<span>*args, **kwargs)</span>
+<span>def <span class="ident">cancelar</span></span>(<span>token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -435,13 +791,14 @@ def buscar(*args, **kwargs):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@requires_emissor
-@requires_empresa
-def cancelar(*args, **kwargs):
+def cancelar(token_empresa:str, 
+             token_secret_empresa:str, 
+             *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.corrigir"><code class="name flex">
-<span>def <span class="ident">corrigir</span></span>(<span>*args, **kwargs)</span>
+<span>def <span class="ident">corrigir</span></span>(<span>token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -450,13 +807,14 @@ def cancelar(*args, **kwargs):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@requires_emissor
-@requires_empresa
-def corrigir(*args, **kwargs):
+def corrigir(token_empresa:str, 
+             token_secret_empresa:str, 
+             *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.emitir"><code class="name flex">
-<span>def <span class="ident">emitir</span></span>(<span>objetoNfe: <a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a>, tipo_emissao: str, *args, **kwargs) ‑> str</span>
+<span>def <span class="ident">emitir</span></span>(<span>objetoNfe: <a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a>, tipo_emissao: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Endpoint utilizado para efetivamente emitir uma nota fiscal eletrônica.</p>
@@ -475,10 +833,12 @@ def corrigir(*args, **kwargs):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@requires_emissor
-@requires_empresa
-def emitir(objetoNfe:ObjetoEmissaoNFe, 
-    tipo_emissao:str, *args, **kwargs) -&gt; str:
-    &#34;&#34;&#34;Endpoint utilizado para efetivamente emitir uma nota fiscal eletrônica.
+def emitir(objetoNfe: ObjetoEmissaoNFe,
+           tipo_emissao: str, 
+           token_empresa: str, 
+           token_secret_empresa: str,
+           *args, **kwargs):
+    &#39;&#39;&#39;Endpoint utilizado para efetivamente emitir uma nota fiscal eletrônica.
 
     Args:
         nfe (ObjetoEmissaoNFe): Nota Fiscal a ser emitida.
@@ -487,10 +847,22 @@ def emitir(objetoNfe:ObjetoEmissaoNFe,
             1: Normal  
             6: Contigência SNC-AN  
             7: Contigência SVC-RS  
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
 
     headers = HEADERS.copy()
-    headers[&#39;tipo-emissao&#39;] = tipo_emissao    # TODO: Validar antes
+    
+    # -----------------------------------------
+    validate_tokens(token_empresa, token_secret_empresa)
+    headers[&#39;token-empresa&#39;]        = token_empresa
+    headers[&#39;token-secret-empresa&#39;] = token_secret_empresa
+    
+    # -----------------------------------------
+    if not tipo_emissao or tipo_emissao not in TIPOS_EMISSAO:
+        raise ValueError(f&#39;Tipo de Emissão {tipo_emissao} inválido&#39;)
+    
+    headers[&#39;tipo-emissao&#39;] = tipo_emissao
+    
+    # -----------------------------------------
     json_str = jsonpickle.encode(objetoNfe.as_filtered_dict(), unpicklable=False)
     
     url = f&#39;{BASE_URL}/nfe&#39;
@@ -506,7 +878,7 @@ def emitir(objetoNfe:ObjetoEmissaoNFe,
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.get_danfe"><code class="name flex">
-<span>def <span class="ident">get_danfe</span></span>(<span>*args, **kwargs)</span>
+<span>def <span class="ident">get_danfe</span></span>(<span>token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -515,8 +887,9 @@ def emitir(objetoNfe:ObjetoEmissaoNFe,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@requires_emissor
-@requires_empresa
-def get_danfe(*args, **kwargs):
+def get_danfe(token_empresa:str, 
+              token_secret_empresa:str, 
+              *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
@@ -535,7 +908,7 @@ def get_nota(*args, **kwargs):
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.get_pre_visualizacao"><code class="name flex">
-<span>def <span class="ident">get_pre_visualizacao</span></span>(<span>*args, **kwargs)</span>
+<span>def <span class="ident">get_pre_visualizacao</span></span>(<span>token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -544,13 +917,14 @@ def get_nota(*args, **kwargs):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@requires_emissor
-@requires_empresa
-def get_pre_visualizacao(*args, **kwargs):
+def get_pre_visualizacao(token_empresa:str, 
+                         token_secret_empresa:str, 
+                         *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.inutilizar_numeracao"><code class="name flex">
-<span>def <span class="ident">inutilizar_numeracao</span></span>(<span>*args, **kwargs)</span>
+<span>def <span class="ident">inutilizar_numeracao</span></span>(<span>token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -559,8 +933,9 @@ def get_pre_visualizacao(*args, **kwargs):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@requires_emissor
-@requires_empresa
-def inutilizar_numeracao(*args, **kwargs):
+def inutilizar_numeracao(token_empresa:str, 
+                         token_secret_empresa:str, 
+                         *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
@@ -588,8 +963,9 @@ def inutilizar_numeracao(*args, **kwargs):
 </summary>
 <pre><code class="python">@requires_emissor
 def listar(qtd:str = None, 
-    pagina:str = None, *args, **kwargs) -&gt; List[NotaFiscal]:
-    &#34;&#34;&#34;Recupera as notas fiscais.
+           pagina:str = None, 
+           *args, **kwargs) -&gt; List[NotaFiscal]:
+    &#39;&#39;&#39;Recupera as notas fiscais.
     
     No Distrito Federal (DF), antes de 01/2023, as notas fiscais de serviço eram emitidas como NFe.
 
@@ -599,14 +975,14 @@ def listar(qtd:str = None,
 
     Returns:
         List[NotaFiscal]: Lista contendo as notas fiscais.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     headers = HEADERS.copy()
     params   = {}
     
     if qtd:
-        params[&#34;qtd&#34;] = qtd
+        params[&#39;qtd&#39;] = qtd
     if pagina:
-        params[&#34;pagina&#34;] = pagina
+        params[&#39;pagina&#39;] = pagina
     
     url = f&#39;{BASE_URL}/nfe/lista-notas&#39;
     response = requests.get(url, params, headers=headers)
@@ -621,7 +997,7 @@ def listar(qtd:str = None,
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.validar"><code class="name flex">
-<span>def <span class="ident">validar</span></span>(<span>objetoNfe: <a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a>, tipo_emissao: str, *args, **kwargs) ‑> str</span>
+<span>def <span class="ident">validar</span></span>(<span>objetoNfe: <a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a>, tipo_emissao: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Endpoint utilizado para validar a nota fiscal eletrônica antes de emitir.</p>
@@ -640,10 +1016,12 @@ def listar(qtd:str = None,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@requires_emissor
-@requires_empresa
 def validar(objetoNfe:ObjetoEmissaoNFe, 
-    tipo_emissao:str, *args, **kwargs) -&gt; str:
-    &#34;&#34;&#34;Endpoint utilizado para validar a nota fiscal eletrônica antes de emitir.
+            tipo_emissao:str,
+            token_empresa:str, 
+            token_secret_empresa:str, 
+            *args, **kwargs) -&gt; str:
+    &#39;&#39;&#39;Endpoint utilizado para validar a nota fiscal eletrônica antes de emitir.
 
     Args:
         nfe (ObjetoEmissaoNFe): Nota Fiscal a ser validada.
@@ -652,9 +1030,20 @@ def validar(objetoNfe:ObjetoEmissaoNFe,
             1: Normal  
             6: Contigência SNC-AN  
             7: Contigência SVC-RS  
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
+    
     headers = HEADERS.copy()
-    headers[&#39;tipo-emissao&#39;] = tipo_emissao    # TODO: Validar antes
+    
+    # -----------------------------------------
+    validate_tokens(token_empresa, token_secret_empresa)
+    headers[&#39;token-empresa&#39;]        = token_empresa
+    headers[&#39;token-secret-empresa&#39;] = token_secret_empresa
+    
+    # -----------------------------------------
+    if not tipo_emissao or tipo_emissao not in TIPOS_EMISSAO:
+        raise ValueError(f&#39;Tipo de Emissão {tipo_emissao} inválido&#39;)
+    
+    headers[&#39;tipo-emissao&#39;] = tipo_emissao
     json_str = jsonpickle.encode(objetoNfe.as_filtered_dict(), unpicklable=False)
     
     url = f&#39;{BASE_URL}/nfe/validacao-nota&#39;
@@ -674,63 +1063,142 @@ def validar(objetoNfe:ObjetoEmissaoNFe,
 <dl>
 <dt id="pysisnoapi.nfe.Compra"><code class="flex name class">
 <span>class <span class="ident">Compra</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>contrato: Optional[str] = None, nota_empenho: Optional[str] = None, pedido: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Compra(contrato: Optional[str] = None, nota_empenho: Optional[str] = None, pedido: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Compra:
-    def __init__(self, **kwargs):
-        raise NotImplementedError</code></pre>
+<pre><code class="python">@dataclass
+class Compra:
+    contrato    : Optional[str] = None
+    nota_empenho: Optional[str] = None
+    pedido      : Optional[str] = None</code></pre>
 </details>
+<h3>Class variables</h3>
+<dl>
+<dt id="pysisnoapi.nfe.Compra.contrato"><code class="name">var <span class="ident">contrato</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Compra.nota_empenho"><code class="name">var <span class="ident">nota_empenho</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Compra.pedido"><code class="name">var <span class="ident">pedido</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.nfe.Exportacao"><code class="flex name class">
 <span>class <span class="ident">Exportacao</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>uf_embarque: str, local_embarque: str, local_despacho: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Exportacao(uf_embarque: str, local_embarque: str, local_despacho: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Exportacao:
-    def __init__(self, **kwargs):
-        raise NotImplementedError</code></pre>
+<pre><code class="python">@dataclass
+class Exportacao:
+    uf_embarque   : str
+    local_embarque: str
+    
+    local_despacho: Optional[str] = None</code></pre>
 </details>
+<h3>Class variables</h3>
+<dl>
+<dt id="pysisnoapi.nfe.Exportacao.local_despacho"><code class="name">var <span class="ident">local_despacho</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Exportacao.local_embarque"><code class="name">var <span class="ident">local_embarque</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Exportacao.uf_embarque"><code class="name">var <span class="ident">uf_embarque</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.nfe.ExportacaoIndividual"><code class="flex name class">
 <span>class <span class="ident">ExportacaoIndividual</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>drawback: Optional[str] = None, reg_exportacao: Optional[str] = None, nfe_exportacao: Optional[str] = None, qtd_exportacao: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>ExportacaoIndividual(drawback: Optional[str] = None, reg_exportacao: Optional[str] = None, nfe_exportacao: Optional[str] = None, qtd_exportacao: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ExportacaoIndividual:
-    def __init__(self, **kwargs):
-        raise NotImplementedError</code></pre>
+<pre><code class="python">@dataclass
+class ExportacaoIndividual:
+    drawback      : Optional[str] = None
+    reg_exportacao: Optional[str] = None
+    nfe_exportacao: Optional[str] = None
+    qtd_exportacao: Optional[str] = None</code></pre>
 </details>
+<h3>Class variables</h3>
+<dl>
+<dt id="pysisnoapi.nfe.ExportacaoIndividual.drawback"><code class="name">var <span class="ident">drawback</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.ExportacaoIndividual.nfe_exportacao"><code class="name">var <span class="ident">nfe_exportacao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.ExportacaoIndividual.qtd_exportacao"><code class="name">var <span class="ident">qtd_exportacao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.ExportacaoIndividual.reg_exportacao"><code class="name">var <span class="ident">reg_exportacao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.nfe.Fatura"><code class="flex name class">
 <span>class <span class="ident">Fatura</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>numero: str, valor: str, desconto: str, valor_liquido: str)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Fatura(numero: str, valor: str, desconto: str, valor_liquido: str)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Fatura:
-    def __init__(self, **kwargs):
-        raise NotImplementedError</code></pre>
+<pre><code class="python">@dataclass
+class Fatura:
+    numero       : str
+    valor        : str
+    desconto     : str
+    valor_liquido: str</code></pre>
 </details>
+<h3>Class variables</h3>
+<dl>
+<dt id="pysisnoapi.nfe.Fatura.desconto"><code class="name">var <span class="ident">desconto</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Fatura.numero"><code class="name">var <span class="ident">numero</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Fatura.valor"><code class="name">var <span class="ident">valor</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Fatura.valor_liquido"><code class="name">var <span class="ident">valor_liquido</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.nfe.FormaPagamento"><code class="flex name class">
 <span>class <span class="ident">FormaPagamento</span></span>
@@ -758,17 +1226,23 @@ class FormaPagamento:
     def __post_init__(self):
         self.validate_forma_pagamento()
         self.validate_meios_pagamento()
-        self.validate_descricao()
+        self.validate_bandeira()
+        self.validate_descricao_meio_pagamento()
     
-    def validate_forma_pagamento(self):
+    def validate_forma_pagamento(self, *args, **kwargs):
         if self.forma_pagamento not in FORMAS_PAGAMENTO:
             raise ValueError(f&#39;Forma de pagamento {self.forma_pagamento} inválido&#39;)
-        
-    def validate_meios_pagamento(self):
+
+    def validate_meios_pagamento(self, *args, **kwargs):
         if self.meio_pagamento not in MEIOS_PAGAMENTO:
             raise ValueError(f&#39;Meio de pagamento {self.meio_pagamento} inválido&#39;)
-        
-    def validate_descricao(self):
+
+    def validate_bandeira(self, *args, **kwargs):
+        if self.bandeira:
+            if self.bandeira not in BANDEIRAS:
+                raise ValueError(f&#39;Bandeira {self.bandeira} inválida.&#39;)
+
+    def validate_descricao_meio_pagamento(self, *args, **kwargs):
         if self.meio_pagamento == &#39;99&#39;:
             if self.descricao_meio_pagamento is None:
                 raise ValueError(f&#39;Necessário preencher &#34;descricao_meio_pagamento&#34; quando a forma de pagamento é &#34;(99) Outros&#34;.&#39;)
@@ -812,8 +1286,8 @@ class FormaPagamento:
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="pysisnoapi.nfe.FormaPagamento.validate_descricao"><code class="name flex">
-<span>def <span class="ident">validate_descricao</span></span>(<span>self)</span>
+<dt id="pysisnoapi.nfe.FormaPagamento.validate_bandeira"><code class="name flex">
+<span>def <span class="ident">validate_bandeira</span></span>(<span>self, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -821,7 +1295,22 @@ class FormaPagamento:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_descricao(self):
+<pre><code class="python">def validate_bandeira(self, *args, **kwargs):
+    if self.bandeira:
+        if self.bandeira not in BANDEIRAS:
+            raise ValueError(f&#39;Bandeira {self.bandeira} inválida.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.FormaPagamento.validate_descricao_meio_pagamento"><code class="name flex">
+<span>def <span class="ident">validate_descricao_meio_pagamento</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_descricao_meio_pagamento(self, *args, **kwargs):
     if self.meio_pagamento == &#39;99&#39;:
         if self.descricao_meio_pagamento is None:
             raise ValueError(f&#39;Necessário preencher &#34;descricao_meio_pagamento&#34; quando a forma de pagamento é &#34;(99) Outros&#34;.&#39;)
@@ -830,7 +1319,7 @@ class FormaPagamento:
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.FormaPagamento.validate_forma_pagamento"><code class="name flex">
-<span>def <span class="ident">validate_forma_pagamento</span></span>(<span>self)</span>
+<span>def <span class="ident">validate_forma_pagamento</span></span>(<span>self, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -838,13 +1327,13 @@ class FormaPagamento:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_forma_pagamento(self):
+<pre><code class="python">def validate_forma_pagamento(self, *args, **kwargs):
     if self.forma_pagamento not in FORMAS_PAGAMENTO:
         raise ValueError(f&#39;Forma de pagamento {self.forma_pagamento} inválido&#39;)</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.FormaPagamento.validate_meios_pagamento"><code class="name flex">
-<span>def <span class="ident">validate_meios_pagamento</span></span>(<span>self)</span>
+<span>def <span class="ident">validate_meios_pagamento</span></span>(<span>self, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -852,7 +1341,7 @@ class FormaPagamento:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_meios_pagamento(self):
+<pre><code class="python">def validate_meios_pagamento(self, *args, **kwargs):
     if self.meio_pagamento not in MEIOS_PAGAMENTO:
         raise ValueError(f&#39;Meio de pagamento {self.meio_pagamento} inválido&#39;)</code></pre>
 </details>
@@ -861,18 +1350,90 @@ class FormaPagamento:
 </dd>
 <dt id="pysisnoapi.nfe.ImportacaoIndividual"><code class="flex name class">
 <span>class <span class="ident">ImportacaoIndividual</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>numero_registro: Optional[str] = None, data_registro: Optional[str] = None, cod_exportador: Optional[str] = None, cod_via_transporte_internacional: Optional[str] = None, valor_afrmm: Optional[str] = None, cod_forma_importacao_intermediacao: Optional[str] = None, uf_desembaraco: Optional[str] = None, local_desembaraco: Optional[str] = None, data_desembaraco: Optional[str] = None, cnpj_terceiro: Optional[str] = None, uf_terceiro: Optional[str] = None, iof: Optional[str] = None, valor_despesas_aduaneiras: Optional[str] = None, adicoes: Optional[List[ForwardRef('DeclaracaoImportacaoAdicao')]] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>ImportacaoIndividual(numero_registro: Optional[str] = None, data_registro: Optional[str] = None, cod_exportador: Optional[str] = None, cod_via_transporte_internacional: Optional[str] = None, valor_afrmm: Optional[str] = None, cod_forma_importacao_intermediacao: Optional[str] = None, uf_desembaraco: Optional[str] = None, local_desembaraco: Optional[str] = None, data_desembaraco: Optional[str] = None, cnpj_terceiro: Optional[str] = None, uf_terceiro: Optional[str] = None, iof: Optional[str] = None, valor_despesas_aduaneiras: Optional[str] = None, adicoes: Optional[List[ForwardRef('DeclaracaoImportacaoAdicao')]] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ImportacaoIndividual:
-    def __init__(self, **kwargs):
-        raise NotImplementedError</code></pre>
+<pre><code class="python">@dataclass
+class ImportacaoIndividual:
+    numero_registro                   : Optional[str]                                = None
+    data_registro                     : Optional[str]                                = None
+    cod_exportador                    : Optional[str]                                = None
+    cod_via_transporte_internacional  : Optional[str]                                = None
+    valor_afrmm                       : Optional[str]                                = None
+    cod_forma_importacao_intermediacao: Optional[str]                                = None
+    uf_desembaraco                    : Optional[str]                                = None
+    local_desembaraco                 : Optional[str]                                = None
+    data_desembaraco                  : Optional[str]                                = None
+    cnpj_terceiro                     : Optional[str]                                = None
+    uf_terceiro                       : Optional[str]                                = None
+    iof                               : Optional[str]                                = None
+    valor_despesas_aduaneiras         : Optional[str]                                = None
+    adicoes                           : Optional[List[&#39;DeclaracaoImportacaoAdicao&#39;]] = None</code></pre>
 </details>
+<h3>Class variables</h3>
+<dl>
+<dt id="pysisnoapi.nfe.ImportacaoIndividual.adicoes"><code class="name">var <span class="ident">adicoes</span> : Optional[List[<a title="pysisnoapi.DeclaracaoImportacaoAdicao" href="index.html#pysisnoapi.DeclaracaoImportacaoAdicao">DeclaracaoImportacaoAdicao</a>]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.ImportacaoIndividual.cnpj_terceiro"><code class="name">var <span class="ident">cnpj_terceiro</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.ImportacaoIndividual.cod_exportador"><code class="name">var <span class="ident">cod_exportador</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.ImportacaoIndividual.cod_forma_importacao_intermediacao"><code class="name">var <span class="ident">cod_forma_importacao_intermediacao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.ImportacaoIndividual.cod_via_transporte_internacional"><code class="name">var <span class="ident">cod_via_transporte_internacional</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.ImportacaoIndividual.data_desembaraco"><code class="name">var <span class="ident">data_desembaraco</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.ImportacaoIndividual.data_registro"><code class="name">var <span class="ident">data_registro</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.ImportacaoIndividual.iof"><code class="name">var <span class="ident">iof</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.ImportacaoIndividual.local_desembaraco"><code class="name">var <span class="ident">local_desembaraco</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.ImportacaoIndividual.numero_registro"><code class="name">var <span class="ident">numero_registro</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.ImportacaoIndividual.uf_desembaraco"><code class="name">var <span class="ident">uf_desembaraco</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.ImportacaoIndividual.uf_terceiro"><code class="name">var <span class="ident">uf_terceiro</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.ImportacaoIndividual.valor_afrmm"><code class="name">var <span class="ident">valor_afrmm</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.ImportacaoIndividual.valor_despesas_aduaneiras"><code class="name">var <span class="ident">valor_despesas_aduaneiras</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.nfe.ImpostosProduto"><code class="flex name class">
 <span>class <span class="ident">ImpostosProduto</span></span>
@@ -886,8 +1447,8 @@ class FormaPagamento:
 </summary>
 <pre><code class="python">@dataclass
 class ImpostosProduto(Impostos):
-    icms: &#34;Icms&#34;
-    ipi : &#34;Ipi&#34;</code></pre>
+    icms: &#39;Icms&#39;
+    ipi : &#39;Ipi&#39;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -907,33 +1468,93 @@ class ImpostosProduto(Impostos):
 </dd>
 <dt id="pysisnoapi.nfe.InformacaoIntermediador"><code class="flex name class">
 <span>class <span class="ident">InformacaoIntermediador</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>cnpj: Optional[str] = None, identificador_cadastro_intermediador: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>InformacaoIntermediador(cnpj: Optional[str] = None, identificador_cadastro_intermediador: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class InformacaoIntermediador:
-    def __init__(self, **kwargs):
-        raise NotImplementedError</code></pre>
+<pre><code class="python">@dataclass
+class InformacaoIntermediador:
+    cnpj                                : Optional[str] = None
+    identificador_cadastro_intermediador: Optional[str] = None</code></pre>
 </details>
+<h3>Class variables</h3>
+<dl>
+<dt id="pysisnoapi.nfe.InformacaoIntermediador.cnpj"><code class="name">var <span class="ident">cnpj</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.InformacaoIntermediador.identificador_cadastro_intermediador"><code class="name">var <span class="ident">identificador_cadastro_intermediador</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.nfe.Local"><code class="flex name class">
 <span>class <span class="ident">Local</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>uf: str, codigo_municipio: str, descricao_municipio: str, bairro: str, logradouro: str, numero: str, complemento: str, cpf: Optional[str] = None, cnpj: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Local(uf: str, codigo_municipio: str, descricao_municipio: str, bairro: str, logradouro: str, numero: str, complemento: str, cpf: Optional[str] = None, cnpj: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Local:
-    def __init__(self, **kwargs):
-        raise NotImplementedError</code></pre>
+<pre><code class="python">@dataclass
+class Local:
+    uf                  : str
+    codigo_municipio    : str
+    descricao_municipio : str
+    bairro              : str
+    logradouro          : str
+    numero              : str
+    complemento         : str
+    
+    cpf : Optional[str] = None
+    cnpj: Optional[str] = None</code></pre>
 </details>
+<h3>Class variables</h3>
+<dl>
+<dt id="pysisnoapi.nfe.Local.bairro"><code class="name">var <span class="ident">bairro</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Local.cnpj"><code class="name">var <span class="ident">cnpj</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Local.codigo_municipio"><code class="name">var <span class="ident">codigo_municipio</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Local.complemento"><code class="name">var <span class="ident">complemento</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Local.cpf"><code class="name">var <span class="ident">cpf</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Local.descricao_municipio"><code class="name">var <span class="ident">descricao_municipio</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Local.logradouro"><code class="name">var <span class="ident">logradouro</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Local.numero"><code class="name">var <span class="ident">numero</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Local.uf"><code class="name">var <span class="ident">uf</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.nfe.ObjetoEmissaoNFe"><code class="flex name class">
 <span>class <span class="ident">ObjetoEmissaoNFe</span></span>
@@ -955,44 +1576,51 @@ class ObjetoEmissaoNFe(BaseClass):
     finalidade              : str
     ambiente                : str
     cliente                 : Cliente
-    produtos                : List[&#34;Produto&#34;]
-    pedido                  : &#34;Pedido&#34;
+    produtos                : List[&#39;Produto&#39;]
+    pedido                  : &#39;Pedido&#39;
     data_entrada_saida      : datetime
     data_emissao            : datetime
     
     numero_pedido           : Optional[str]                       = None
-    transporte              : Optional[&#34;Transporte&#34;]              = None
-    fatura                  : Optional[&#34;Fatura&#34;]                  = None
-    parcelas                : Optional[List[&#34;Parcela&#34;]]           = None
-    exportacao              : Optional[&#34;Exportacao&#34;]              = None
+    transporte              : Optional[&#39;Transporte&#39;]              = None
+    fatura                  : Optional[&#39;Fatura&#39;]                  = None
+    parcelas                : Optional[List[&#39;Parcela&#39;]]           = None
+    exportacao              : Optional[&#39;Exportacao&#39;]              = None
     nfe_referenciada        : Optional[List[str]]                 = None
-    retirada                : Optional[&#34;Local&#34;]                   = None
-    entrega                 : Optional[&#34;Local&#34;]                   = None
-    compra                  : Optional[&#34;Compra&#34;]                  = None
+    retirada                : Optional[&#39;Local&#39;]                   = None
+    entrega                 : Optional[&#39;Local&#39;]                   = None
+    compra                  : Optional[&#39;Compra&#39;]                  = None
     indicador_intermediador : Optional[str]                       = None
-    informacao_intermediador: Optional[&#34;InformacaoIntermediador&#34;] = None
+    informacao_intermediador: Optional[&#39;InformacaoIntermediador&#39;] = None
     
     def __post_init__(self):
+        self.validate_numero_nota_sequencial()
         self.validate_operacao()
         self.validate_modelo()
         self.validate_finalidade()
         self.validate_ambiente()
     
+    def validate_numero_nota_sequencial(self):
+        if not isinstance(self.numero_nota_sequencial, str):
+            raise TypeError(f&#39;numero_nota_sequencialdeve ser string.&#39;)
+        if len(self.numero_nota_sequencial) &lt; 1 or len(self.numero_nota_sequencial) &gt; 9:
+            raise ValueError(f&#39;numero_nota_sequencial deve conter entre 1 e 9 caracteres.&#39;)
+    
     def validate_operacao(self):
-        if self.operacao not in [&#39;0&#39;, &#39;1&#39;]:
-            raise ValueError(f&#34;Operação {self.operacao} inválida&#34;)
+        if self.operacao not in OPERACOES:
+            raise ValueError(f&#39;Operação {self.operacao} inválida&#39;)
     
     def validate_modelo(self):
-        if self.modelo not in [&#39;55&#39;, &#39;65&#39;]:
-            raise ValueError(f&#34;Modelo {self.modelo} inválido&#34;)
+        if self.modelo not in MODELOS:
+            raise ValueError(f&#39;Modelo {self.modelo} inválido&#39;)
     
     def validate_finalidade(self):
-        if self.finalidade not in [&#39;1&#39;, &#39;2&#39;, &#39;3&#39;, &#39;4&#39;]:
-            raise ValueError(f&#34;Finalidade {self.finalidade} inválida&#34;)
+        if self.finalidade not in FINALIDADES:
+            raise ValueError(f&#39;Finalidade {self.finalidade} inválida&#39;)
     
     def validate_ambiente(self):
-        if self.ambiente not in [&#39;1&#39;, &#39;2&#39;,]:
-            raise ValueError(f&#34;Ambiente {self.ambiente} inválido&#34;)</code></pre>
+        if self.ambiente not in AMBIENTES:
+            raise ValueError(f&#39;Ambiente {self.ambiente} inválido&#39;)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1105,8 +1733,8 @@ class ObjetoEmissaoNFe(BaseClass):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def validate_ambiente(self):
-    if self.ambiente not in [&#39;1&#39;, &#39;2&#39;,]:
-        raise ValueError(f&#34;Ambiente {self.ambiente} inválido&#34;)</code></pre>
+    if self.ambiente not in AMBIENTES:
+        raise ValueError(f&#39;Ambiente {self.ambiente} inválido&#39;)</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.ObjetoEmissaoNFe.validate_finalidade"><code class="name flex">
@@ -1119,8 +1747,8 @@ class ObjetoEmissaoNFe(BaseClass):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def validate_finalidade(self):
-    if self.finalidade not in [&#39;1&#39;, &#39;2&#39;, &#39;3&#39;, &#39;4&#39;]:
-        raise ValueError(f&#34;Finalidade {self.finalidade} inválida&#34;)</code></pre>
+    if self.finalidade not in FINALIDADES:
+        raise ValueError(f&#39;Finalidade {self.finalidade} inválida&#39;)</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.ObjetoEmissaoNFe.validate_modelo"><code class="name flex">
@@ -1133,8 +1761,24 @@ class ObjetoEmissaoNFe(BaseClass):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def validate_modelo(self):
-    if self.modelo not in [&#39;55&#39;, &#39;65&#39;]:
-        raise ValueError(f&#34;Modelo {self.modelo} inválido&#34;)</code></pre>
+    if self.modelo not in MODELOS:
+        raise ValueError(f&#39;Modelo {self.modelo} inválido&#39;)</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.ObjetoEmissaoNFe.validate_numero_nota_sequencial"><code class="name flex">
+<span>def <span class="ident">validate_numero_nota_sequencial</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_numero_nota_sequencial(self):
+    if not isinstance(self.numero_nota_sequencial, str):
+        raise TypeError(f&#39;numero_nota_sequencialdeve ser string.&#39;)
+    if len(self.numero_nota_sequencial) &lt; 1 or len(self.numero_nota_sequencial) &gt; 9:
+        raise ValueError(f&#39;numero_nota_sequencial deve conter entre 1 e 9 caracteres.&#39;)</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.ObjetoEmissaoNFe.validate_operacao"><code class="name flex">
@@ -1147,8 +1791,8 @@ class ObjetoEmissaoNFe(BaseClass):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def validate_operacao(self):
-    if self.operacao not in [&#39;0&#39;, &#39;1&#39;]:
-        raise ValueError(f&#34;Operação {self.operacao} inválida&#34;)</code></pre>
+    if self.operacao not in OPERACOES:
+        raise ValueError(f&#39;Operação {self.operacao} inválida&#39;)</code></pre>
 </details>
 </dd>
 </dl>
@@ -1173,7 +1817,7 @@ class ObjetoEmissaoNFe(BaseClass):
 </summary>
 <pre><code class="python">@dataclass
 class Pagamento:
-    formas_pagamento: List[&#34;FormaPagamento&#34;]</code></pre>
+    formas_pagamento: List[&#39;FormaPagamento&#39;]</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -1185,33 +1829,67 @@ class Pagamento:
 </dd>
 <dt id="pysisnoapi.nfe.PaginaNotas"><code class="flex name class">
 <span>class <span class="ident">PaginaNotas</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>total: Optional[str] = None, itens_por_pagina: Optional[str] = None, pagina_atual: Optional[str] = None, itens: Optional[List[ForwardRef('NotaFiscal')]] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>PaginaNotas(total: Optional[str] = None, itens_por_pagina: Optional[str] = None, pagina_atual: Optional[str] = None, itens: Optional[List[ForwardRef('NotaFiscal')]] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class PaginaNotas:
-    def __init__(self, **kwargs):
-        raise NotImplementedError</code></pre>
+<pre><code class="python">@dataclass
+class PaginaNotas:
+    total           : Optional[str]                = None
+    itens_por_pagina: Optional[str]                = None
+    pagina_atual    : Optional[str]                = None
+    itens           : Optional[List[&#39;NotaFiscal&#39;]] = None</code></pre>
 </details>
+<h3>Class variables</h3>
+<dl>
+<dt id="pysisnoapi.nfe.PaginaNotas.itens"><code class="name">var <span class="ident">itens</span> : Optional[List[<a title="pysisnoapi.NotaFiscal" href="index.html#pysisnoapi.NotaFiscal">NotaFiscal</a>]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.PaginaNotas.itens_por_pagina"><code class="name">var <span class="ident">itens_por_pagina</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.PaginaNotas.pagina_atual"><code class="name">var <span class="ident">pagina_atual</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.PaginaNotas.total"><code class="name">var <span class="ident">total</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.nfe.Parcela"><code class="flex name class">
 <span>class <span class="ident">Parcela</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>vencimento: str, valor: str)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Parcela(vencimento: str, valor: str)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Parcela:
-    def __init__(self, **kwargs):
-        raise NotImplementedError</code></pre>
+<pre><code class="python">@dataclass
+class Parcela:
+    vencimento: str
+    valor     : str</code></pre>
 </details>
+<h3>Class variables</h3>
+<dl>
+<dt id="pysisnoapi.nfe.Parcela.valor"><code class="name">var <span class="ident">valor</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Parcela.vencimento"><code class="name">var <span class="ident">vencimento</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.nfe.Pedido"><code class="flex name class">
 <span>class <span class="ident">Pedido</span></span>
@@ -1226,7 +1904,7 @@ class Pagamento:
 <pre><code class="python">@dataclass
 class Pedido:
     presenca                  : str
-    pagamento                 : &#34;Pagamento&#34;
+    pagamento                 : &#39;Pagamento&#39;
     
     modalidade_frete          : Optional[str] = None
     frete                     : Optional[str] = None
@@ -1237,7 +1915,20 @@ class Pedido:
     informacoes_complementares: Optional[str] = None
     informacoes_fisco         : Optional[str] = None
     observacoes_fisco         : Optional[str] = None
-    observacoes_contribuinte  : Optional[str] = None</code></pre>
+    observacoes_contribuinte  : Optional[str] = None
+    
+    def __post_init__(self):
+        self.validate_presenca()
+        self.validate_modalidade_frete()
+    
+    def validate_presenca(self, *args, **kwargs):
+        if self.presenca not in PRESENCAS:
+            raise ValueError(f&#39;Presença {self.presenca} inválida.&#39;)
+        
+    def validate_modalidade_frete(self, *args, **kwargs):
+        if self.modalidade_frete:
+            if self.modalidade_frete not in MODALIDADES_FRETE:
+                raise ValueError(f&#39;Modalidade de Frete {self.modalidade_frete} inválida.&#39;)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -1290,6 +1981,38 @@ class Pedido:
 <div class="desc"></div>
 </dd>
 </dl>
+<h3>Methods</h3>
+<dl>
+<dt id="pysisnoapi.nfe.Pedido.validate_modalidade_frete"><code class="name flex">
+<span>def <span class="ident">validate_modalidade_frete</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_modalidade_frete(self, *args, **kwargs):
+    if self.modalidade_frete:
+        if self.modalidade_frete not in MODALIDADES_FRETE:
+            raise ValueError(f&#39;Modalidade de Frete {self.modalidade_frete} inválida.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.Pedido.validate_presenca"><code class="name flex">
+<span>def <span class="ident">validate_presenca</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_presenca(self, *args, **kwargs):
+    if self.presenca not in PRESENCAS:
+        raise ValueError(f&#39;Presença {self.presenca} inválida.&#39;)</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.nfe.Produto"><code class="flex name class">
 <span>class <span class="ident">Produto</span></span>
@@ -1310,12 +2033,12 @@ class Pedido:
 </summary>
 <pre><code class="python">@dataclass
 class Produto:
-    &#34;&#34;&#34;Classe Produto
+    &#39;&#39;&#39;Classe Produto
 
     Raises:
         ValueError: Caso o valor de algum atributo seja inválido.
         TypeError: Caso algum campo obrigatório não for informado.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     item                            : str   # Número incremental na lista de produtos
     
     cfop                            : str
@@ -1352,17 +2075,38 @@ class Produto:
     valor_desconto                  : Optional[str]                    = None
     valor_outras_despesas_acessorias: Optional[str]                    = None
     
-    def __post_init__(self):
+    def __post_init__(self, *args, **kwargs):
         self.validate_unidade()
         self.validate_impostos()
+        self.validate_origem()
+        self.validate_total()
+        self.validate_ind_escala()
         
-    def validate_unidade(self):
+    def validate_unidade(self, *args, **kwargs):
         if self.unidade not in UNIDADES:
-            raise ValueError(f&#34;Unidade {self.unidade} inválida.&#34;)
+            raise ValueError(f&#39;Unidade {self.unidade} inválida.&#39;)
         
-    def validate_impostos(self):
+    def validate_impostos(self, *args, **kwargs):
         if not isinstance(self.impostos, Impostos):
-            raise TypeError(f&#39;Campo &#34;impostos&#34; deve ser {repr(Impostos)} e não {type(self.impostos)}&#39;)</code></pre>
+            raise TypeError(f&#39;Campo &#34;impostos&#34; deve ser {repr(Impostos)} e não {type(self.impostos)}&#39;)
+
+    def validate_origem(self, *args, **kwargs):
+        if self.origem:
+            if self.origem not in ORIGENS:
+                raise ValueError(f&#39;Origem {self.origem} inválida.&#39;)
+        
+    def validate_total(self, *args, **kwargs):
+        quantidade = float(self.quantidade)
+        subtotal   = float(self.subtotal)
+        total      = float(self.total)
+        
+        if f&#39;{total:.2f}&#39; != f&#39;{quantidade*subtotal:.2f}&#39;:
+            raise ValueError(f&#39;Total {total:.2f} é diferente de quantidade {quantidade:.2f} * subtotal {subtotal:.2f} = {quantidade*subtotal:.2f}&#39;)
+        
+    def validate_ind_escala(self, *args, **kwargs):
+        if self.ind_escala:
+            if self.ind_escala not in INDICATIVOS_ESCALA:
+                raise ValueError(f&#39;Indicativo de escala {self.ind_escala} inválido.&#39;)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -1502,7 +2246,7 @@ class Produto:
 <h3>Methods</h3>
 <dl>
 <dt id="pysisnoapi.nfe.Produto.validate_impostos"><code class="name flex">
-<span>def <span class="ident">validate_impostos</span></span>(<span>self)</span>
+<span>def <span class="ident">validate_impostos</span></span>(<span>self, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1510,13 +2254,13 @@ class Produto:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_impostos(self):
+<pre><code class="python">def validate_impostos(self, *args, **kwargs):
     if not isinstance(self.impostos, Impostos):
         raise TypeError(f&#39;Campo &#34;impostos&#34; deve ser {repr(Impostos)} e não {type(self.impostos)}&#39;)</code></pre>
 </details>
 </dd>
-<dt id="pysisnoapi.nfe.Produto.validate_unidade"><code class="name flex">
-<span>def <span class="ident">validate_unidade</span></span>(<span>self)</span>
+<dt id="pysisnoapi.nfe.Produto.validate_ind_escala"><code class="name flex">
+<span>def <span class="ident">validate_ind_escala</span></span>(<span>self, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1524,31 +2268,288 @@ class Produto:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_unidade(self):
+<pre><code class="python">def validate_ind_escala(self, *args, **kwargs):
+    if self.ind_escala:
+        if self.ind_escala not in INDICATIVOS_ESCALA:
+            raise ValueError(f&#39;Indicativo de escala {self.ind_escala} inválido.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.Produto.validate_origem"><code class="name flex">
+<span>def <span class="ident">validate_origem</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_origem(self, *args, **kwargs):
+    if self.origem:
+        if self.origem not in ORIGENS:
+            raise ValueError(f&#39;Origem {self.origem} inválida.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.Produto.validate_total"><code class="name flex">
+<span>def <span class="ident">validate_total</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_total(self, *args, **kwargs):
+    quantidade = float(self.quantidade)
+    subtotal   = float(self.subtotal)
+    total      = float(self.total)
+    
+    if f&#39;{total:.2f}&#39; != f&#39;{quantidade*subtotal:.2f}&#39;:
+        raise ValueError(f&#39;Total {total:.2f} é diferente de quantidade {quantidade:.2f} * subtotal {subtotal:.2f} = {quantidade*subtotal:.2f}&#39;)</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.Produto.validate_unidade"><code class="name flex">
+<span>def <span class="ident">validate_unidade</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_unidade(self, *args, **kwargs):
     if self.unidade not in UNIDADES:
-        raise ValueError(f&#34;Unidade {self.unidade} inválida.&#34;)</code></pre>
+        raise ValueError(f&#39;Unidade {self.unidade} inválida.&#39;)</code></pre>
 </details>
 </dd>
 </dl>
 </dd>
 <dt id="pysisnoapi.nfe.Rastreamento"><code class="flex name class">
 <span>class <span class="ident">Rastreamento</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>lote: str, quantidade: str, data_fabricacao: str, data_validade: str, codigo_agregacao: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Rastreamento(lote: str, quantidade: str, data_fabricacao: str, data_validade: str, codigo_agregacao: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Rastreamento:
-    def __init__(self, **kwargs):
-        raise NotImplementedError</code></pre>
+<pre><code class="python">@dataclass
+class Rastreamento:
+    lote           : str
+    quantidade     : str
+    data_fabricacao: str
+    data_validade  : str
+    
+    codigo_agregacao: Optional[str] = None</code></pre>
 </details>
+<h3>Class variables</h3>
+<dl>
+<dt id="pysisnoapi.nfe.Rastreamento.codigo_agregacao"><code class="name">var <span class="ident">codigo_agregacao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Rastreamento.data_fabricacao"><code class="name">var <span class="ident">data_fabricacao</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Rastreamento.data_validade"><code class="name">var <span class="ident">data_validade</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Rastreamento.lote"><code class="name">var <span class="ident">lote</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.Rastreamento.quantidade"><code class="name">var <span class="ident">quantidade</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.nfe.VeiculoNovo"><code class="flex name class">
 <span>class <span class="ident">VeiculoNovo</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>tipo_operacao: str, chassi: str, cor: str, cor_descricao: str, cilindrada: str, peso_liquido: str, peso_bruto: str, serie: str, tipo_combustivel: str, numero_motor: str, dist: str, ano_modelo: str, ano_fabricacao: str, tipo_pintura: str, tipo_veiculo: str, especie_veiculo: str, condicao_veiculo: str, marca_modelo: str, cor_denatran: str, lotacao: str, restricao: str, capacidade_maxima_tracao: Optional[str] = None, condicao_chassi: Optional[str] = None, potencia: Optional[str] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>VeiculoNovo(tipo_operacao: str, chassi: str, cor: str, cor_descricao: str, cilindrada: str, peso_liquido: str, peso_bruto: str, serie: str, tipo_combustivel: str, numero_motor: str, dist: str, ano_modelo: str, ano_fabricacao: str, tipo_pintura: str, tipo_veiculo: str, especie_veiculo: str, condicao_veiculo: str, marca_modelo: str, cor_denatran: str, lotacao: str, restricao: str, capacidade_maxima_tracao: Optional[str] = None, condicao_chassi: Optional[str] = None, potencia: Optional[str] = None)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@dataclass
+class VeiculoNovo:
+    tipo_operacao   : str
+    chassi          : str
+    cor             : str
+    cor_descricao   : str
+    cilindrada      : str
+    peso_liquido    : str
+    peso_bruto      : str
+    serie           : str
+    tipo_combustivel: str
+    numero_motor    : str
+    dist            : str
+    ano_modelo      : str
+    ano_fabricacao  : str
+    tipo_pintura    : str
+    tipo_veiculo    : str
+    especie_veiculo : str
+    condicao_veiculo: str
+    marca_modelo    : str
+    cor_denatran    : str
+    lotacao         : str
+    restricao       : str
+
+    capacidade_maxima_tracao: Optional[str] = None
+    condicao_chassi         : Optional[str] = None
+    potencia                : Optional[str] = None
+   
+    def __post_init__(self):
+       self.validate_tipo_operacao()
+       self.validate_cor()
+       self.validate_tipo_combustivel()
+       self.validate_tipo_veiculo()
+       self.validate_especie_veiculo()
+       self.validate_condicao_veiculo()
+       self.validate_restricao()
+       self.validate_condicao_chassi()
+    
+    def validate_tipo_operacao(self, *args, **kwargs):
+        if self.tipo_operacao not in TIPOS_OPERACAO:
+            raise ValueError(f&#39;Tipo de operação {self.tipo_operacao} inválido.&#39;)
+    
+    def validate_cor(self, *args, **kwargs):
+        if self.cor not in CORES:
+            raise ValueError(f&#39;Cor {self.cor} inválida.&#39;)
+    
+    def validate_tipo_combustivel(self, *args, **kwargs):
+        if self.tipo_combustivel not in TIPOS_COMBUSTIVEL:
+            raise ValueError(f&#39;Tipo combustível {self.tipo_combustivel} inválido.&#39;)
+    
+    def validate_tipo_veiculo(self, *args, **kwargs):
+        if self.tipo_veiculo not in TIPOS_VEICULO:
+            raise ValueError(f&#39;Tipo de Veículo {self.tipo_veiculo} inválido.&#39;)
+    
+    def validate_especie_veiculo(self, *args, **kwargs):
+        if self.especie_veiculo not in ESPECIES_VEICULO:
+            raise ValueError(f&#39;Espécie de Veículo {self.especie_veiculo} inválida.&#39;)
+    
+    def validate_condicao_veiculo(self, *args, **kwargs):
+        if self.condicao_veiculo not in CONDICOES_VEICULO:
+            raise ValueError(f&#39;Condição do véiculo {self.condicao_veiculo} inválida.&#39;)
+    
+    def validate_restricao(self, *args, **kwargs):
+        if self.restricao not in RESTRICOES:
+            raise ValueError(f&#39;Restrição {self.restricao} inválida.&#39;)
+    
+    def validate_condicao_chassi(self, *args, **kwargs):
+        if self.condicao_chassi:
+            if self.condicao_chassi not in CONDICOES_CHASSI:
+                raise ValueError(f&#39;Condição do Chassi {self.condicao_chassi} inválida.&#39;)</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="pysisnoapi.nfe.VeiculoNovo.ano_fabricacao"><code class="name">var <span class="ident">ano_fabricacao</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.ano_modelo"><code class="name">var <span class="ident">ano_modelo</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.capacidade_maxima_tracao"><code class="name">var <span class="ident">capacidade_maxima_tracao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.chassi"><code class="name">var <span class="ident">chassi</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.cilindrada"><code class="name">var <span class="ident">cilindrada</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.condicao_chassi"><code class="name">var <span class="ident">condicao_chassi</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.condicao_veiculo"><code class="name">var <span class="ident">condicao_veiculo</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.cor"><code class="name">var <span class="ident">cor</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.cor_denatran"><code class="name">var <span class="ident">cor_denatran</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.cor_descricao"><code class="name">var <span class="ident">cor_descricao</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.dist"><code class="name">var <span class="ident">dist</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.especie_veiculo"><code class="name">var <span class="ident">especie_veiculo</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.lotacao"><code class="name">var <span class="ident">lotacao</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.marca_modelo"><code class="name">var <span class="ident">marca_modelo</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.numero_motor"><code class="name">var <span class="ident">numero_motor</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.peso_bruto"><code class="name">var <span class="ident">peso_bruto</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.peso_liquido"><code class="name">var <span class="ident">peso_liquido</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.potencia"><code class="name">var <span class="ident">potencia</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.restricao"><code class="name">var <span class="ident">restricao</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.serie"><code class="name">var <span class="ident">serie</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.tipo_combustivel"><code class="name">var <span class="ident">tipo_combustivel</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.tipo_operacao"><code class="name">var <span class="ident">tipo_operacao</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.tipo_pintura"><code class="name">var <span class="ident">tipo_pintura</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.tipo_veiculo"><code class="name">var <span class="ident">tipo_veiculo</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="pysisnoapi.nfe.VeiculoNovo.validate_condicao_chassi"><code class="name flex">
+<span>def <span class="ident">validate_condicao_chassi</span></span>(<span>self, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1556,10 +2557,111 @@ class Produto:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class VeiculoNovo:
-    def __init__(self, **kwargs):
-        raise NotImplementedError</code></pre>
+<pre><code class="python">def validate_condicao_chassi(self, *args, **kwargs):
+    if self.condicao_chassi:
+        if self.condicao_chassi not in CONDICOES_CHASSI:
+            raise ValueError(f&#39;Condição do Chassi {self.condicao_chassi} inválida.&#39;)</code></pre>
 </details>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.validate_condicao_veiculo"><code class="name flex">
+<span>def <span class="ident">validate_condicao_veiculo</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_condicao_veiculo(self, *args, **kwargs):
+    if self.condicao_veiculo not in CONDICOES_VEICULO:
+        raise ValueError(f&#39;Condição do véiculo {self.condicao_veiculo} inválida.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.validate_cor"><code class="name flex">
+<span>def <span class="ident">validate_cor</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_cor(self, *args, **kwargs):
+    if self.cor not in CORES:
+        raise ValueError(f&#39;Cor {self.cor} inválida.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.validate_especie_veiculo"><code class="name flex">
+<span>def <span class="ident">validate_especie_veiculo</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_especie_veiculo(self, *args, **kwargs):
+    if self.especie_veiculo not in ESPECIES_VEICULO:
+        raise ValueError(f&#39;Espécie de Veículo {self.especie_veiculo} inválida.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.validate_restricao"><code class="name flex">
+<span>def <span class="ident">validate_restricao</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_restricao(self, *args, **kwargs):
+    if self.restricao not in RESTRICOES:
+        raise ValueError(f&#39;Restrição {self.restricao} inválida.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.validate_tipo_combustivel"><code class="name flex">
+<span>def <span class="ident">validate_tipo_combustivel</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_tipo_combustivel(self, *args, **kwargs):
+    if self.tipo_combustivel not in TIPOS_COMBUSTIVEL:
+        raise ValueError(f&#39;Tipo combustível {self.tipo_combustivel} inválido.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.validate_tipo_operacao"><code class="name flex">
+<span>def <span class="ident">validate_tipo_operacao</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_tipo_operacao(self, *args, **kwargs):
+    if self.tipo_operacao not in TIPOS_OPERACAO:
+        raise ValueError(f&#39;Tipo de operação {self.tipo_operacao} inválido.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.nfe.VeiculoNovo.validate_tipo_veiculo"><code class="name flex">
+<span>def <span class="ident">validate_tipo_veiculo</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_tipo_veiculo(self, *args, **kwargs):
+    if self.tipo_veiculo not in TIPOS_VEICULO:
+        raise ValueError(f&#39;Tipo de Veículo {self.tipo_veiculo} inválido.&#39;)</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 </dl>
 </section>
@@ -1593,15 +2695,37 @@ class Produto:
 <ul>
 <li>
 <h4><code><a title="pysisnoapi.nfe.Compra" href="#pysisnoapi.nfe.Compra">Compra</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.nfe.Compra.contrato" href="#pysisnoapi.nfe.Compra.contrato">contrato</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Compra.nota_empenho" href="#pysisnoapi.nfe.Compra.nota_empenho">nota_empenho</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Compra.pedido" href="#pysisnoapi.nfe.Compra.pedido">pedido</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.nfe.Exportacao" href="#pysisnoapi.nfe.Exportacao">Exportacao</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.nfe.Exportacao.local_despacho" href="#pysisnoapi.nfe.Exportacao.local_despacho">local_despacho</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Exportacao.local_embarque" href="#pysisnoapi.nfe.Exportacao.local_embarque">local_embarque</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Exportacao.uf_embarque" href="#pysisnoapi.nfe.Exportacao.uf_embarque">uf_embarque</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.nfe.ExportacaoIndividual" href="#pysisnoapi.nfe.ExportacaoIndividual">ExportacaoIndividual</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.nfe.ExportacaoIndividual.drawback" href="#pysisnoapi.nfe.ExportacaoIndividual.drawback">drawback</a></code></li>
+<li><code><a title="pysisnoapi.nfe.ExportacaoIndividual.nfe_exportacao" href="#pysisnoapi.nfe.ExportacaoIndividual.nfe_exportacao">nfe_exportacao</a></code></li>
+<li><code><a title="pysisnoapi.nfe.ExportacaoIndividual.qtd_exportacao" href="#pysisnoapi.nfe.ExportacaoIndividual.qtd_exportacao">qtd_exportacao</a></code></li>
+<li><code><a title="pysisnoapi.nfe.ExportacaoIndividual.reg_exportacao" href="#pysisnoapi.nfe.ExportacaoIndividual.reg_exportacao">reg_exportacao</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.nfe.Fatura" href="#pysisnoapi.nfe.Fatura">Fatura</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.nfe.Fatura.desconto" href="#pysisnoapi.nfe.Fatura.desconto">desconto</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Fatura.numero" href="#pysisnoapi.nfe.Fatura.numero">numero</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Fatura.valor" href="#pysisnoapi.nfe.Fatura.valor">valor</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Fatura.valor_liquido" href="#pysisnoapi.nfe.Fatura.valor_liquido">valor_liquido</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.nfe.FormaPagamento" href="#pysisnoapi.nfe.FormaPagamento">FormaPagamento</a></code></h4>
@@ -1613,7 +2737,8 @@ class Produto:
 <li><code><a title="pysisnoapi.nfe.FormaPagamento.descricao_meio_pagamento" href="#pysisnoapi.nfe.FormaPagamento.descricao_meio_pagamento">descricao_meio_pagamento</a></code></li>
 <li><code><a title="pysisnoapi.nfe.FormaPagamento.forma_pagamento" href="#pysisnoapi.nfe.FormaPagamento.forma_pagamento">forma_pagamento</a></code></li>
 <li><code><a title="pysisnoapi.nfe.FormaPagamento.meio_pagamento" href="#pysisnoapi.nfe.FormaPagamento.meio_pagamento">meio_pagamento</a></code></li>
-<li><code><a title="pysisnoapi.nfe.FormaPagamento.validate_descricao" href="#pysisnoapi.nfe.FormaPagamento.validate_descricao">validate_descricao</a></code></li>
+<li><code><a title="pysisnoapi.nfe.FormaPagamento.validate_bandeira" href="#pysisnoapi.nfe.FormaPagamento.validate_bandeira">validate_bandeira</a></code></li>
+<li><code><a title="pysisnoapi.nfe.FormaPagamento.validate_descricao_meio_pagamento" href="#pysisnoapi.nfe.FormaPagamento.validate_descricao_meio_pagamento">validate_descricao_meio_pagamento</a></code></li>
 <li><code><a title="pysisnoapi.nfe.FormaPagamento.validate_forma_pagamento" href="#pysisnoapi.nfe.FormaPagamento.validate_forma_pagamento">validate_forma_pagamento</a></code></li>
 <li><code><a title="pysisnoapi.nfe.FormaPagamento.validate_meios_pagamento" href="#pysisnoapi.nfe.FormaPagamento.validate_meios_pagamento">validate_meios_pagamento</a></code></li>
 <li><code><a title="pysisnoapi.nfe.FormaPagamento.valor_pagamento" href="#pysisnoapi.nfe.FormaPagamento.valor_pagamento">valor_pagamento</a></code></li>
@@ -1621,6 +2746,22 @@ class Produto:
 </li>
 <li>
 <h4><code><a title="pysisnoapi.nfe.ImportacaoIndividual" href="#pysisnoapi.nfe.ImportacaoIndividual">ImportacaoIndividual</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.nfe.ImportacaoIndividual.adicoes" href="#pysisnoapi.nfe.ImportacaoIndividual.adicoes">adicoes</a></code></li>
+<li><code><a title="pysisnoapi.nfe.ImportacaoIndividual.cnpj_terceiro" href="#pysisnoapi.nfe.ImportacaoIndividual.cnpj_terceiro">cnpj_terceiro</a></code></li>
+<li><code><a title="pysisnoapi.nfe.ImportacaoIndividual.cod_exportador" href="#pysisnoapi.nfe.ImportacaoIndividual.cod_exportador">cod_exportador</a></code></li>
+<li><code><a title="pysisnoapi.nfe.ImportacaoIndividual.cod_forma_importacao_intermediacao" href="#pysisnoapi.nfe.ImportacaoIndividual.cod_forma_importacao_intermediacao">cod_forma_importacao_intermediacao</a></code></li>
+<li><code><a title="pysisnoapi.nfe.ImportacaoIndividual.cod_via_transporte_internacional" href="#pysisnoapi.nfe.ImportacaoIndividual.cod_via_transporte_internacional">cod_via_transporte_internacional</a></code></li>
+<li><code><a title="pysisnoapi.nfe.ImportacaoIndividual.data_desembaraco" href="#pysisnoapi.nfe.ImportacaoIndividual.data_desembaraco">data_desembaraco</a></code></li>
+<li><code><a title="pysisnoapi.nfe.ImportacaoIndividual.data_registro" href="#pysisnoapi.nfe.ImportacaoIndividual.data_registro">data_registro</a></code></li>
+<li><code><a title="pysisnoapi.nfe.ImportacaoIndividual.iof" href="#pysisnoapi.nfe.ImportacaoIndividual.iof">iof</a></code></li>
+<li><code><a title="pysisnoapi.nfe.ImportacaoIndividual.local_desembaraco" href="#pysisnoapi.nfe.ImportacaoIndividual.local_desembaraco">local_desembaraco</a></code></li>
+<li><code><a title="pysisnoapi.nfe.ImportacaoIndividual.numero_registro" href="#pysisnoapi.nfe.ImportacaoIndividual.numero_registro">numero_registro</a></code></li>
+<li><code><a title="pysisnoapi.nfe.ImportacaoIndividual.uf_desembaraco" href="#pysisnoapi.nfe.ImportacaoIndividual.uf_desembaraco">uf_desembaraco</a></code></li>
+<li><code><a title="pysisnoapi.nfe.ImportacaoIndividual.uf_terceiro" href="#pysisnoapi.nfe.ImportacaoIndividual.uf_terceiro">uf_terceiro</a></code></li>
+<li><code><a title="pysisnoapi.nfe.ImportacaoIndividual.valor_afrmm" href="#pysisnoapi.nfe.ImportacaoIndividual.valor_afrmm">valor_afrmm</a></code></li>
+<li><code><a title="pysisnoapi.nfe.ImportacaoIndividual.valor_despesas_aduaneiras" href="#pysisnoapi.nfe.ImportacaoIndividual.valor_despesas_aduaneiras">valor_despesas_aduaneiras</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.nfe.ImpostosProduto" href="#pysisnoapi.nfe.ImpostosProduto">ImpostosProduto</a></code></h4>
@@ -1631,9 +2772,24 @@ class Produto:
 </li>
 <li>
 <h4><code><a title="pysisnoapi.nfe.InformacaoIntermediador" href="#pysisnoapi.nfe.InformacaoIntermediador">InformacaoIntermediador</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.nfe.InformacaoIntermediador.cnpj" href="#pysisnoapi.nfe.InformacaoIntermediador.cnpj">cnpj</a></code></li>
+<li><code><a title="pysisnoapi.nfe.InformacaoIntermediador.identificador_cadastro_intermediador" href="#pysisnoapi.nfe.InformacaoIntermediador.identificador_cadastro_intermediador">identificador_cadastro_intermediador</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.nfe.Local" href="#pysisnoapi.nfe.Local">Local</a></code></h4>
+<ul class="two-column">
+<li><code><a title="pysisnoapi.nfe.Local.bairro" href="#pysisnoapi.nfe.Local.bairro">bairro</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Local.cnpj" href="#pysisnoapi.nfe.Local.cnpj">cnpj</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Local.codigo_municipio" href="#pysisnoapi.nfe.Local.codigo_municipio">codigo_municipio</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Local.complemento" href="#pysisnoapi.nfe.Local.complemento">complemento</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Local.cpf" href="#pysisnoapi.nfe.Local.cpf">cpf</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Local.descricao_municipio" href="#pysisnoapi.nfe.Local.descricao_municipio">descricao_municipio</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Local.logradouro" href="#pysisnoapi.nfe.Local.logradouro">logradouro</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Local.numero" href="#pysisnoapi.nfe.Local.numero">numero</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Local.uf" href="#pysisnoapi.nfe.Local.uf">uf</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a></code></h4>
@@ -1664,6 +2820,7 @@ class Produto:
 <li><code><a title="pysisnoapi.nfe.ObjetoEmissaoNFe.validate_ambiente" href="#pysisnoapi.nfe.ObjetoEmissaoNFe.validate_ambiente">validate_ambiente</a></code></li>
 <li><code><a title="pysisnoapi.nfe.ObjetoEmissaoNFe.validate_finalidade" href="#pysisnoapi.nfe.ObjetoEmissaoNFe.validate_finalidade">validate_finalidade</a></code></li>
 <li><code><a title="pysisnoapi.nfe.ObjetoEmissaoNFe.validate_modelo" href="#pysisnoapi.nfe.ObjetoEmissaoNFe.validate_modelo">validate_modelo</a></code></li>
+<li><code><a title="pysisnoapi.nfe.ObjetoEmissaoNFe.validate_numero_nota_sequencial" href="#pysisnoapi.nfe.ObjetoEmissaoNFe.validate_numero_nota_sequencial">validate_numero_nota_sequencial</a></code></li>
 <li><code><a title="pysisnoapi.nfe.ObjetoEmissaoNFe.validate_operacao" href="#pysisnoapi.nfe.ObjetoEmissaoNFe.validate_operacao">validate_operacao</a></code></li>
 </ul>
 </li>
@@ -1675,9 +2832,19 @@ class Produto:
 </li>
 <li>
 <h4><code><a title="pysisnoapi.nfe.PaginaNotas" href="#pysisnoapi.nfe.PaginaNotas">PaginaNotas</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.nfe.PaginaNotas.itens" href="#pysisnoapi.nfe.PaginaNotas.itens">itens</a></code></li>
+<li><code><a title="pysisnoapi.nfe.PaginaNotas.itens_por_pagina" href="#pysisnoapi.nfe.PaginaNotas.itens_por_pagina">itens_por_pagina</a></code></li>
+<li><code><a title="pysisnoapi.nfe.PaginaNotas.pagina_atual" href="#pysisnoapi.nfe.PaginaNotas.pagina_atual">pagina_atual</a></code></li>
+<li><code><a title="pysisnoapi.nfe.PaginaNotas.total" href="#pysisnoapi.nfe.PaginaNotas.total">total</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.nfe.Parcela" href="#pysisnoapi.nfe.Parcela">Parcela</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.nfe.Parcela.valor" href="#pysisnoapi.nfe.Parcela.valor">valor</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Parcela.vencimento" href="#pysisnoapi.nfe.Parcela.vencimento">vencimento</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.nfe.Pedido" href="#pysisnoapi.nfe.Pedido">Pedido</a></code></h4>
@@ -1694,6 +2861,8 @@ class Produto:
 <li><code><a title="pysisnoapi.nfe.Pedido.pagamento" href="#pysisnoapi.nfe.Pedido.pagamento">pagamento</a></code></li>
 <li><code><a title="pysisnoapi.nfe.Pedido.presenca" href="#pysisnoapi.nfe.Pedido.presenca">presenca</a></code></li>
 <li><code><a title="pysisnoapi.nfe.Pedido.total" href="#pysisnoapi.nfe.Pedido.total">total</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Pedido.validate_modalidade_frete" href="#pysisnoapi.nfe.Pedido.validate_modalidade_frete">validate_modalidade_frete</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Pedido.validate_presenca" href="#pysisnoapi.nfe.Pedido.validate_presenca">validate_presenca</a></code></li>
 </ul>
 </li>
 <li>
@@ -1727,6 +2896,9 @@ class Produto:
 <li><code><a title="pysisnoapi.nfe.Produto.total" href="#pysisnoapi.nfe.Produto.total">total</a></code></li>
 <li><code><a title="pysisnoapi.nfe.Produto.unidade" href="#pysisnoapi.nfe.Produto.unidade">unidade</a></code></li>
 <li><code><a title="pysisnoapi.nfe.Produto.validate_impostos" href="#pysisnoapi.nfe.Produto.validate_impostos">validate_impostos</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Produto.validate_ind_escala" href="#pysisnoapi.nfe.Produto.validate_ind_escala">validate_ind_escala</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Produto.validate_origem" href="#pysisnoapi.nfe.Produto.validate_origem">validate_origem</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Produto.validate_total" href="#pysisnoapi.nfe.Produto.validate_total">validate_total</a></code></li>
 <li><code><a title="pysisnoapi.nfe.Produto.validate_unidade" href="#pysisnoapi.nfe.Produto.validate_unidade">validate_unidade</a></code></li>
 <li><code><a title="pysisnoapi.nfe.Produto.valor_desconto" href="#pysisnoapi.nfe.Produto.valor_desconto">valor_desconto</a></code></li>
 <li><code><a title="pysisnoapi.nfe.Produto.valor_frete" href="#pysisnoapi.nfe.Produto.valor_frete">valor_frete</a></code></li>
@@ -1738,9 +2910,50 @@ class Produto:
 </li>
 <li>
 <h4><code><a title="pysisnoapi.nfe.Rastreamento" href="#pysisnoapi.nfe.Rastreamento">Rastreamento</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.nfe.Rastreamento.codigo_agregacao" href="#pysisnoapi.nfe.Rastreamento.codigo_agregacao">codigo_agregacao</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Rastreamento.data_fabricacao" href="#pysisnoapi.nfe.Rastreamento.data_fabricacao">data_fabricacao</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Rastreamento.data_validade" href="#pysisnoapi.nfe.Rastreamento.data_validade">data_validade</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Rastreamento.lote" href="#pysisnoapi.nfe.Rastreamento.lote">lote</a></code></li>
+<li><code><a title="pysisnoapi.nfe.Rastreamento.quantidade" href="#pysisnoapi.nfe.Rastreamento.quantidade">quantidade</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.nfe.VeiculoNovo" href="#pysisnoapi.nfe.VeiculoNovo">VeiculoNovo</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.ano_fabricacao" href="#pysisnoapi.nfe.VeiculoNovo.ano_fabricacao">ano_fabricacao</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.ano_modelo" href="#pysisnoapi.nfe.VeiculoNovo.ano_modelo">ano_modelo</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.capacidade_maxima_tracao" href="#pysisnoapi.nfe.VeiculoNovo.capacidade_maxima_tracao">capacidade_maxima_tracao</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.chassi" href="#pysisnoapi.nfe.VeiculoNovo.chassi">chassi</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.cilindrada" href="#pysisnoapi.nfe.VeiculoNovo.cilindrada">cilindrada</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.condicao_chassi" href="#pysisnoapi.nfe.VeiculoNovo.condicao_chassi">condicao_chassi</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.condicao_veiculo" href="#pysisnoapi.nfe.VeiculoNovo.condicao_veiculo">condicao_veiculo</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.cor" href="#pysisnoapi.nfe.VeiculoNovo.cor">cor</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.cor_denatran" href="#pysisnoapi.nfe.VeiculoNovo.cor_denatran">cor_denatran</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.cor_descricao" href="#pysisnoapi.nfe.VeiculoNovo.cor_descricao">cor_descricao</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.dist" href="#pysisnoapi.nfe.VeiculoNovo.dist">dist</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.especie_veiculo" href="#pysisnoapi.nfe.VeiculoNovo.especie_veiculo">especie_veiculo</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.lotacao" href="#pysisnoapi.nfe.VeiculoNovo.lotacao">lotacao</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.marca_modelo" href="#pysisnoapi.nfe.VeiculoNovo.marca_modelo">marca_modelo</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.numero_motor" href="#pysisnoapi.nfe.VeiculoNovo.numero_motor">numero_motor</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.peso_bruto" href="#pysisnoapi.nfe.VeiculoNovo.peso_bruto">peso_bruto</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.peso_liquido" href="#pysisnoapi.nfe.VeiculoNovo.peso_liquido">peso_liquido</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.potencia" href="#pysisnoapi.nfe.VeiculoNovo.potencia">potencia</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.restricao" href="#pysisnoapi.nfe.VeiculoNovo.restricao">restricao</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.serie" href="#pysisnoapi.nfe.VeiculoNovo.serie">serie</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.tipo_combustivel" href="#pysisnoapi.nfe.VeiculoNovo.tipo_combustivel">tipo_combustivel</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.tipo_operacao" href="#pysisnoapi.nfe.VeiculoNovo.tipo_operacao">tipo_operacao</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.tipo_pintura" href="#pysisnoapi.nfe.VeiculoNovo.tipo_pintura">tipo_pintura</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.tipo_veiculo" href="#pysisnoapi.nfe.VeiculoNovo.tipo_veiculo">tipo_veiculo</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.validate_condicao_chassi" href="#pysisnoapi.nfe.VeiculoNovo.validate_condicao_chassi">validate_condicao_chassi</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.validate_condicao_veiculo" href="#pysisnoapi.nfe.VeiculoNovo.validate_condicao_veiculo">validate_condicao_veiculo</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.validate_cor" href="#pysisnoapi.nfe.VeiculoNovo.validate_cor">validate_cor</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.validate_especie_veiculo" href="#pysisnoapi.nfe.VeiculoNovo.validate_especie_veiculo">validate_especie_veiculo</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.validate_restricao" href="#pysisnoapi.nfe.VeiculoNovo.validate_restricao">validate_restricao</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.validate_tipo_combustivel" href="#pysisnoapi.nfe.VeiculoNovo.validate_tipo_combustivel">validate_tipo_combustivel</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.validate_tipo_operacao" href="#pysisnoapi.nfe.VeiculoNovo.validate_tipo_operacao">validate_tipo_operacao</a></code></li>
+<li><code><a title="pysisnoapi.nfe.VeiculoNovo.validate_tipo_veiculo" href="#pysisnoapi.nfe.VeiculoNovo.validate_tipo_veiculo">validate_tipo_veiculo</a></code></li>
+</ul>
 </li>
 </ul>
 </li>

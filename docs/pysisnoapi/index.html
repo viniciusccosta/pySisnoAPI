@@ -32,7 +32,7 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;
+<pre><code class="python">&#39;&#39;&#39;
     Package criado para integração com a API da plataforma SISNO.
 
     Para utilizar esse package basta importá-lo da seguinte forma:  
@@ -40,7 +40,7 @@
     
     Ou também poderá importar apenas os módulos necessários, como por exemplo:  
     `from pysisnoapi import nfe` 
-&#34;&#34;&#34;
+&#39;&#39;&#39;
 
 # ======================================================================================================================
 # Imports:
@@ -57,14 +57,149 @@ from dateutil    import parser
 # Globals:
 load_dotenv()
 
-BASE_URL = &#34;https://homolog.arkaonline.com.br/nfe-service&#34;               # TODO: Provisório, em breve voltará para &#39;https://homolog.sisno.com.br/nfe-service/&#39;
+BASE_URL = &#39;https://homolog.arkaonline.com.br/nfe-service&#39;               # TODO: Provisório, em breve voltará para &#39;https://homolog.sisno.com.br/nfe-service/&#39;
+
 HEADERS  = {
-    &#34;token-emissor&#34;         : os.getenv(&#34;token-emissor&#34;       , &#34;&#34;),
-    &#34;token-secret-emissor&#34;  : os.getenv(&#34;token-secret-emissor&#34;, &#34;&#34;),
-    &#34;token-empresa&#34;         : os.getenv(&#34;token-empresa&#34;       , &#34;&#34;),
-    &#34;token-secret-empresa&#34;  : os.getenv(&#34;token-secret-empresa&#34;, &#34;&#34;),
-    &#34;accept&#34;                : &#34;application/json&#34;,
-    &#34;Content-Type&#34;          : &#34;application/json&#34;,
+    &#39;token-emissor&#39;         : os.getenv(&#39;sisnoapi-token-emissor&#39;       , &#39;&#39;),
+    &#39;token-secret-emissor&#39;  : os.getenv(&#39;sisnoapi-token-secret-emissor&#39;, &#39;&#39;),
+    # &#39;token-empresa&#39;         : os.getenv(&#39;token-empresa&#39;       , &#39;&#39;),
+    # &#39;token-secret-empresa&#39;  : os.getenv(&#39;token-secret-empresa&#39;, &#39;&#39;),
+    &#39;accept&#39;                : &#39;application/json&#39;,
+    &#39;Content-Type&#39;          : &#39;application/json&#39;,
+}
+
+# -------------------------------------------
+AMBIENTES = {
+    &#39;1&#39;: &#39;Produção&#39;,
+    &#39;2&#39;: &#39;Homologação&#39;,
+}
+
+FORMAS_PAGAMENTO = {
+    &#39;0&#39;: &#39;À Vista&#39;,
+    &#39;1&#39;: &#39;À Prazo&#39;,
+}
+
+MEIOS_PAGAMENTO = {
+    &#39;01&#39;: &#39;Dinheiro&#39;,
+    &#39;02&#39;: &#39;Cheque&#39;,
+    &#39;03&#39;: &#39;Cartão de crédito&#39;,
+    &#39;04&#39;: &#39;Cartão de débito&#39;,
+    &#39;05&#39;: &#39;Cartão da loja&#39;,
+    &#39;10&#39;: &#39;Vale alimentação&#39;,
+    &#39;11&#39;: &#39;Vale refeição&#39;,
+    &#39;12&#39;: &#39;Vale presente&#39;,
+    &#39;13&#39;: &#39;Vale combustível&#39;,
+    &#39;14&#39;: &#39;Duplicata mercantil&#39;,
+    &#39;15&#39;: &#39;Boleto bancário&#39;,
+    &#39;16&#39;: &#39;Depósito bancário&#39;,
+    &#39;17&#39;: &#39;Pagamento Instantaneo (PIX)&#39;,
+    &#39;18&#39;: &#39;Transferência bancária&#39;,
+    &#39;19&#39;: &#39;Programa de fidelidade (Cashback)&#39;,
+    &#39;90&#39;: &#39;Sem pagamento&#39;,
+    &#39;99&#39;: &#39;Outros&#39;,
+}
+
+MOTIVOS_DESONERACAO = {
+    &#39;1&#39; : &#39;Táxi&#39;,
+    &#39;3&#39; : &#39;Produtor Agropecuário&#39;,
+    &#39;4&#39; : &#39;Frotista Locadora&#39;,
+    &#39;5&#39; : &#39;Diplomático Consular&#39;,
+    &#39;6&#39; : &#39;Utilitários Motocicletas Amazônia Ocidental Áreas Livre Comércio&#39;,
+    &#39;7&#39; : &#39;Suframa&#39;,
+    &#39;8&#39; : &#39;Venda Órgãos Públicos&#39;,
+    &#39;9&#39; : &#39;Outros&#39;,
+    &#39;10&#39;: &#39;Deficiente Condutor&#39;,
+    &#39;11&#39;: &#39;Deficiente Não Condutor&#39;,
+    &#39;12&#39;: &#39;Órgão de Fomento Desenvolvimento Agropecuário&#39;,
+    &#39;90&#39;: &#39;Solicitado pelo Fisco&#39;,
+}
+
+SITUACOES_TRIBUTARIAS_ICMS = {
+    &#39;00&#39; : &#39;Tributada integralmente&#39;,
+    &#39;10&#39; : &#39;Tributada com cobrança de ICMS por ST&#39;,
+    &#39;20&#39; : &#39;Com redução da base de cálculo&#39;,
+    &#39;30&#39; : &#39;Isenta ou não tributada com cobrança de ICMS por ST&#39;,
+    &#39;40&#39; : &#39;Isenta&#39;,
+    &#39;41&#39; : &#39;Não tributada&#39;,
+    &#39;50&#39; : &#39;Suspensão&#39;,
+    &#39;51&#39; : &#39;Diferimento&#39;,
+    &#39;60&#39; : &#39;ICMS cobrado anteriormente por ST&#39;,
+    &#39;70&#39; : &#39;Com redução da base de cálculo/Cobrança ICMS por ST/ICMS ST&#39;,
+    &#39;90&#39; : &#39;Outros&#39;,
+    &#39;101&#39;: &#39;Tributada pelo Simples Nacional com permissão de crédito&#39;,
+    &#39;102&#39;: &#39;Tributada pelo Simples Nacional sem permissão de crédito&#39;,
+    &#39;103&#39;: &#39;Isenção do ICMS no Simples Nacional para faixa de receita bruta&#39;,
+    &#39;201&#39;: &#39;Tributada pelo Simples Nacional com permissão de crédito e com cobrança do ICMS por substituição tributária&#39;,
+    &#39;202&#39;: &#39;Tributada pelo Simples Nacional sem permissão de crédito e com cobrança do ICMS por substituição tributária&#39;,
+    &#39;203&#39;: &#39;Isenção do ICMS no Simples Nacional para faixa de receita bruta e com cobrança do ICMS por substituição tributária&#39;,
+    &#39;300&#39;: &#39;Imune&#39;,
+    &#39;400&#39;: &#39;Não tributada pelo Simples Nacional&#39;,
+    &#39;500&#39;: &#39;ICMS cobrado anteriormente por substituição tributária (substituído) ou por antecipação&#39;,
+    &#39;900&#39;: &#39;Outros&#39;,
+}
+
+SITUACOES_TRIBUTARIAS_IPI = {
+    &#39;00&#39;: &#39;Entrada com Recuperação de Crédito&#39;,
+    &#39;01&#39;: &#39;Entrada Tributada com Alíquota Zero&#39;,
+    &#39;02&#39;: &#39;Entrada Isenta&#39;,
+    &#39;03&#39;: &#39;Entrada Não Tributada&#39;,
+    &#39;04&#39;: &#39;Entrada Imune&#39;,
+    &#39;05&#39;: &#39;Entrada com Suspensão&#39;,
+    &#39;49&#39;: &#39;Outras Entradas&#39;,
+    &#39;50&#39;: &#39;Saída Tributada&#39;,
+    &#39;51&#39;: &#39;Saída Tributável com Alíquota Zero&#39;,
+    &#39;52&#39;: &#39;Saída Isenta&#39;,
+    &#39;53&#39;: &#39;Saída Não Tributada&#39;,
+    &#39;54&#39;: &#39;Saída Imune&#39;,
+    &#39;55&#39;: &#39;Saída com Suspensão&#39;,
+    &#39;99&#39;: &#39;Outras Saídas&#39;,
+}
+
+SITUACOES_TRIBUTARIAS_PIS_COFINS = {
+    &#39;01&#39;: &#39;Operação Tributável com Alíquota Básica&#39;,
+    &#39;02&#39;: &#39;Operação Tributável com Alíquota por Unidade de Medida de Produto&#39;,
+    &#39;03&#39;: &#39;Operação Tributável com Alíquota por Unidade de Medida de Produto&#39;,
+    &#39;04&#39;: &#39;Operação Tributável Monofásica - Revenda a Alíquota Zero&#39;,
+    &#39;05&#39;: &#39;Operação Tributável por Substituição Tributária&#39;,
+    &#39;06&#39;: &#39;Operação Tributável a Alíquota Zero&#39;,
+    &#39;07&#39;: &#39;Operação Isenta da Contribuição&#39;,
+    &#39;08&#39;: &#39;Operação sem Incidência da Contribuição&#39;,
+    &#39;09&#39;: &#39;Operação com Suspensão da Contribuição&#39;,
+    &#39;49&#39;: &#39;Outras Operações de Saída&#39;,
+    &#39;50&#39;: &#39;Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno&#39;,
+    &#39;51&#39;: &#39;Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno&#39;,
+    &#39;52&#39;: &#39;Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação&#39;,
+    &#39;53&#39;: &#39;Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno&#39;,
+    &#39;54&#39;: &#39;Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação&#39;,
+    &#39;55&#39;: &#39;Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação&#39;,
+    &#39;56&#39;: &#39;Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação&#39;,
+    &#39;60&#39;: &#39;Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno&#39;,
+    &#39;61&#39;: &#39;Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno&#39;,
+    &#39;62&#39;: &#39;Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação&#39;,
+    &#39;63&#39;: &#39;Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno&#39;,
+    &#39;64&#39;: &#39;Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação&#39;,
+    &#39;65&#39;: &#39;Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação&#39;,
+    &#39;66&#39;: &#39;Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação&#39;,
+    &#39;67&#39;: &#39;Crédito Presumido - Outras Operações&#39;,
+    &#39;70&#39;: &#39;Operação de Aquisição sem Direito a Crédito&#39;,
+    &#39;71&#39;: &#39;Operação de Aquisição com Isenção&#39;,
+    &#39;72&#39;: &#39;Operação de Aquisição com Suspensão&#39;,
+    &#39;73&#39;: &#39;Operação de Aquisição a Alíquota Zero&#39;,
+    &#39;74&#39;: &#39;Operação de Aquisição sem Incidência da Contribuição&#39;,
+    &#39;75&#39;: &#39;Operação de Aquisição por Substituição Tributária&#39;,
+    &#39;98&#39;: &#39;Outras Operações de Entrada&#39;,
+    &#39;99&#39;: &#39;Outras Operações&#39;,
+}
+
+TIPOS_CONSUMIDOR_FINAL = {
+    &#39;0&#39;: &#39;Não&#39;,
+    &#39;1&#39;: &#39;Sim&#39;,
+} # TODO: Sugerir utilização de Boolean
+
+TIPOS_CONTRIBUINTES = {
+    &#39;1&#39;: &#39;Contribuinte ICMS&#39;,
+    &#39;2&#39;: &#39;Contribuinte isento&#39;,
+    &#39;9&#39;: &#39;Não contribuinte&#39;,
 }
 
 UNIDADES = [
@@ -129,69 +264,32 @@ UNIDADES = [
     &#39;VIDRO&#39;,
 ]
 
-FORMAS_PAGAMENTO = {
-    &#39;0&#39;: &#39;À Vista&#39;,
-    &#39;1&#39;: &#39;À Prazo&#39;,
-}
-
-MEIOS_PAGAMENTO = {
-    &#39;01&#39;: &#39;Dinheiro&#39;,
-    &#39;02&#39;: &#39;Cheque&#39;,
-    &#39;03&#39;: &#39;Cartão de crédito&#39;,
-    &#39;04&#39;: &#39;Cartão de débito&#39;,
-    &#39;05&#39;: &#39;Cartão da loja&#39;,
-    &#39;10&#39;: &#39;Vale alimentação&#39;,
-    &#39;11&#39;: &#39;Vale refeição&#39;,
-    &#39;12&#39;: &#39;Vale presente&#39;,
-    &#39;13&#39;: &#39;Vale combustível&#39;,
-    &#39;14&#39;: &#39;Duplicata mercantil&#39;,
-    &#39;15&#39;: &#39;Boleto bancário&#39;,
-    &#39;16&#39;: &#39;Depósito bancário&#39;,
-    &#39;17&#39;: &#39;Pagamento Instantaneo (PIX)&#39;,
-    &#39;18&#39;: &#39;Transferência bancária&#39;,
-    &#39;19&#39;: &#39;Programa de fidelidade (Cashback)&#39;,
-    &#39;90&#39;: &#39;Sem pagamento&#39;,
-    &#39;99&#39;: &#39;Outros&#39;,
-}
-
 # ======================================================================================================================
 # Decorators:
 def requires_emissor(func):
-    &#34;&#34;&#34;Esse decorador é utilizado para garantir que as chaves de API do emissor estão presentes no HEADERS antes da função ser executada.&#34;&#34;&#34;
+    &#39;&#39;&#39;Esse decorador é utilizado para garantir que as chaves de API do emissor estão presentes no HEADERS antes da função ser executada.&#39;&#39;&#39;
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        for key in [&#34;token-emissor&#34;, &#34;token-secret-emissor&#34;]:
-            if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
+        for key in [&#39;token-emissor&#39;, &#39;token-secret-emissor&#39;]:
+            if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) &gt; 0:
                 return func(*args, **kwargs)
             else:
-                raise ValueError(f&#34;Chave &#39;{key}&#39; não configurada.&#34;)
-    return wrapper
-
-def requires_empresa(func):
-    &#34;&#34;&#34;Esse decorador é utilizado para garantir que as chaves de API da empresa estão presentes no HEADERS antes da função ser executada.&#34;&#34;&#34;
-
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        for key in [&#34;token-empresa&#34;, &#34;token-secret-empresa&#34;]:
-            if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
-                return func(*args, **kwargs)
-            else:
-                raise ValueError(f&#34;Chave &#39;{key}&#39; não configurada.&#34;)
+                raise ValueError(f&#39;Chave &#34;{key}&#34; não configurada.&#39;)
     return wrapper
 
 # ======================================================================================================================
 # Classes:
 @dataclass
 class BaseClass:
-    &#34;&#34;&#34;Classe genérica utilizada como base para as demais classes neste package.
+    &#39;&#39;&#39;Classe genérica utilizada como base para as demais classes neste package.
     
     A principal finalidade desta classe é fornecer o método `as_filtered_dict` para filtrar e retornar um dicionário com os atributos relevantes da instância.
     Para maiores informações consulte a documentação do método [aqui](#pysisnoapi.BaseClass.as_filtered_dict).
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     
     def as_filtered_dict(self)-&gt; dict[str:str]:
-        &#34;&#34;&#34;
+        &#39;&#39;&#39;
         Retorna um dicionário contendo os campos/atributos da classe com valores não nulos.
 
         O dicionário resultante possui chaves (str) correspondentes aos nomes dos campos
@@ -200,13 +298,13 @@ class BaseClass:
         
         Returns:
             dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
-        &#34;&#34;&#34;
+        &#39;&#39;&#39;
         return asdict(self, dict_factory=_dict_factory)
 
 @dataclass
 class Cfop:
-    &#34;&#34;&#34;Classe `CFOP` (Código Fiscal de Operações e Prestações)
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;Classe `CFOP` (Código Fiscal de Operações e Prestações)
+    &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo: Optional[str] = None
     descricao: Optional[str] = None
@@ -214,15 +312,15 @@ class Cfop:
 
 @dataclass
 class Cliente:
-    &#34;&#34;&#34;Classe `Cliente`
+    &#39;&#39;&#39;Classe `Cliente`
     Geralmente é o destinatário da NFe.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     consumidor_final: str
     contribuinte    : str
-    endereco        : &#34;Endereco&#34;
+    endereco        : &#39;Endereco&#39;
     
-    pessoa_fisica   : Optional[&#34;PessoaFisica&#34;]   = None
-    pessoa_juridica : Optional[&#34;PessoaJuridica&#34;] = None
+    pessoa_fisica   : Optional[&#39;PessoaFisica&#39;]   = None
+    pessoa_juridica : Optional[&#39;PessoaJuridica&#39;] = None
     
     id              : Optional[int] = None
     ie              : Optional[str] = None
@@ -237,21 +335,21 @@ class Cliente:
     
     def validate_pessoa(self):
         if self.pessoa_fisica and self.pessoa_juridica:
-            raise ValueError(&#34;Informe apenas um dos campos pessoa_fisica ou pessoa_juridica&#34;)
+            raise ValueError(&#39;Informe apenas um dos campos pessoa_fisica ou pessoa_juridica&#39;)
         if not self.pessoa_fisica and not self.pessoa_juridica:
-            raise ValueError(&#34;Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica&#34;)
+            raise ValueError(&#39;Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica&#39;)
     
     def validate_consumidor_final(self):
-        if self.consumidor_final not in [&#39;1&#39;, &#39;2&#39;,]:
-            raise ValueError(f&#34;Consumidor Final {self.consumidor_final} inválido&#34;)
+        if self.consumidor_final not in TIPOS_CONSUMIDOR_FINAL:
+            raise ValueError(f&#39;Consumidor Final {self.consumidor_final} inválido&#39;)
     
     def validate_contribuinte(self):
-        if self.contribuinte not in [&#39;1&#39;, &#39;2&#39;, &#39;9&#39;]:
-            raise ValueError(f&#34;Contribuinte {self.contribuinte} inválido&#34;)
+        if self.contribuinte not in TIPOS_CONTRIBUINTES:
+            raise ValueError(f&#39;Contribuinte {self.contribuinte} inválido&#39;)
 
 @dataclass
 class Cofins:
-    &#34;&#34;&#34;Contribuição para Financiamento da Seguridade Social.
+    &#39;&#39;&#39;Contribuição para Financiamento da Seguridade Social.
 
     situacao_tributaria:  
         01: Operação Tributável com Alíquota Básica  
@@ -294,30 +392,35 @@ class Cofins:
     aliquota_st (str): $0.0000
     
     aliquota_retencao (str): $0.0000
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     situacao_tributaria : str
     
     aliquota            : Optional[str] = None
     aliquota_st         : Optional[str] = None
     aliquota_retencao   : Optional[str] = None
-
-class DeclaracaoImportacaoAdicao:
-    # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
+    
+    def __post_init__(self, *args, **kwargs):
+        self.validate_situacao_tributaria()
+        
+    def validate_situacao_tributaria(self, *args, **kwargs):
+        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
+            raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)
 
 @dataclass
+class DeclaracaoImportacaoAdicao:
+    numero_sequencial: Optional[str] = None
+    numero           : Optional[str] = None
+    cod_fabricante   : Optional[str] = None
+    desconto         : Optional[str] = None
+    drawback         : Optional[str] = None
+    
+@dataclass
 class Empresa:
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
         Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
         Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
         Em resumo: não há necessidade de se preocupar com os campos, caso não saiba algum deles, pois, eles serão preenchidos automaticamente com aquilo que vier do endpoint.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                                          : Optional[str]         = None
     token                                       : Optional[str]         = None
@@ -352,8 +455,8 @@ class Empresa:
 
 @dataclass
 class Endereco:
-    &#34;&#34;&#34;Classe `Endereço`
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;Classe `Endereço`
+    &#39;&#39;&#39;
     
     codigo_pais        : str
     descricao_pais     : str
@@ -374,8 +477,8 @@ class Endereco:
     
 @dataclass
 class Ibpt:
-    &#34;&#34;&#34;Classe `IBPT` (Impostos sobre Produtos e Serviços)
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;Classe `IBPT` (Impostos sobre Produtos e Serviços)
+    &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo            : Optional[str]  = None
     ex                : Optional[str]  = None
@@ -400,36 +503,49 @@ class Ibpt:
 
 @dataclass
 class Icms:
-    &#34;&#34;&#34;Classe `ICMS` (Imposto sobre Circulação de Mercadorias e Serviços)
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;Classe `ICMS` (Imposto sobre Circulação de Mercadorias e Serviços)
+    &#39;&#39;&#39;
     situacao_tributaria                       : str
     
-    codigo_cfop                               : Optional[str] = None
-    aliquota_icms                             : Optional[str] = None
-    percentual_reducao_bc_icms                : Optional[str] = None
-    aliquota_fcp                              : Optional[str] = None
-    percentual_reducao_bc_icms_st             : Optional[str] = None
-    aliquota_aplicavel_calculo_credito        : Optional[str] = None
-    aliquota_icms_st                          : Optional[str] = None
-    aliquota_fcp_st                           : Optional[str] = None
-    percentual_margem_valor_agregado_icms_st  : Optional[str] = None
-    percentual_diferimento                    : Optional[str] = None
-    percentual_desonerado                     : Optional[str] = None
-    motivo_desoneracao                        : Optional[str] = None
-    percentual_icms_st_retido                 : Optional[str] = None
-    utilizar_tabela_aliquotas_interestaduais  : Optional[str] = None
-    utilizar_aliquota_interestadual_importacao: Optional[str] = None
+    codigo_cfop                               : Optional[str]  = None
+    aliquota_icms                             : Optional[str]  = None
+    percentual_reducao_bc_icms                : Optional[str]  = None
+    aliquota_fcp                              : Optional[str]  = None
+    percentual_reducao_bc_icms_st             : Optional[str]  = None
+    aliquota_aplicavel_calculo_credito        : Optional[str]  = None
+    aliquota_icms_st                          : Optional[str]  = None
+    aliquota_fcp_st                           : Optional[str]  = None
+    percentual_margem_valor_agregado_icms_st  : Optional[str]  = None
+    percentual_diferimento                    : Optional[str]  = None
+    percentual_desonerado                     : Optional[str]  = None
+    motivo_desoneracao                        : Optional[str]  = None
+    percentual_icms_st_retido                 : Optional[str]  = None
+    utilizar_tabela_aliquotas_interestaduais  : Optional[bool] = None
+    utilizar_aliquota_interestadual_importacao: Optional[bool] = None
+    
+    def __post_init__(self, *args, **kwargs):
+        self.validate_situacao_tributaria()
+        self.validate_motivo_desoneracao()
+        
+    def validate_situacao_tributaria(self, *args, **kwargs):
+        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_ICMS:
+            raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)
+    
+    def validate_motivo_desoneracao(self, *args, **kwargs):
+        if self.motivo_desoneracao:
+            if self.motivo_desoneracao not in MOTIVOS_DESONERACAO:
+                raise ValueError(f&#39;Motivo de Desoneração {self.motivo_desoneracao} inválido.&#39;)
 
 @dataclass
 class Impostos:
-    &#34;&#34;&#34;Classe Base para as Classes de Impostos de Produtos e Serviços.
-    &#34;&#34;&#34;
-    pis   : &#34;Pis&#34;
-    cofins: &#34;Cofins&#34;
+    &#39;&#39;&#39;Classe Base para as Classes de Impostos de Produtos e Serviços.
+    &#39;&#39;&#39;
+    pis   : &#39;Pis&#39;
+    cofins: &#39;Cofins&#39;
 
 @dataclass
 class Ipi:
-    &#34;&#34;&#34;Classe `IPI` (Imposto Sobre Produtos Industrializados)
+    &#39;&#39;&#39;Classe `IPI` (Imposto Sobre Produtos Industrializados)
 
     situacao_tributaria:  
         00: Entrada com Recuperação de Crédito  
@@ -446,41 +562,25 @@ class Ipi:
         54: Saída Imune  
         55: Saída com Suspensão  
         99: Outras Saídas  
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     situacao_tributaria : str
     
     aliquota            : Optional[str] = None
     codigo_enquadramento: Optional[str] = None
     codigo_selo         : Optional[str] = None
     qtd_selo            : Optional[str] = None
-
-class Issqn:
-    def __init__(self, **kwargs):
-        &#34;&#34;&#34;
-            Indicador_exigibilidade_iss  
-                1. Exigível  
-                2. Não incidência  
-                3. Isenção  
-                4. Exportação  
-                5. Imunidade  
-                6. Exigibilidade suspensa por decisão judicial  
-                7. Exigibilidade suspensa por processo administrativo  
-        &#34;&#34;&#34;
-        
-        self.indicador_exigibilidade_iss     = kwargs.get(&#34;indicador_exigibilidade_iss&#34;, None)   # string [ 1, 2, 3, 4, 5, 6, 7 ]
-        self.indicador_incentivo_fiscal      = kwargs.get(&#34;indicador_incentivo_fiscal&#34;, None)    # string (1: Não, 2: Sim)
-        self.item_lista_servicos             = kwargs.get(&#34;item_lista_servicos&#34;, None)           # string - Item da lista de serviços no Padrão ABRASF (Formato NN.NN)
-        self.aliquota                        = kwargs.get(&#34;aliquota&#34;, None)                      # string ($0.0000)
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
+    
+    def __post_init__(self, *args, **kwargs):
+        self.validate_situacao_tributaria()
+    
+    def validate_situacao_tributaria(self, *args, **kwargs):
+        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_IPI:
+            raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)
 
 @dataclass
 class Municipio:
-    &#34;&#34;&#34;Classe `Município`
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;Classe `Município`
+    &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo_ibge : Optional[int] = None
     descricao   : Optional[str] = None
@@ -491,10 +591,10 @@ class Municipio:
 
 @dataclass
 class NotaFiscal:
-    &#34;&#34;&#34;Classe `Nota Fiscal`.
+    &#39;&#39;&#39;Classe `Nota Fiscal`.
     
     Até 01/2023 essa classe também era usada para Notas Fiscais de Serviço (NFSe).
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                      : Optional[int]         = None
     empresa                 : Optional[&#39;Empresa&#39;]   = None
@@ -536,24 +636,17 @@ class NotaFiscal:
             **kwargs
         )
 
+@dataclass
 class Observacao:
-    # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
+    campo: Optional[str] = None
+    texto: Optional[str] = None
     
-    def __init__(self, **kwargs):
-        self.campo                   = kwargs.get(&#34;campo&#34;, None)                                # string
-        self.texto                   = kwargs.get(&#34;texto&#34;, None)                                # string
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
-
 @dataclass
 class PessoaFisica:
-    &#34;&#34;&#34;Classe `Pessoa Física`
+    &#39;&#39;&#39;Classe `Pessoa Física`
     
     Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     nome_completo: str
     
     cpf           : Optional[str] = None
@@ -561,14 +654,14 @@ class PessoaFisica:
     
     def __post_init__(self):
         if self.cpf and self.id_estrangeiro:
-            raise ValueError(&#34;Informe somente um dos campos: cpf ou id_estrangeiro&#34;)
+            raise ValueError(&#39;Informe somente um dos campos: cpf ou id_estrangeiro&#39;)
         if not self.cpf and not self.id_estrangeiro:
-            raise ValueError(&#34;Informe um dos campos: cpf ou id_estrangeiro&#34;)
+            raise ValueError(&#39;Informe um dos campos: cpf ou id_estrangeiro&#39;)
 
 @dataclass
 class PessoaJuridica:
-    &#34;&#34;&#34;Classe `Pessoa Jurídica`
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;Classe `Pessoa Jurídica`
+    &#39;&#39;&#39;
     cnpj        : str
     razao_social: str
     
@@ -577,7 +670,7 @@ class PessoaJuridica:
 
 @dataclass
 class Pis:
-    &#34;&#34;&#34;Classe `PIS` (Programas de Integração Social)
+    &#39;&#39;&#39;Classe `PIS` (Programas de Integração Social)
 
     situacao_tributaria (str): Situação Tributária  
         01: Operação Tributável com Alíquota Básica  
@@ -621,23 +714,29 @@ class Pis:
     
     aliquota_retencao (str): $0.0000
     
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     situacao_tributaria: str
     
     aliquota           : Optional[str] = None
     aliquota_st        : Optional[str] = None
     aliquota_retencao  : Optional[str] = None
-    
+
+    def __post_init__(self, *args, **kwargs):
+        self.validate_situacao_tributaria()
+        
+    def validate_situacao_tributaria(self, *args, **kwargs):
+        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
+            raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)
+
+@dataclass
 class RetencaoIcmsTransporte:
-    # TODO: Até o dia 10/05/2023 essa classe só está sendo usada na classe &#34;Transporte&#34;, que não está sendo usada
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None
-
+    valor_servico                                           : Optional[str] = None
+    valor_icms_retido                                       : Optional[str] = None
+    cfop                                                    : Optional[str] = None
+    codigo_municipio_ocorrencia_fato_gerador_icms_transporte: Optional[str] = None
+    base_calculo_retencao_icms                              : Optional[str] = None
+    aliquota_retencao                                       : Optional[str] = None
+    
 @dataclass
 class Transporte:
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
@@ -645,11 +744,11 @@ class Transporte:
 
 @dataclass
 class Uf:
-    &#34;&#34;&#34;Classe `UF`(Unidade Federativa)
+    &#39;&#39;&#39;Classe `UF`(Unidade Federativa)
 
     Returns:
         _type_: _description_
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     # TODO: Até o dia 01/06/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
     codigo_ibge: Optional[str]  = None
@@ -662,32 +761,42 @@ class Uf:
 
 # ======================================================================================================================
 def alterar_empresa(token_empresa:str, token_secret_empresa:str):
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     Altera as chaves de API utilizadas para a emissão de notas fiscais na plataforma SISNO.
 
     Esse método é responsável por modificar as chaves de API, necessárias para a emissão de notas fiscais em empresas distintas.
     As chaves de API são utilizadas pela plataforma SISNO para identificar a empresa na qual a nota fiscal será emitida.
 
     Args:
-        token_empresa (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API.
-        token_secret_empresa (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com &#34;1000:&#34;.
+        token_empresa (str): String fornecida pela plataforma SISNO para utilização da API.
+        token_secret_empresa (str): String fornecida pela plataforma SISNO para utilização da API.
 
     Raises:
         Exception: Lançada caso alguma das chaves seja inválida.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     
     # TODO: Realizar melhores validações
     
-    if not isinstance(token_empresa, str) or len(token_empresa) != 775:
+    if not isinstance(token_empresa, str) or len(token_empresa) &lt; 1:
         raise Exception(&#39;Token Empresa inválido&#39;)
-    if not isinstance(token_secret_empresa, str) or len(token_secret_empresa) != 166:
+    if not isinstance(token_secret_empresa, str) or len(token_secret_empresa) &lt; 1:
         raise Exception(&#39;Token Secret Empresa inválido&#39;)
     
-    HEADERS[&#34;token-empresa&#34;]        = token_empresa
-    HEADERS[&#34;token-secret-empresa&#34;] = token_secret_empresa
+    HEADERS[&#39;token-empresa&#39;]        = token_empresa
+    HEADERS[&#39;token-secret-empresa&#39;] = token_secret_empresa
+
+def validate_tokens(token_empresa:str, token_secret_empresa:str):
+    &#39;&#39;&#39;Verifica se os tokens informados pelo usuário estão corretos e válidos.&#39;&#39;&#39;
+    
+    if not isinstance(token_empresa, str) or len(token_empresa) &lt; 1:
+        raise Exception(&#39;Token Empresa inválido&#39;)
+    if not isinstance(token_secret_empresa, str) or len(token_secret_empresa) &lt; 1:
+        raise Exception(&#39;Token Secret Empresa inválido&#39;)
+    
+    return True
 
 def _dict_factory(x: List[Tuple]) -&gt; Optional[Dict]:
-    &#34;&#34;&#34;Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.
+    &#39;&#39;&#39;Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.
 
     Essa função é chamada automaticamente durante a conversão de uma classe para um dicionário usando `dataclasses.asdict`, 
     quando é atribuída a opção `dict_factory` como seu valor. 
@@ -701,7 +810,7 @@ def _dict_factory(x: List[Tuple]) -&gt; Optional[Dict]:
 
     Returns:
         dict ou None: Um dicionário filtrado com as chaves cujos valores são diferentes de None ou retorna None se o dicionário resultante estiver vazio.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     dic = {k: v for (k, v) in x if v is not None}
     return dic if len(dic) &gt; 0 else None
 
@@ -740,9 +849,9 @@ As chaves de API são utilizadas pela plataforma SISNO para identificar a empres
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>token_empresa</code></strong> :&ensp;<code>str</code></dt>
-<dd>String de 775 caracters fornecido pela plataforma SISNO para utilização da API.</dd>
+<dd>String fornecida pela plataforma SISNO para utilização da API.</dd>
 <dt><strong><code>token_secret_empresa</code></strong> :&ensp;<code>str</code></dt>
-<dd>String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".</dd>
+<dd>String fornecida pela plataforma SISNO para utilização da API.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
@@ -754,29 +863,29 @@ As chaves de API são utilizadas pela plataforma SISNO para identificar a empres
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def alterar_empresa(token_empresa:str, token_secret_empresa:str):
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     Altera as chaves de API utilizadas para a emissão de notas fiscais na plataforma SISNO.
 
     Esse método é responsável por modificar as chaves de API, necessárias para a emissão de notas fiscais em empresas distintas.
     As chaves de API são utilizadas pela plataforma SISNO para identificar a empresa na qual a nota fiscal será emitida.
 
     Args:
-        token_empresa (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API.
-        token_secret_empresa (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com &#34;1000:&#34;.
+        token_empresa (str): String fornecida pela plataforma SISNO para utilização da API.
+        token_secret_empresa (str): String fornecida pela plataforma SISNO para utilização da API.
 
     Raises:
         Exception: Lançada caso alguma das chaves seja inválida.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     
     # TODO: Realizar melhores validações
     
-    if not isinstance(token_empresa, str) or len(token_empresa) != 775:
+    if not isinstance(token_empresa, str) or len(token_empresa) &lt; 1:
         raise Exception(&#39;Token Empresa inválido&#39;)
-    if not isinstance(token_secret_empresa, str) or len(token_secret_empresa) != 166:
+    if not isinstance(token_secret_empresa, str) or len(token_secret_empresa) &lt; 1:
         raise Exception(&#39;Token Secret Empresa inválido&#39;)
     
-    HEADERS[&#34;token-empresa&#34;]        = token_empresa
-    HEADERS[&#34;token-secret-empresa&#34;] = token_secret_empresa</code></pre>
+    HEADERS[&#39;token-empresa&#39;]        = token_empresa
+    HEADERS[&#39;token-secret-empresa&#39;] = token_secret_empresa</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.requires_emissor"><code class="name flex">
@@ -789,38 +898,36 @@ As chaves de API são utilizadas pela plataforma SISNO para identificar a empres
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def requires_emissor(func):
-    &#34;&#34;&#34;Esse decorador é utilizado para garantir que as chaves de API do emissor estão presentes no HEADERS antes da função ser executada.&#34;&#34;&#34;
+    &#39;&#39;&#39;Esse decorador é utilizado para garantir que as chaves de API do emissor estão presentes no HEADERS antes da função ser executada.&#39;&#39;&#39;
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        for key in [&#34;token-emissor&#34;, &#34;token-secret-emissor&#34;]:
-            if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
+        for key in [&#39;token-emissor&#39;, &#39;token-secret-emissor&#39;]:
+            if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) &gt; 0:
                 return func(*args, **kwargs)
             else:
-                raise ValueError(f&#34;Chave &#39;{key}&#39; não configurada.&#34;)
+                raise ValueError(f&#39;Chave &#34;{key}&#34; não configurada.&#39;)
     return wrapper</code></pre>
 </details>
 </dd>
-<dt id="pysisnoapi.requires_empresa"><code class="name flex">
-<span>def <span class="ident">requires_empresa</span></span>(<span>func)</span>
+<dt id="pysisnoapi.validate_tokens"><code class="name flex">
+<span>def <span class="ident">validate_tokens</span></span>(<span>token_empresa: str, token_secret_empresa: str)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Esse decorador é utilizado para garantir que as chaves de API da empresa estão presentes no HEADERS antes da função ser executada.</p></div>
+<div class="desc"><p>Verifica se os tokens informados pelo usuário estão corretos e válidos.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def requires_empresa(func):
-    &#34;&#34;&#34;Esse decorador é utilizado para garantir que as chaves de API da empresa estão presentes no HEADERS antes da função ser executada.&#34;&#34;&#34;
-
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        for key in [&#34;token-empresa&#34;, &#34;token-secret-empresa&#34;]:
-            if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
-                return func(*args, **kwargs)
-            else:
-                raise ValueError(f&#34;Chave &#39;{key}&#39; não configurada.&#34;)
-    return wrapper</code></pre>
+<pre><code class="python">def validate_tokens(token_empresa:str, token_secret_empresa:str):
+    &#39;&#39;&#39;Verifica se os tokens informados pelo usuário estão corretos e válidos.&#39;&#39;&#39;
+    
+    if not isinstance(token_empresa, str) or len(token_empresa) &lt; 1:
+        raise Exception(&#39;Token Empresa inválido&#39;)
+    if not isinstance(token_secret_empresa, str) or len(token_secret_empresa) &lt; 1:
+        raise Exception(&#39;Token Secret Empresa inválido&#39;)
+    
+    return True</code></pre>
 </details>
 </dd>
 </dl>
@@ -841,14 +948,14 @@ Para maiores informações consulte a documentação do método <a href="#pysisn
 </summary>
 <pre><code class="python">@dataclass
 class BaseClass:
-    &#34;&#34;&#34;Classe genérica utilizada como base para as demais classes neste package.
+    &#39;&#39;&#39;Classe genérica utilizada como base para as demais classes neste package.
     
     A principal finalidade desta classe é fornecer o método `as_filtered_dict` para filtrar e retornar um dicionário com os atributos relevantes da instância.
     Para maiores informações consulte a documentação do método [aqui](#pysisnoapi.BaseClass.as_filtered_dict).
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     
     def as_filtered_dict(self)-&gt; dict[str:str]:
-        &#34;&#34;&#34;
+        &#39;&#39;&#39;
         Retorna um dicionário contendo os campos/atributos da classe com valores não nulos.
 
         O dicionário resultante possui chaves (str) correspondentes aos nomes dos campos
@@ -857,12 +964,13 @@ class BaseClass:
         
         Returns:
             dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
-        &#34;&#34;&#34;
+        &#39;&#39;&#39;
         return asdict(self, dict_factory=_dict_factory)</code></pre>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="nfe.html#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a></li>
+<li><a title="pysisnoapi.nfse.ObjetoEmissaoNFSe" href="nfse.html#pysisnoapi.nfse.ObjetoEmissaoNFSe">ObjetoEmissaoNFSe</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
@@ -884,7 +992,7 @@ desde que esses valores não sejam nulos (None).</p>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def as_filtered_dict(self)-&gt; dict[str:str]:
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     Retorna um dicionário contendo os campos/atributos da classe com valores não nulos.
 
     O dicionário resultante possui chaves (str) correspondentes aos nomes dos campos
@@ -893,7 +1001,7 @@ desde que esses valores não sejam nulos (None).</p>
     
     Returns:
         dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     return asdict(self, dict_factory=_dict_factory)</code></pre>
 </details>
 </dd>
@@ -911,8 +1019,8 @@ desde que esses valores não sejam nulos (None).</p>
 </summary>
 <pre><code class="python">@dataclass
 class Cfop:
-    &#34;&#34;&#34;Classe `CFOP` (Código Fiscal de Operações e Prestações)
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;Classe `CFOP` (Código Fiscal de Operações e Prestações)
+    &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo: Optional[str] = None
     descricao: Optional[str] = None
@@ -947,15 +1055,15 @@ Geralmente é o destinatário da NFe.</p></div>
 </summary>
 <pre><code class="python">@dataclass
 class Cliente:
-    &#34;&#34;&#34;Classe `Cliente`
+    &#39;&#39;&#39;Classe `Cliente`
     Geralmente é o destinatário da NFe.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     consumidor_final: str
     contribuinte    : str
-    endereco        : &#34;Endereco&#34;
+    endereco        : &#39;Endereco&#39;
     
-    pessoa_fisica   : Optional[&#34;PessoaFisica&#34;]   = None
-    pessoa_juridica : Optional[&#34;PessoaJuridica&#34;] = None
+    pessoa_fisica   : Optional[&#39;PessoaFisica&#39;]   = None
+    pessoa_juridica : Optional[&#39;PessoaJuridica&#39;] = None
     
     id              : Optional[int] = None
     ie              : Optional[str] = None
@@ -970,17 +1078,17 @@ class Cliente:
     
     def validate_pessoa(self):
         if self.pessoa_fisica and self.pessoa_juridica:
-            raise ValueError(&#34;Informe apenas um dos campos pessoa_fisica ou pessoa_juridica&#34;)
+            raise ValueError(&#39;Informe apenas um dos campos pessoa_fisica ou pessoa_juridica&#39;)
         if not self.pessoa_fisica and not self.pessoa_juridica:
-            raise ValueError(&#34;Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica&#34;)
+            raise ValueError(&#39;Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica&#39;)
     
     def validate_consumidor_final(self):
-        if self.consumidor_final not in [&#39;1&#39;, &#39;2&#39;,]:
-            raise ValueError(f&#34;Consumidor Final {self.consumidor_final} inválido&#34;)
+        if self.consumidor_final not in TIPOS_CONSUMIDOR_FINAL:
+            raise ValueError(f&#39;Consumidor Final {self.consumidor_final} inválido&#39;)
     
     def validate_contribuinte(self):
-        if self.contribuinte not in [&#39;1&#39;, &#39;2&#39;, &#39;9&#39;]:
-            raise ValueError(f&#34;Contribuinte {self.contribuinte} inválido&#34;)</code></pre>
+        if self.contribuinte not in TIPOS_CONTRIBUINTES:
+            raise ValueError(f&#39;Contribuinte {self.contribuinte} inválido&#39;)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -1037,8 +1145,8 @@ class Cliente:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def validate_consumidor_final(self):
-    if self.consumidor_final not in [&#39;1&#39;, &#39;2&#39;,]:
-        raise ValueError(f&#34;Consumidor Final {self.consumidor_final} inválido&#34;)</code></pre>
+    if self.consumidor_final not in TIPOS_CONSUMIDOR_FINAL:
+        raise ValueError(f&#39;Consumidor Final {self.consumidor_final} inválido&#39;)</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.Cliente.validate_contribuinte"><code class="name flex">
@@ -1051,8 +1159,8 @@ class Cliente:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def validate_contribuinte(self):
-    if self.contribuinte not in [&#39;1&#39;, &#39;2&#39;, &#39;9&#39;]:
-        raise ValueError(f&#34;Contribuinte {self.contribuinte} inválido&#34;)</code></pre>
+    if self.contribuinte not in TIPOS_CONTRIBUINTES:
+        raise ValueError(f&#39;Contribuinte {self.contribuinte} inválido&#39;)</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.Cliente.validate_pessoa"><code class="name flex">
@@ -1066,9 +1174,9 @@ class Cliente:
 </summary>
 <pre><code class="python">def validate_pessoa(self):
     if self.pessoa_fisica and self.pessoa_juridica:
-        raise ValueError(&#34;Informe apenas um dos campos pessoa_fisica ou pessoa_juridica&#34;)
+        raise ValueError(&#39;Informe apenas um dos campos pessoa_fisica ou pessoa_juridica&#39;)
     if not self.pessoa_fisica and not self.pessoa_juridica:
-        raise ValueError(&#34;Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica&#34;)</code></pre>
+        raise ValueError(&#39;Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica&#39;)</code></pre>
 </details>
 </dd>
 </dl>
@@ -1125,7 +1233,7 @@ Passar percentual quando tributado pela alíquota ou em reais quando tributado p
 </summary>
 <pre><code class="python">@dataclass
 class Cofins:
-    &#34;&#34;&#34;Contribuição para Financiamento da Seguridade Social.
+    &#39;&#39;&#39;Contribuição para Financiamento da Seguridade Social.
 
     situacao_tributaria:  
         01: Operação Tributável com Alíquota Básica  
@@ -1168,12 +1276,19 @@ class Cofins:
     aliquota_st (str): $0.0000
     
     aliquota_retencao (str): $0.0000
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     situacao_tributaria : str
     
     aliquota            : Optional[str] = None
     aliquota_st         : Optional[str] = None
-    aliquota_retencao   : Optional[str] = None</code></pre>
+    aliquota_retencao   : Optional[str] = None
+    
+    def __post_init__(self, *args, **kwargs):
+        self.validate_situacao_tributaria()
+        
+    def validate_situacao_tributaria(self, *args, **kwargs):
+        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
+            raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -1194,43 +1309,63 @@ class Cofins:
 <div class="desc"></div>
 </dd>
 </dl>
+<h3>Methods</h3>
+<dl>
+<dt id="pysisnoapi.Cofins.validate_situacao_tributaria"><code class="name flex">
+<span>def <span class="ident">validate_situacao_tributaria</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_situacao_tributaria(self, *args, **kwargs):
+    if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
+        raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.DeclaracaoImportacaoAdicao"><code class="flex name class">
 <span>class <span class="ident">DeclaracaoImportacaoAdicao</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>numero_sequencial: Optional[str] = None, numero: Optional[str] = None, cod_fabricante: Optional[str] = None, desconto: Optional[str] = None, drawback: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>DeclaracaoImportacaoAdicao(numero_sequencial: Optional[str] = None, numero: Optional[str] = None, cod_fabricante: Optional[str] = None, desconto: Optional[str] = None, drawback: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class DeclaracaoImportacaoAdicao:
-    # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
+<pre><code class="python">@dataclass
+class DeclaracaoImportacaoAdicao:
+    numero_sequencial: Optional[str] = None
+    numero           : Optional[str] = None
+    cod_fabricante   : Optional[str] = None
+    desconto         : Optional[str] = None
+    drawback         : Optional[str] = None</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.DeclaracaoImportacaoAdicao.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
-</code></dt>
+<dt id="pysisnoapi.DeclaracaoImportacaoAdicao.cod_fabricante"><code class="name">var <span class="ident">cod_fabricante</span> : Optional[str]</code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def asdict(self):
-    dados = self.__dict__
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
-</details>
+</dd>
+<dt id="pysisnoapi.DeclaracaoImportacaoAdicao.desconto"><code class="name">var <span class="ident">desconto</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.DeclaracaoImportacaoAdicao.drawback"><code class="name">var <span class="ident">drawback</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.DeclaracaoImportacaoAdicao.numero"><code class="name">var <span class="ident">numero</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.DeclaracaoImportacaoAdicao.numero_sequencial"><code class="name">var <span class="ident">numero_sequencial</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -1248,11 +1383,11 @@ Em resumo: não há necessidade de se preocupar com os campos, caso não saiba a
 </summary>
 <pre><code class="python">@dataclass
 class Empresa:
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
         Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
         Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
         Em resumo: não há necessidade de se preocupar com os campos, caso não saiba algum deles, pois, eles serão preenchidos automaticamente com aquilo que vier do endpoint.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                                          : Optional[str]         = None
     token                                       : Optional[str]         = None
@@ -1413,8 +1548,8 @@ def from_json(cls, **kwargs):
 </summary>
 <pre><code class="python">@dataclass
 class Endereco:
-    &#34;&#34;&#34;Classe `Endereço`
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;Classe `Endereço`
+    &#39;&#39;&#39;
     
     codigo_pais        : str
     descricao_pais     : str
@@ -1510,8 +1645,8 @@ def from_json(cls, **kwargs):
 </summary>
 <pre><code class="python">@dataclass
 class Ibpt:
-    &#34;&#34;&#34;Classe `IBPT` (Impostos sobre Produtos e Serviços)
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;Classe `IBPT` (Impostos sobre Produtos e Serviços)
+    &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo            : Optional[str]  = None
     ex                : Optional[str]  = None
@@ -1615,7 +1750,7 @@ def from_json(cls, **kwargs):
 </dd>
 <dt id="pysisnoapi.Icms"><code class="flex name class">
 <span>class <span class="ident">Icms</span></span>
-<span>(</span><span>situacao_tributaria: str, codigo_cfop: Optional[str] = None, aliquota_icms: Optional[str] = None, percentual_reducao_bc_icms: Optional[str] = None, aliquota_fcp: Optional[str] = None, percentual_reducao_bc_icms_st: Optional[str] = None, aliquota_aplicavel_calculo_credito: Optional[str] = None, aliquota_icms_st: Optional[str] = None, aliquota_fcp_st: Optional[str] = None, percentual_margem_valor_agregado_icms_st: Optional[str] = None, percentual_diferimento: Optional[str] = None, percentual_desonerado: Optional[str] = None, motivo_desoneracao: Optional[str] = None, percentual_icms_st_retido: Optional[str] = None, utilizar_tabela_aliquotas_interestaduais: Optional[str] = None, utilizar_aliquota_interestadual_importacao: Optional[str] = None)</span>
+<span>(</span><span>situacao_tributaria: str, codigo_cfop: Optional[str] = None, aliquota_icms: Optional[str] = None, percentual_reducao_bc_icms: Optional[str] = None, aliquota_fcp: Optional[str] = None, percentual_reducao_bc_icms_st: Optional[str] = None, aliquota_aplicavel_calculo_credito: Optional[str] = None, aliquota_icms_st: Optional[str] = None, aliquota_fcp_st: Optional[str] = None, percentual_margem_valor_agregado_icms_st: Optional[str] = None, percentual_diferimento: Optional[str] = None, percentual_desonerado: Optional[str] = None, motivo_desoneracao: Optional[str] = None, percentual_icms_st_retido: Optional[str] = None, utilizar_tabela_aliquotas_interestaduais: Optional[bool] = None, utilizar_aliquota_interestadual_importacao: Optional[bool] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Classe <code>ICMS</code> (Imposto sobre Circulação de Mercadorias e Serviços)</p></div>
@@ -1625,25 +1760,38 @@ def from_json(cls, **kwargs):
 </summary>
 <pre><code class="python">@dataclass
 class Icms:
-    &#34;&#34;&#34;Classe `ICMS` (Imposto sobre Circulação de Mercadorias e Serviços)
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;Classe `ICMS` (Imposto sobre Circulação de Mercadorias e Serviços)
+    &#39;&#39;&#39;
     situacao_tributaria                       : str
     
-    codigo_cfop                               : Optional[str] = None
-    aliquota_icms                             : Optional[str] = None
-    percentual_reducao_bc_icms                : Optional[str] = None
-    aliquota_fcp                              : Optional[str] = None
-    percentual_reducao_bc_icms_st             : Optional[str] = None
-    aliquota_aplicavel_calculo_credito        : Optional[str] = None
-    aliquota_icms_st                          : Optional[str] = None
-    aliquota_fcp_st                           : Optional[str] = None
-    percentual_margem_valor_agregado_icms_st  : Optional[str] = None
-    percentual_diferimento                    : Optional[str] = None
-    percentual_desonerado                     : Optional[str] = None
-    motivo_desoneracao                        : Optional[str] = None
-    percentual_icms_st_retido                 : Optional[str] = None
-    utilizar_tabela_aliquotas_interestaduais  : Optional[str] = None
-    utilizar_aliquota_interestadual_importacao: Optional[str] = None</code></pre>
+    codigo_cfop                               : Optional[str]  = None
+    aliquota_icms                             : Optional[str]  = None
+    percentual_reducao_bc_icms                : Optional[str]  = None
+    aliquota_fcp                              : Optional[str]  = None
+    percentual_reducao_bc_icms_st             : Optional[str]  = None
+    aliquota_aplicavel_calculo_credito        : Optional[str]  = None
+    aliquota_icms_st                          : Optional[str]  = None
+    aliquota_fcp_st                           : Optional[str]  = None
+    percentual_margem_valor_agregado_icms_st  : Optional[str]  = None
+    percentual_diferimento                    : Optional[str]  = None
+    percentual_desonerado                     : Optional[str]  = None
+    motivo_desoneracao                        : Optional[str]  = None
+    percentual_icms_st_retido                 : Optional[str]  = None
+    utilizar_tabela_aliquotas_interestaduais  : Optional[bool] = None
+    utilizar_aliquota_interestadual_importacao: Optional[bool] = None
+    
+    def __post_init__(self, *args, **kwargs):
+        self.validate_situacao_tributaria()
+        self.validate_motivo_desoneracao()
+        
+    def validate_situacao_tributaria(self, *args, **kwargs):
+        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_ICMS:
+            raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)
+    
+    def validate_motivo_desoneracao(self, *args, **kwargs):
+        if self.motivo_desoneracao:
+            if self.motivo_desoneracao not in MOTIVOS_DESONERACAO:
+                raise ValueError(f&#39;Motivo de Desoneração {self.motivo_desoneracao} inválido.&#39;)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -1703,13 +1851,45 @@ class Icms:
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="pysisnoapi.Icms.utilizar_aliquota_interestadual_importacao"><code class="name">var <span class="ident">utilizar_aliquota_interestadual_importacao</span> : Optional[str]</code></dt>
+<dt id="pysisnoapi.Icms.utilizar_aliquota_interestadual_importacao"><code class="name">var <span class="ident">utilizar_aliquota_interestadual_importacao</span> : Optional[bool]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="pysisnoapi.Icms.utilizar_tabela_aliquotas_interestaduais"><code class="name">var <span class="ident">utilizar_tabela_aliquotas_interestaduais</span> : Optional[str]</code></dt>
+<dt id="pysisnoapi.Icms.utilizar_tabela_aliquotas_interestaduais"><code class="name">var <span class="ident">utilizar_tabela_aliquotas_interestaduais</span> : Optional[bool]</code></dt>
 <dd>
 <div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="pysisnoapi.Icms.validate_motivo_desoneracao"><code class="name flex">
+<span>def <span class="ident">validate_motivo_desoneracao</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_motivo_desoneracao(self, *args, **kwargs):
+    if self.motivo_desoneracao:
+        if self.motivo_desoneracao not in MOTIVOS_DESONERACAO:
+            raise ValueError(f&#39;Motivo de Desoneração {self.motivo_desoneracao} inválido.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="pysisnoapi.Icms.validate_situacao_tributaria"><code class="name flex">
+<span>def <span class="ident">validate_situacao_tributaria</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_situacao_tributaria(self, *args, **kwargs):
+    if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_ICMS:
+        raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)</code></pre>
+</details>
 </dd>
 </dl>
 </dd>
@@ -1725,10 +1905,10 @@ class Icms:
 </summary>
 <pre><code class="python">@dataclass
 class Impostos:
-    &#34;&#34;&#34;Classe Base para as Classes de Impostos de Produtos e Serviços.
-    &#34;&#34;&#34;
-    pis   : &#34;Pis&#34;
-    cofins: &#34;Cofins&#34;</code></pre>
+    &#39;&#39;&#39;Classe Base para as Classes de Impostos de Produtos e Serviços.
+    &#39;&#39;&#39;
+    pis   : &#39;Pis&#39;
+    cofins: &#39;Cofins&#39;</code></pre>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -1774,7 +1954,7 @@ class Impostos:
 </summary>
 <pre><code class="python">@dataclass
 class Ipi:
-    &#34;&#34;&#34;Classe `IPI` (Imposto Sobre Produtos Industrializados)
+    &#39;&#39;&#39;Classe `IPI` (Imposto Sobre Produtos Industrializados)
 
     situacao_tributaria:  
         00: Entrada com Recuperação de Crédito  
@@ -1791,13 +1971,20 @@ class Ipi:
         54: Saída Imune  
         55: Saída com Suspensão  
         99: Outras Saídas  
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     situacao_tributaria : str
     
     aliquota            : Optional[str] = None
     codigo_enquadramento: Optional[str] = None
     codigo_selo         : Optional[str] = None
-    qtd_selo            : Optional[str] = None</code></pre>
+    qtd_selo            : Optional[str] = None
+    
+    def __post_init__(self, *args, **kwargs):
+        self.validate_situacao_tributaria()
+    
+    def validate_situacao_tributaria(self, *args, **kwargs):
+        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_IPI:
+            raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -1822,51 +2009,10 @@ class Ipi:
 <div class="desc"></div>
 </dd>
 </dl>
-</dd>
-<dt id="pysisnoapi.Issqn"><code class="flex name class">
-<span>class <span class="ident">Issqn</span></span>
-<span>(</span><span>**kwargs)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Indicador_exigibilidade_iss<br>
-1. Exigível<br>
-2. Não incidência<br>
-3. Isenção<br>
-4. Exportação<br>
-5. Imunidade<br>
-6. Exigibilidade suspensa por decisão judicial<br>
-7. Exigibilidade suspensa por processo administrativo</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class Issqn:
-    def __init__(self, **kwargs):
-        &#34;&#34;&#34;
-            Indicador_exigibilidade_iss  
-                1. Exigível  
-                2. Não incidência  
-                3. Isenção  
-                4. Exportação  
-                5. Imunidade  
-                6. Exigibilidade suspensa por decisão judicial  
-                7. Exigibilidade suspensa por processo administrativo  
-        &#34;&#34;&#34;
-        
-        self.indicador_exigibilidade_iss     = kwargs.get(&#34;indicador_exigibilidade_iss&#34;, None)   # string [ 1, 2, 3, 4, 5, 6, 7 ]
-        self.indicador_incentivo_fiscal      = kwargs.get(&#34;indicador_incentivo_fiscal&#34;, None)    # string (1: Não, 2: Sim)
-        self.item_lista_servicos             = kwargs.get(&#34;item_lista_servicos&#34;, None)           # string - Item da lista de serviços no Padrão ABRASF (Formato NN.NN)
-        self.aliquota                        = kwargs.get(&#34;aliquota&#34;, None)                      # string ($0.0000)
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
-</details>
 <h3>Methods</h3>
 <dl>
-<dt id="pysisnoapi.Issqn.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
+<dt id="pysisnoapi.Ipi.validate_situacao_tributaria"><code class="name flex">
+<span>def <span class="ident">validate_situacao_tributaria</span></span>(<span>self, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1874,10 +2020,9 @@ class Ipi:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def asdict(self):
-    dados = self.__dict__
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
+<pre><code class="python">def validate_situacao_tributaria(self, *args, **kwargs):
+    if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_IPI:
+        raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)</code></pre>
 </details>
 </dd>
 </dl>
@@ -1894,8 +2039,8 @@ class Ipi:
 </summary>
 <pre><code class="python">@dataclass
 class Municipio:
-    &#34;&#34;&#34;Classe `Município`
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;Classe `Município`
+    &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     codigo_ibge : Optional[int] = None
     descricao   : Optional[str] = None
@@ -1946,10 +2091,10 @@ def from_json(cls, **kwargs):
 </summary>
 <pre><code class="python">@dataclass
 class NotaFiscal:
-    &#34;&#34;&#34;Classe `Nota Fiscal`.
+    &#39;&#39;&#39;Classe `Nota Fiscal`.
     
     Até 01/2023 essa classe também era usada para Notas Fiscais de Serviço (NFSe).
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                      : Optional[int]         = None
     empresa                 : Optional[&#39;Empresa&#39;]   = None
@@ -2112,42 +2257,28 @@ def from_json(cls, **kwargs):
 </dd>
 <dt id="pysisnoapi.Observacao"><code class="flex name class">
 <span>class <span class="ident">Observacao</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>campo: Optional[str] = None, texto: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Observacao(campo: Optional[str] = None, texto: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Observacao:
-    # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
-    
-    def __init__(self, **kwargs):
-        self.campo                   = kwargs.get(&#34;campo&#34;, None)                                # string
-        self.texto                   = kwargs.get(&#34;texto&#34;, None)                                # string
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
+<pre><code class="python">@dataclass
+class Observacao:
+    campo: Optional[str] = None
+    texto: Optional[str] = None</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.Observacao.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
-</code></dt>
+<dt id="pysisnoapi.Observacao.campo"><code class="name">var <span class="ident">campo</span> : Optional[str]</code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def asdict(self):
-    dados = self.__dict__
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
-</details>
+</dd>
+<dt id="pysisnoapi.Observacao.texto"><code class="name">var <span class="ident">texto</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -2164,10 +2295,10 @@ def from_json(cls, **kwargs):
 </summary>
 <pre><code class="python">@dataclass
 class PessoaFisica:
-    &#34;&#34;&#34;Classe `Pessoa Física`
+    &#39;&#39;&#39;Classe `Pessoa Física`
     
     Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     nome_completo: str
     
     cpf           : Optional[str] = None
@@ -2175,9 +2306,9 @@ class PessoaFisica:
     
     def __post_init__(self):
         if self.cpf and self.id_estrangeiro:
-            raise ValueError(&#34;Informe somente um dos campos: cpf ou id_estrangeiro&#34;)
+            raise ValueError(&#39;Informe somente um dos campos: cpf ou id_estrangeiro&#39;)
         if not self.cpf and not self.id_estrangeiro:
-            raise ValueError(&#34;Informe um dos campos: cpf ou id_estrangeiro&#34;)</code></pre>
+            raise ValueError(&#39;Informe um dos campos: cpf ou id_estrangeiro&#39;)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -2207,8 +2338,8 @@ class PessoaFisica:
 </summary>
 <pre><code class="python">@dataclass
 class PessoaJuridica:
-    &#34;&#34;&#34;Classe `Pessoa Jurídica`
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;Classe `Pessoa Jurídica`
+    &#39;&#39;&#39;
     cnpj        : str
     razao_social: str
     
@@ -2288,7 +2419,7 @@ Passar percentual quando tributado pela alíquota ou em reais quando tributado p
 </summary>
 <pre><code class="python">@dataclass
 class Pis:
-    &#34;&#34;&#34;Classe `PIS` (Programas de Integração Social)
+    &#39;&#39;&#39;Classe `PIS` (Programas de Integração Social)
 
     situacao_tributaria (str): Situação Tributária  
         01: Operação Tributável com Alíquota Básica  
@@ -2332,12 +2463,19 @@ class Pis:
     
     aliquota_retencao (str): $0.0000
     
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     situacao_tributaria: str
     
     aliquota           : Optional[str] = None
     aliquota_st        : Optional[str] = None
-    aliquota_retencao  : Optional[str] = None</code></pre>
+    aliquota_retencao  : Optional[str] = None
+
+    def __post_init__(self, *args, **kwargs):
+        self.validate_situacao_tributaria()
+        
+    def validate_situacao_tributaria(self, *args, **kwargs):
+        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
+            raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -2358,43 +2496,68 @@ class Pis:
 <div class="desc"></div>
 </dd>
 </dl>
+<h3>Methods</h3>
+<dl>
+<dt id="pysisnoapi.Pis.validate_situacao_tributaria"><code class="name flex">
+<span>def <span class="ident">validate_situacao_tributaria</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate_situacao_tributaria(self, *args, **kwargs):
+    if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
+        raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.RetencaoIcmsTransporte"><code class="flex name class">
 <span>class <span class="ident">RetencaoIcmsTransporte</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>valor_servico: Optional[str] = None, valor_icms_retido: Optional[str] = None, cfop: Optional[str] = None, codigo_municipio_ocorrencia_fato_gerador_icms_transporte: Optional[str] = None, base_calculo_retencao_icms: Optional[str] = None, aliquota_retencao: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>RetencaoIcmsTransporte(valor_servico: Optional[str] = None, valor_icms_retido: Optional[str] = None, cfop: Optional[str] = None, codigo_municipio_ocorrencia_fato_gerador_icms_transporte: Optional[str] = None, base_calculo_retencao_icms: Optional[str] = None, aliquota_retencao: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class RetencaoIcmsTransporte:
-    # TODO: Até o dia 10/05/2023 essa classe só está sendo usada na classe &#34;Transporte&#34;, que não está sendo usada
-    def __init__(self, **kwargs):
-        raise NotImplementedError
-
-    def asdict(self):
-        dados = self.__dict__
-        dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-        return dados if len(dados) &gt; 0 else None</code></pre>
+<pre><code class="python">@dataclass
+class RetencaoIcmsTransporte:
+    valor_servico                                           : Optional[str] = None
+    valor_icms_retido                                       : Optional[str] = None
+    cfop                                                    : Optional[str] = None
+    codigo_municipio_ocorrencia_fato_gerador_icms_transporte: Optional[str] = None
+    base_calculo_retencao_icms                              : Optional[str] = None
+    aliquota_retencao                                       : Optional[str] = None</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Class variables</h3>
 <dl>
-<dt id="pysisnoapi.RetencaoIcmsTransporte.asdict"><code class="name flex">
-<span>def <span class="ident">asdict</span></span>(<span>self)</span>
-</code></dt>
+<dt id="pysisnoapi.RetencaoIcmsTransporte.aliquota_retencao"><code class="name">var <span class="ident">aliquota_retencao</span> : Optional[str]</code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def asdict(self):
-    dados = self.__dict__
-    dados = {k: v for k,v in dados.items() if (v is not None) and (not isinstance(v, str) or v != &#39;&#39;)}    # Removendo os dados que possuem valores vazios (None ou &#39;&#39;)
-    return dados if len(dados) &gt; 0 else None</code></pre>
-</details>
+</dd>
+<dt id="pysisnoapi.RetencaoIcmsTransporte.base_calculo_retencao_icms"><code class="name">var <span class="ident">base_calculo_retencao_icms</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.RetencaoIcmsTransporte.cfop"><code class="name">var <span class="ident">cfop</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.RetencaoIcmsTransporte.codigo_municipio_ocorrencia_fato_gerador_icms_transporte"><code class="name">var <span class="ident">codigo_municipio_ocorrencia_fato_gerador_icms_transporte</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.RetencaoIcmsTransporte.valor_icms_retido"><code class="name">var <span class="ident">valor_icms_retido</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.RetencaoIcmsTransporte.valor_servico"><code class="name">var <span class="ident">valor_servico</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -2430,11 +2593,11 @@ class Transporte:
 </summary>
 <pre><code class="python">@dataclass
 class Uf:
-    &#34;&#34;&#34;Classe `UF`(Unidade Federativa)
+    &#39;&#39;&#39;Classe `UF`(Unidade Federativa)
 
     Returns:
         _type_: _description_
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     # TODO: Até o dia 01/06/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
     codigo_ibge: Optional[str]  = None
@@ -2498,7 +2661,7 @@ def from_json(cls, **kwargs):
 <ul class="">
 <li><code><a title="pysisnoapi.alterar_empresa" href="#pysisnoapi.alterar_empresa">alterar_empresa</a></code></li>
 <li><code><a title="pysisnoapi.requires_emissor" href="#pysisnoapi.requires_emissor">requires_emissor</a></code></li>
-<li><code><a title="pysisnoapi.requires_empresa" href="#pysisnoapi.requires_empresa">requires_empresa</a></code></li>
+<li><code><a title="pysisnoapi.validate_tokens" href="#pysisnoapi.validate_tokens">validate_tokens</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
@@ -2542,12 +2705,17 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.Cofins.aliquota_retencao" href="#pysisnoapi.Cofins.aliquota_retencao">aliquota_retencao</a></code></li>
 <li><code><a title="pysisnoapi.Cofins.aliquota_st" href="#pysisnoapi.Cofins.aliquota_st">aliquota_st</a></code></li>
 <li><code><a title="pysisnoapi.Cofins.situacao_tributaria" href="#pysisnoapi.Cofins.situacao_tributaria">situacao_tributaria</a></code></li>
+<li><code><a title="pysisnoapi.Cofins.validate_situacao_tributaria" href="#pysisnoapi.Cofins.validate_situacao_tributaria">validate_situacao_tributaria</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao" href="#pysisnoapi.DeclaracaoImportacaoAdicao">DeclaracaoImportacaoAdicao</a></code></h4>
 <ul class="">
-<li><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao.asdict" href="#pysisnoapi.DeclaracaoImportacaoAdicao.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao.cod_fabricante" href="#pysisnoapi.DeclaracaoImportacaoAdicao.cod_fabricante">cod_fabricante</a></code></li>
+<li><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao.desconto" href="#pysisnoapi.DeclaracaoImportacaoAdicao.desconto">desconto</a></code></li>
+<li><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao.drawback" href="#pysisnoapi.DeclaracaoImportacaoAdicao.drawback">drawback</a></code></li>
+<li><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao.numero" href="#pysisnoapi.DeclaracaoImportacaoAdicao.numero">numero</a></code></li>
+<li><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao.numero_sequencial" href="#pysisnoapi.DeclaracaoImportacaoAdicao.numero_sequencial">numero_sequencial</a></code></li>
 </ul>
 </li>
 <li>
@@ -2635,6 +2803,8 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.Icms.situacao_tributaria" href="#pysisnoapi.Icms.situacao_tributaria">situacao_tributaria</a></code></li>
 <li><code><a title="pysisnoapi.Icms.utilizar_aliquota_interestadual_importacao" href="#pysisnoapi.Icms.utilizar_aliquota_interestadual_importacao">utilizar_aliquota_interestadual_importacao</a></code></li>
 <li><code><a title="pysisnoapi.Icms.utilizar_tabela_aliquotas_interestaduais" href="#pysisnoapi.Icms.utilizar_tabela_aliquotas_interestaduais">utilizar_tabela_aliquotas_interestaduais</a></code></li>
+<li><code><a title="pysisnoapi.Icms.validate_motivo_desoneracao" href="#pysisnoapi.Icms.validate_motivo_desoneracao">validate_motivo_desoneracao</a></code></li>
+<li><code><a title="pysisnoapi.Icms.validate_situacao_tributaria" href="#pysisnoapi.Icms.validate_situacao_tributaria">validate_situacao_tributaria</a></code></li>
 </ul>
 </li>
 <li>
@@ -2652,12 +2822,7 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.Ipi.codigo_selo" href="#pysisnoapi.Ipi.codigo_selo">codigo_selo</a></code></li>
 <li><code><a title="pysisnoapi.Ipi.qtd_selo" href="#pysisnoapi.Ipi.qtd_selo">qtd_selo</a></code></li>
 <li><code><a title="pysisnoapi.Ipi.situacao_tributaria" href="#pysisnoapi.Ipi.situacao_tributaria">situacao_tributaria</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="pysisnoapi.Issqn" href="#pysisnoapi.Issqn">Issqn</a></code></h4>
-<ul class="">
-<li><code><a title="pysisnoapi.Issqn.asdict" href="#pysisnoapi.Issqn.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Ipi.validate_situacao_tributaria" href="#pysisnoapi.Ipi.validate_situacao_tributaria">validate_situacao_tributaria</a></code></li>
 </ul>
 </li>
 <li>
@@ -2698,7 +2863,8 @@ def from_json(cls, **kwargs):
 <li>
 <h4><code><a title="pysisnoapi.Observacao" href="#pysisnoapi.Observacao">Observacao</a></code></h4>
 <ul class="">
-<li><code><a title="pysisnoapi.Observacao.asdict" href="#pysisnoapi.Observacao.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.Observacao.campo" href="#pysisnoapi.Observacao.campo">campo</a></code></li>
+<li><code><a title="pysisnoapi.Observacao.texto" href="#pysisnoapi.Observacao.texto">texto</a></code></li>
 </ul>
 </li>
 <li>
@@ -2725,12 +2891,18 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.Pis.aliquota_retencao" href="#pysisnoapi.Pis.aliquota_retencao">aliquota_retencao</a></code></li>
 <li><code><a title="pysisnoapi.Pis.aliquota_st" href="#pysisnoapi.Pis.aliquota_st">aliquota_st</a></code></li>
 <li><code><a title="pysisnoapi.Pis.situacao_tributaria" href="#pysisnoapi.Pis.situacao_tributaria">situacao_tributaria</a></code></li>
+<li><code><a title="pysisnoapi.Pis.validate_situacao_tributaria" href="#pysisnoapi.Pis.validate_situacao_tributaria">validate_situacao_tributaria</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.RetencaoIcmsTransporte" href="#pysisnoapi.RetencaoIcmsTransporte">RetencaoIcmsTransporte</a></code></h4>
 <ul class="">
-<li><code><a title="pysisnoapi.RetencaoIcmsTransporte.asdict" href="#pysisnoapi.RetencaoIcmsTransporte.asdict">asdict</a></code></li>
+<li><code><a title="pysisnoapi.RetencaoIcmsTransporte.aliquota_retencao" href="#pysisnoapi.RetencaoIcmsTransporte.aliquota_retencao">aliquota_retencao</a></code></li>
+<li><code><a title="pysisnoapi.RetencaoIcmsTransporte.base_calculo_retencao_icms" href="#pysisnoapi.RetencaoIcmsTransporte.base_calculo_retencao_icms">base_calculo_retencao_icms</a></code></li>
+<li><code><a title="pysisnoapi.RetencaoIcmsTransporte.cfop" href="#pysisnoapi.RetencaoIcmsTransporte.cfop">cfop</a></code></li>
+<li><code><a title="pysisnoapi.RetencaoIcmsTransporte.codigo_municipio_ocorrencia_fato_gerador_icms_transporte" href="#pysisnoapi.RetencaoIcmsTransporte.codigo_municipio_ocorrencia_fato_gerador_icms_transporte">codigo_municipio_ocorrencia_fato_gerador_icms_transporte</a></code></li>
+<li><code><a title="pysisnoapi.RetencaoIcmsTransporte.valor_icms_retido" href="#pysisnoapi.RetencaoIcmsTransporte.valor_icms_retido">valor_icms_retido</a></code></li>
+<li><code><a title="pysisnoapi.RetencaoIcmsTransporte.valor_servico" href="#pysisnoapi.RetencaoIcmsTransporte.valor_servico">valor_servico</a></code></li>
 </ul>
 </li>
 <li>

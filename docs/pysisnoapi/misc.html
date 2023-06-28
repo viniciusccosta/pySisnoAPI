@@ -31,7 +31,7 @@ Este módulo faz parte de um pacote e depende completamente de outros módulos.<
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34; 
+<pre><code class="python">&#39;&#39;&#39; 
     O módulo misc.py contém funções genéricas que não se enquadram em outros módulos.
     
     Um exemplo é a função para realizar uma requisição à API a fim de consultar informações sobre municípios. 
@@ -39,7 +39,7 @@ Este módulo faz parte de um pacote e depende completamente de outros módulos.<
 
     Para utilizar as funções deste módulo, basta importá-lo da seguinte forma:  
     `from pysisnoapi import misc`
-&#34;&#34;&#34;
+&#39;&#39;&#39;
 
 # ======================================================================================================================
 from . import *
@@ -50,7 +50,7 @@ from typing import List
 # ======================================================================================================================
 @requires_emissor
 def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
-    &#34;&#34;&#34;Consulta os municípios de um determinado estado através de uma requisição à API.
+    &#39;&#39;&#39;Consulta os municípios de um determinado estado através de uma requisição à API.
 
     Essa função permite consultar os municípios de um estado específico através de uma requisição à API.
     Ela retorna uma lista de objetos Municipio contendo informações sobre cada município.
@@ -60,7 +60,7 @@ def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
 
     Returns:
         List[Municipio]: Uma lista de objetos Municipio, representando os municípios do estado consultado.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
 
     headers  = HEADERS.copy()
     url      = f&#39;{BASE_URL}/unidades-federativas/{uf}/municipios&#39;
@@ -78,13 +78,13 @@ def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
 
 @requires_emissor
 def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
-    &#34;&#34;&#34;Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
+    &#39;&#39;&#39;Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
 
     Essa função permite obter a lista completa de CFOPs (Código Fiscal de Operações e Prestações) disponíveis através de uma requisição à API.
 
     Returns:
         List[Cfop]: Uma lista de objetos Cfop, representando os CFOPs disponíveis.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
 
     headers  = HEADERS.copy()
     url      = f&#39;{BASE_URL}/cfops&#39;
@@ -104,7 +104,7 @@ def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
 def get_ibpts(
     cod_desc: str, 
     uf: str, *args, **kwargs) -&gt; List[Ibpt]:
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     Obtém os IBPTs através de uma requisição à API.
 
     Essa função permite obter os dados de IBPTs (Impostos sobre Produtos e Serviços) para um determinado item ou código, em uma determinada UF (Unidade Federativa)
@@ -118,14 +118,14 @@ def get_ibpts(
 
     Returns:
         List[Ibpt]: Uma lista de objetos Ibpt representando os IBPTs.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
 
     if len(cod_desc) &lt; 4:
-        raise Exception(&#34;Código ou Descrição precisa ter no mínimo 4 caracteres&#34;)
+        raise Exception(&#39;Código ou Descrição precisa ter no mínimo 4 caracteres&#39;)
     
     headers  = HEADERS.copy()
-    headers[&#34;codigo-ou-descricao&#34;] = cod_desc
-    headers[&#34;uf&#34;] = uf
+    headers[&#39;codigo-ou-descricao&#39;] = cod_desc
+    headers[&#39;uf&#39;] = uf
 
     url      = f&#39;{BASE_URL}/ibpts&#39;
     response = requests.get(url, headers=headers)
@@ -167,13 +167,13 @@ def get_ibpts(
 </summary>
 <pre><code class="python">@requires_emissor
 def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
-    &#34;&#34;&#34;Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
+    &#39;&#39;&#39;Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
 
     Essa função permite obter a lista completa de CFOPs (Código Fiscal de Operações e Prestações) disponíveis através de uma requisição à API.
 
     Returns:
         List[Cfop]: Uma lista de objetos Cfop, representando os CFOPs disponíveis.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
 
     headers  = HEADERS.copy()
     url      = f&#39;{BASE_URL}/cfops&#39;
@@ -221,7 +221,7 @@ def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
 def get_ibpts(
     cod_desc: str, 
     uf: str, *args, **kwargs) -&gt; List[Ibpt]:
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
     Obtém os IBPTs através de uma requisição à API.
 
     Essa função permite obter os dados de IBPTs (Impostos sobre Produtos e Serviços) para um determinado item ou código, em uma determinada UF (Unidade Federativa)
@@ -235,14 +235,14 @@ def get_ibpts(
 
     Returns:
         List[Ibpt]: Uma lista de objetos Ibpt representando os IBPTs.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
 
     if len(cod_desc) &lt; 4:
-        raise Exception(&#34;Código ou Descrição precisa ter no mínimo 4 caracteres&#34;)
+        raise Exception(&#39;Código ou Descrição precisa ter no mínimo 4 caracteres&#39;)
     
     headers  = HEADERS.copy()
-    headers[&#34;codigo-ou-descricao&#34;] = cod_desc
-    headers[&#34;uf&#34;] = uf
+    headers[&#39;codigo-ou-descricao&#39;] = cod_desc
+    headers[&#39;uf&#39;] = uf
 
     url      = f&#39;{BASE_URL}/ibpts&#39;
     response = requests.get(url, headers=headers)
@@ -281,7 +281,7 @@ Ela retorna uma lista de objetos Municipio contendo informações sobre cada mun
 </summary>
 <pre><code class="python">@requires_emissor
 def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
-    &#34;&#34;&#34;Consulta os municípios de um determinado estado através de uma requisição à API.
+    &#39;&#39;&#39;Consulta os municípios de um determinado estado através de uma requisição à API.
 
     Essa função permite consultar os municípios de um estado específico através de uma requisição à API.
     Ela retorna uma lista de objetos Municipio contendo informações sobre cada município.
@@ -291,7 +291,7 @@ def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
 
     Returns:
         List[Municipio]: Uma lista de objetos Municipio, representando os municípios do estado consultado.
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
 
     headers  = HEADERS.copy()
     url      = f&#39;{BASE_URL}/unidades-federativas/{uf}/municipios&#39;
