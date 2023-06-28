@@ -30,11 +30,11 @@
 import requests
 import unittest
 
-from unittest.mock import MagicMock
+from unittest.mock  import MagicMock
+from datetime       import datetime
 
-from pysisnoapi import nfe
 from pysisnoapi import *
-from datetime import datetime
+from pysisnoapi import nfe
 
 # =================================================================
 class NfeTestCase(unittest.TestCase):
@@ -60,20 +60,20 @@ class NfeTestCase(unittest.TestCase):
         )
         
         impostos = nfe.ImpostosProduto(
-            Pis (
+            pis = Pis (
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
-            Cofins(
+            cofins = Cofins(
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
-            Icms (
+            icms = Icms (
                 situacao_tributaria=&#39;102&#39;,
                 aliquota_icms=&#39;0.0000&#39;,
                 aliquota_icms_st=&#39;0.0000&#39;,
             ),
-            Ipi(
+            ipi = Ipi(
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
@@ -182,9 +182,9 @@ class NfeTestCase(unittest.TestCase):
                         &#34;numero_nota&#34;: &#34;50&#34;,
                         &#34;chave_acesso&#34;: &#34;53230500665143000112550010000000777777777777&#34;,
                         &#34;protocolo&#34;: &#34;353230007777777&#34;,
-                        &#34;nome_destinatario&#34;: &#34;NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL&#34;,
-                        &#34;uf_destinatario&#34;: &#34;DF&#34;,
-                        &#34;cpf_cnpj_destinatario&#34;: &#34;94346387047&#34;,  # https://www.4devs.com.br/gerador_de_cpf
+                        # &#34;nome_destinatario&#34;: &#34;NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL&#34;,
+                        # &#34;uf_destinatario&#34;: &#34;DF&#34;,
+                        # &#34;cpf_cnpj_destinatario&#34;: &#34;94346387047&#34;,  # https://www.4devs.com.br/gerador_de_cpf
                         &#34;valor_total&#34;: &#34;4.00&#34;,
                         &#34;status&#34;: &#34;Autorizada&#34;,
                         &#34;motivo&#34;: &#34;Autorizado o uso da NF-e&#34;,
@@ -197,10 +197,10 @@ class NfeTestCase(unittest.TestCase):
                         &#34;tipo_emissao&#34;: &#34;1&#34;
                     }
                 ], 
-                &#39;informacoesAdicionais&#39;: {
-                    &#39;totalAutorizadas&#39;: 0.0, 
-                    &#39;totalCanceladas&#39;: 0.0
-                },
+                # &#39;informacoesAdicionais&#39;: {
+                #     &#39;totalAutorizadas&#39;: 0.0, 
+                #     &#39;totalCanceladas&#39;: 0.0
+                # },
             }
         }
 
@@ -228,7 +228,7 @@ class NfeTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        result = nfe.validar(self.objeto, tipo_emissao=&#39;1&#39;)
+        result = nfe.validar(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
         
         # Checando resultado:
         self.assertEqual(&#39;Sucesso&#39;, result[&#39;status&#39;])
@@ -538,7 +538,7 @@ class NfeTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;)
+        result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
         
         # Checando resultado:
         self.assertIn(&#39;status&#39;, result)
@@ -571,7 +571,7 @@ class NfeTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
          # Chamando a Função:
-        result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;)
+        result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
         
         # Checando resultado:
         self.assertIn(&#39;status&#39;, result)
@@ -633,8 +633,8 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 ncm                    = &#34;62069000&#34;,
                 quantidade             = &#34;2.0&#34;,
                 unidade                = &#34;UNID&#34;,
-                subtotal               = &#34;2.0&#34;,
-                total                  = &#34;2.0&#34;,
+                subtotal               = &#34;5.0&#34;,
+                total                  = &#34;10.0&#34;,
                 impostos               = self.impostos,
                 informacoes_adicionais = &#34;Emitido pelo pySisnoAPI&#34;,
             ),
@@ -891,6 +891,40 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
             )
 
+    def test_numero_nota_sequencial_menor_que_1_caracter(self):
+        with self.assertRaises(ValueError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial= &#39;&#39;,
+                serie                 = &#39;1&#39;,
+                operacao              = &#39;1&#39;,
+                natureza_operacao     = &#39;NATUREZA&#39;,
+                modelo                = &#39;55&#39;,
+                finalidade            = &#39;1&#39;,
+                ambiente              = &#39;2&#39;,
+                cliente               = self.cliente,
+                produtos              = self.produtos,
+                pedido                = self.pedido,
+                data_entrada_saida    = self.data,
+                data_emissao          = self.data,
+            )
+    
+    def test_numero_nota_sequencial_maior_que_9_caracteres(self):
+        with self.assertRaises(ValueError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial= &#39;0123456789&#39;,
+                serie                 = &#39;1&#39;,
+                operacao              = &#39;1&#39;,
+                natureza_operacao     = &#39;NATUREZA&#39;,
+                modelo                = &#39;55&#39;,
+                finalidade            = &#39;1&#39;,
+                ambiente              = &#39;2&#39;,
+                cliente               = self.cliente,
+                produtos              = self.produtos,
+                pedido                = self.pedido,
+                data_entrada_saida    = self.data,
+                data_emissao          = self.data,
+            )
+    
     def test_operacao_invalida(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (
@@ -1085,8 +1119,8 @@ class ProdutoUnitTest(unittest.TestCase):
             ncm        = &#34;62069000&#34;,
             quantidade = &#34;2.0&#34;,
             unidade    = &#34;UNID&#34;,
-            subtotal   = &#34;2.0&#34;,
-            total      = &#34;2.0&#34;,
+            subtotal   = &#34;5.0&#34;,
+            total      = &#34;10.0&#34;,
             impostos   = self.impostos,
         )
     
@@ -1097,8 +1131,8 @@ class ProdutoUnitTest(unittest.TestCase):
         self.assertEqual(produto.ncm       , &#39;62069000&#39;)
         self.assertEqual(produto.quantidade, &#39;2.0&#39;)
         self.assertEqual(produto.unidade   , &#39;UNID&#39;)
-        self.assertEqual(produto.subtotal  , &#39;2.0&#39;)
-        self.assertEqual(produto.total     , &#39;2.0&#39;)
+        self.assertEqual(produto.subtotal  , &#39;5.0&#39;)
+        self.assertEqual(produto.total     , &#39;10.0&#39;)
         self.assertEqual(produto.impostos  , self.impostos)
         
     def test_campo_obrigatorio_item(self):
@@ -1111,8 +1145,8 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
-                subtotal   = &#34;2.0&#34;,
-                total      = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
+                total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
         
@@ -1126,8 +1160,8 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
-                subtotal   = &#34;2.0&#34;,
-                total      = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
+                total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
             
@@ -1141,8 +1175,8 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
-                subtotal   = &#34;2.0&#34;,
-                total      = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
+                total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
             
@@ -1156,8 +1190,8 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
-                subtotal   = &#34;2.0&#34;,
-                total      = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
+                total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
             
@@ -1171,8 +1205,8 @@ class ProdutoUnitTest(unittest.TestCase):
                 
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
-                subtotal   = &#34;2.0&#34;,
-                total      = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
+                total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
             
@@ -1186,8 +1220,8 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = &#34;62069000&#34;,
                 
                 unidade    = &#34;UNID&#34;,
-                subtotal   = &#34;2.0&#34;,
-                total      = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
+                total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
             
@@ -1201,8 +1235,8 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 
-                subtotal   = &#34;2.0&#34;,
-                total      = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
+                total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
             
@@ -1217,7 +1251,7 @@ class ProdutoUnitTest(unittest.TestCase):
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
                 
-                total      = &#34;2.0&#34;,
+                total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
 
@@ -1231,7 +1265,7 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
-                subtotal   = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
                 
                 impostos   = self.impostos,
             )
@@ -1246,8 +1280,8 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
-                subtotal   = &#34;2.0&#34;,
-                total      = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
+                total      = &#34;10.0&#34;,
                 
             )
 
@@ -1611,20 +1645,20 @@ not have a method with the specified name.</p></div>
         )
         
         impostos = nfe.ImpostosProduto(
-            Pis (
+            pis = Pis (
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
-            Cofins(
+            cofins = Cofins(
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
-            Icms (
+            icms = Icms (
                 situacao_tributaria=&#39;102&#39;,
                 aliquota_icms=&#39;0.0000&#39;,
                 aliquota_icms_st=&#39;0.0000&#39;,
             ),
-            Ipi(
+            ipi = Ipi(
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
@@ -1733,9 +1767,9 @@ not have a method with the specified name.</p></div>
                         &#34;numero_nota&#34;: &#34;50&#34;,
                         &#34;chave_acesso&#34;: &#34;53230500665143000112550010000000777777777777&#34;,
                         &#34;protocolo&#34;: &#34;353230007777777&#34;,
-                        &#34;nome_destinatario&#34;: &#34;NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL&#34;,
-                        &#34;uf_destinatario&#34;: &#34;DF&#34;,
-                        &#34;cpf_cnpj_destinatario&#34;: &#34;94346387047&#34;,  # https://www.4devs.com.br/gerador_de_cpf
+                        # &#34;nome_destinatario&#34;: &#34;NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL&#34;,
+                        # &#34;uf_destinatario&#34;: &#34;DF&#34;,
+                        # &#34;cpf_cnpj_destinatario&#34;: &#34;94346387047&#34;,  # https://www.4devs.com.br/gerador_de_cpf
                         &#34;valor_total&#34;: &#34;4.00&#34;,
                         &#34;status&#34;: &#34;Autorizada&#34;,
                         &#34;motivo&#34;: &#34;Autorizado o uso da NF-e&#34;,
@@ -1748,10 +1782,10 @@ not have a method with the specified name.</p></div>
                         &#34;tipo_emissao&#34;: &#34;1&#34;
                     }
                 ], 
-                &#39;informacoesAdicionais&#39;: {
-                    &#39;totalAutorizadas&#39;: 0.0, 
-                    &#39;totalCanceladas&#39;: 0.0
-                },
+                # &#39;informacoesAdicionais&#39;: {
+                #     &#39;totalAutorizadas&#39;: 0.0, 
+                #     &#39;totalCanceladas&#39;: 0.0
+                # },
             }
         }
 
@@ -1779,7 +1813,7 @@ not have a method with the specified name.</p></div>
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        result = nfe.validar(self.objeto, tipo_emissao=&#39;1&#39;)
+        result = nfe.validar(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
         
         # Checando resultado:
         self.assertEqual(&#39;Sucesso&#39;, result[&#39;status&#39;])
@@ -2089,7 +2123,7 @@ not have a method with the specified name.</p></div>
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;)
+        result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
         
         # Checando resultado:
         self.assertIn(&#39;status&#39;, result)
@@ -2122,7 +2156,7 @@ not have a method with the specified name.</p></div>
         requests.post = MagicMock(return_value=mock_response)
         
          # Chamando a Função:
-        result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;)
+        result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
         
         # Checando resultado:
         self.assertIn(&#39;status&#39;, result)
@@ -2168,20 +2202,20 @@ not have a method with the specified name.</p></div>
     )
     
     impostos = nfe.ImpostosProduto(
-        Pis (
+        pis = Pis (
             situacao_tributaria=&#39;99&#39;,
             aliquota=&#39;0.0000&#39;,
         ),
-        Cofins(
+        cofins = Cofins(
             situacao_tributaria=&#39;99&#39;,
             aliquota=&#39;0.0000&#39;,
         ),
-        Icms (
+        icms = Icms (
             situacao_tributaria=&#39;102&#39;,
             aliquota_icms=&#39;0.0000&#39;,
             aliquota_icms_st=&#39;0.0000&#39;,
         ),
-        Ipi(
+        ipi = Ipi(
             situacao_tributaria=&#39;99&#39;,
             aliquota=&#39;0.0000&#39;,
         ),
@@ -2551,7 +2585,7 @@ Essa função realiza uma solicitação ao endpoint correspondente para emitir u
     requests.post = MagicMock(return_value=mock_response)
     
     # Chamando a Função:
-    result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;)
+    result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
     
     # Checando resultado:
     self.assertIn(&#39;status&#39;, result)
@@ -2599,7 +2633,7 @@ permitindo ao usuário realizar alterações nos campos pertinentes e tentar emi
     requests.post = MagicMock(return_value=mock_response)
     
      # Chamando a Função:
-    result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;)
+    result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
     
     # Checando resultado:
     self.assertIn(&#39;status&#39;, result)
@@ -2673,9 +2707,9 @@ Essa função realiza uma solicitação ao endpoint correspondente e retorna uma
                     &#34;numero_nota&#34;: &#34;50&#34;,
                     &#34;chave_acesso&#34;: &#34;53230500665143000112550010000000777777777777&#34;,
                     &#34;protocolo&#34;: &#34;353230007777777&#34;,
-                    &#34;nome_destinatario&#34;: &#34;NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL&#34;,
-                    &#34;uf_destinatario&#34;: &#34;DF&#34;,
-                    &#34;cpf_cnpj_destinatario&#34;: &#34;94346387047&#34;,  # https://www.4devs.com.br/gerador_de_cpf
+                    # &#34;nome_destinatario&#34;: &#34;NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL&#34;,
+                    # &#34;uf_destinatario&#34;: &#34;DF&#34;,
+                    # &#34;cpf_cnpj_destinatario&#34;: &#34;94346387047&#34;,  # https://www.4devs.com.br/gerador_de_cpf
                     &#34;valor_total&#34;: &#34;4.00&#34;,
                     &#34;status&#34;: &#34;Autorizada&#34;,
                     &#34;motivo&#34;: &#34;Autorizado o uso da NF-e&#34;,
@@ -2688,10 +2722,10 @@ Essa função realiza uma solicitação ao endpoint correspondente e retorna uma
                     &#34;tipo_emissao&#34;: &#34;1&#34;
                 }
             ], 
-            &#39;informacoesAdicionais&#39;: {
-                &#39;totalAutorizadas&#39;: 0.0, 
-                &#39;totalCanceladas&#39;: 0.0
-            },
+            # &#39;informacoesAdicionais&#39;: {
+            #     &#39;totalAutorizadas&#39;: 0.0, 
+            #     &#39;totalCanceladas&#39;: 0.0
+            # },
         }
     }
 
@@ -2730,7 +2764,7 @@ Essa função realiza uma solicitação ao endpoint correspondente para validar 
     requests.post = MagicMock(return_value=mock_response)
     
     # Chamando a Função:
-    result = nfe.validar(self.objeto, tipo_emissao=&#39;1&#39;)
+    result = nfe.validar(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
     
     # Checando resultado:
     self.assertEqual(&#39;Sucesso&#39;, result[&#39;status&#39;])
@@ -2827,8 +2861,8 @@ not have a method with the specified name.</p></div>
                 ncm                    = &#34;62069000&#34;,
                 quantidade             = &#34;2.0&#34;,
                 unidade                = &#34;UNID&#34;,
-                subtotal               = &#34;2.0&#34;,
-                total                  = &#34;2.0&#34;,
+                subtotal               = &#34;5.0&#34;,
+                total                  = &#34;10.0&#34;,
                 impostos               = self.impostos,
                 informacoes_adicionais = &#34;Emitido pelo pySisnoAPI&#34;,
             ),
@@ -3085,6 +3119,40 @@ not have a method with the specified name.</p></div>
                 data_entrada_saida     = self.data,
             )
 
+    def test_numero_nota_sequencial_menor_que_1_caracter(self):
+        with self.assertRaises(ValueError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial= &#39;&#39;,
+                serie                 = &#39;1&#39;,
+                operacao              = &#39;1&#39;,
+                natureza_operacao     = &#39;NATUREZA&#39;,
+                modelo                = &#39;55&#39;,
+                finalidade            = &#39;1&#39;,
+                ambiente              = &#39;2&#39;,
+                cliente               = self.cliente,
+                produtos              = self.produtos,
+                pedido                = self.pedido,
+                data_entrada_saida    = self.data,
+                data_emissao          = self.data,
+            )
+    
+    def test_numero_nota_sequencial_maior_que_9_caracteres(self):
+        with self.assertRaises(ValueError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial= &#39;0123456789&#39;,
+                serie                 = &#39;1&#39;,
+                operacao              = &#39;1&#39;,
+                natureza_operacao     = &#39;NATUREZA&#39;,
+                modelo                = &#39;55&#39;,
+                finalidade            = &#39;1&#39;,
+                ambiente              = &#39;2&#39;,
+                cliente               = self.cliente,
+                produtos              = self.produtos,
+                pedido                = self.pedido,
+                data_entrada_saida    = self.data,
+                data_emissao          = self.data,
+            )
+    
     def test_operacao_invalida(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (
@@ -3218,8 +3286,8 @@ not have a method with the specified name.</p></div>
             ncm                    = &#34;62069000&#34;,
             quantidade             = &#34;2.0&#34;,
             unidade                = &#34;UNID&#34;,
-            subtotal               = &#34;2.0&#34;,
-            total                  = &#34;2.0&#34;,
+            subtotal               = &#34;5.0&#34;,
+            total                  = &#34;10.0&#34;,
             impostos               = self.impostos,
             informacoes_adicionais = &#34;Emitido pelo pySisnoAPI&#34;,
         ),
@@ -3637,6 +3705,60 @@ not have a method with the specified name.</p></div>
         )</code></pre>
 </details>
 </dd>
+<dt id="tests.test_nfe.ObjetoEmissaoNFeTestCase.test_numero_nota_sequencial_maior_que_9_caracteres"><code class="name flex">
+<span>def <span class="ident">test_numero_nota_sequencial_maior_que_9_caracteres</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_numero_nota_sequencial_maior_que_9_caracteres(self):
+    with self.assertRaises(ValueError):
+        nfe.ObjetoEmissaoNFe (
+            numero_nota_sequencial= &#39;0123456789&#39;,
+            serie                 = &#39;1&#39;,
+            operacao              = &#39;1&#39;,
+            natureza_operacao     = &#39;NATUREZA&#39;,
+            modelo                = &#39;55&#39;,
+            finalidade            = &#39;1&#39;,
+            ambiente              = &#39;2&#39;,
+            cliente               = self.cliente,
+            produtos              = self.produtos,
+            pedido                = self.pedido,
+            data_entrada_saida    = self.data,
+            data_emissao          = self.data,
+        )</code></pre>
+</details>
+</dd>
+<dt id="tests.test_nfe.ObjetoEmissaoNFeTestCase.test_numero_nota_sequencial_menor_que_1_caracter"><code class="name flex">
+<span>def <span class="ident">test_numero_nota_sequencial_menor_que_1_caracter</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_numero_nota_sequencial_menor_que_1_caracter(self):
+    with self.assertRaises(ValueError):
+        nfe.ObjetoEmissaoNFe (
+            numero_nota_sequencial= &#39;&#39;,
+            serie                 = &#39;1&#39;,
+            operacao              = &#39;1&#39;,
+            natureza_operacao     = &#39;NATUREZA&#39;,
+            modelo                = &#39;55&#39;,
+            finalidade            = &#39;1&#39;,
+            ambiente              = &#39;2&#39;,
+            cliente               = self.cliente,
+            produtos              = self.produtos,
+            pedido                = self.pedido,
+            data_entrada_saida    = self.data,
+            data_emissao          = self.data,
+        )</code></pre>
+</details>
+</dd>
 <dt id="tests.test_nfe.ObjetoEmissaoNFeTestCase.test_operacao_invalida"><code class="name flex">
 <span>def <span class="ident">test_operacao_invalida</span></span>(<span>self)</span>
 </code></dt>
@@ -3863,8 +3985,8 @@ not have a method with the specified name.</p></div>
             ncm        = &#34;62069000&#34;,
             quantidade = &#34;2.0&#34;,
             unidade    = &#34;UNID&#34;,
-            subtotal   = &#34;2.0&#34;,
-            total      = &#34;2.0&#34;,
+            subtotal   = &#34;5.0&#34;,
+            total      = &#34;10.0&#34;,
             impostos   = self.impostos,
         )
     
@@ -3875,8 +3997,8 @@ not have a method with the specified name.</p></div>
         self.assertEqual(produto.ncm       , &#39;62069000&#39;)
         self.assertEqual(produto.quantidade, &#39;2.0&#39;)
         self.assertEqual(produto.unidade   , &#39;UNID&#39;)
-        self.assertEqual(produto.subtotal  , &#39;2.0&#39;)
-        self.assertEqual(produto.total     , &#39;2.0&#39;)
+        self.assertEqual(produto.subtotal  , &#39;5.0&#39;)
+        self.assertEqual(produto.total     , &#39;10.0&#39;)
         self.assertEqual(produto.impostos  , self.impostos)
         
     def test_campo_obrigatorio_item(self):
@@ -3889,8 +4011,8 @@ not have a method with the specified name.</p></div>
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
-                subtotal   = &#34;2.0&#34;,
-                total      = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
+                total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
         
@@ -3904,8 +4026,8 @@ not have a method with the specified name.</p></div>
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
-                subtotal   = &#34;2.0&#34;,
-                total      = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
+                total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
             
@@ -3919,8 +4041,8 @@ not have a method with the specified name.</p></div>
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
-                subtotal   = &#34;2.0&#34;,
-                total      = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
+                total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
             
@@ -3934,8 +4056,8 @@ not have a method with the specified name.</p></div>
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
-                subtotal   = &#34;2.0&#34;,
-                total      = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
+                total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
             
@@ -3949,8 +4071,8 @@ not have a method with the specified name.</p></div>
                 
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
-                subtotal   = &#34;2.0&#34;,
-                total      = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
+                total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
             
@@ -3964,8 +4086,8 @@ not have a method with the specified name.</p></div>
                 ncm        = &#34;62069000&#34;,
                 
                 unidade    = &#34;UNID&#34;,
-                subtotal   = &#34;2.0&#34;,
-                total      = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
+                total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
             
@@ -3979,8 +4101,8 @@ not have a method with the specified name.</p></div>
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 
-                subtotal   = &#34;2.0&#34;,
-                total      = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
+                total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
             
@@ -3995,7 +4117,7 @@ not have a method with the specified name.</p></div>
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
                 
-                total      = &#34;2.0&#34;,
+                total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
 
@@ -4009,7 +4131,7 @@ not have a method with the specified name.</p></div>
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
-                subtotal   = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
                 
                 impostos   = self.impostos,
             )
@@ -4024,8 +4146,8 @@ not have a method with the specified name.</p></div>
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
-                subtotal   = &#34;2.0&#34;,
-                total      = &#34;2.0&#34;,
+                subtotal   = &#34;5.0&#34;,
+                total      = &#34;10.0&#34;,
                 
             )</code></pre>
 </details>
@@ -4085,8 +4207,8 @@ not have a method with the specified name.</p></div>
             ncm        = &#34;62069000&#34;,
             quantidade = &#34;2.0&#34;,
             unidade    = &#34;UNID&#34;,
-            subtotal   = &#34;2.0&#34;,
-            total      = &#34;2.0&#34;,
+            subtotal   = &#34;5.0&#34;,
+            total      = &#34;10.0&#34;,
             impostos   = self.impostos,
         )</code></pre>
 </details>
@@ -4110,8 +4232,8 @@ not have a method with the specified name.</p></div>
             ncm        = &#34;62069000&#34;,
             quantidade = &#34;2.0&#34;,
             unidade    = &#34;UNID&#34;,
-            subtotal   = &#34;2.0&#34;,
-            total      = &#34;2.0&#34;,
+            subtotal   = &#34;5.0&#34;,
+            total      = &#34;10.0&#34;,
             impostos   = self.impostos,
         )</code></pre>
 </details>
@@ -4135,8 +4257,8 @@ not have a method with the specified name.</p></div>
             ncm        = &#34;62069000&#34;,
             quantidade = &#34;2.0&#34;,
             unidade    = &#34;UNID&#34;,
-            subtotal   = &#34;2.0&#34;,
-            total      = &#34;2.0&#34;,
+            subtotal   = &#34;5.0&#34;,
+            total      = &#34;10.0&#34;,
             
         )</code></pre>
 </details>
@@ -4160,8 +4282,8 @@ not have a method with the specified name.</p></div>
             ncm        = &#34;62069000&#34;,
             quantidade = &#34;2.0&#34;,
             unidade    = &#34;UNID&#34;,
-            subtotal   = &#34;2.0&#34;,
-            total      = &#34;2.0&#34;,
+            subtotal   = &#34;5.0&#34;,
+            total      = &#34;10.0&#34;,
             impostos   = self.impostos,
         )</code></pre>
 </details>
@@ -4185,8 +4307,8 @@ not have a method with the specified name.</p></div>
             
             quantidade = &#34;2.0&#34;,
             unidade    = &#34;UNID&#34;,
-            subtotal   = &#34;2.0&#34;,
-            total      = &#34;2.0&#34;,
+            subtotal   = &#34;5.0&#34;,
+            total      = &#34;10.0&#34;,
             impostos   = self.impostos,
         )</code></pre>
 </details>
@@ -4210,8 +4332,8 @@ not have a method with the specified name.</p></div>
             ncm        = &#34;62069000&#34;,
             quantidade = &#34;2.0&#34;,
             unidade    = &#34;UNID&#34;,
-            subtotal   = &#34;2.0&#34;,
-            total      = &#34;2.0&#34;,
+            subtotal   = &#34;5.0&#34;,
+            total      = &#34;10.0&#34;,
             impostos   = self.impostos,
         )</code></pre>
 </details>
@@ -4235,8 +4357,8 @@ not have a method with the specified name.</p></div>
             ncm        = &#34;62069000&#34;,
             
             unidade    = &#34;UNID&#34;,
-            subtotal   = &#34;2.0&#34;,
-            total      = &#34;2.0&#34;,
+            subtotal   = &#34;5.0&#34;,
+            total      = &#34;10.0&#34;,
             impostos   = self.impostos,
         )</code></pre>
 </details>
@@ -4261,7 +4383,7 @@ not have a method with the specified name.</p></div>
             quantidade = &#34;2.0&#34;,
             unidade    = &#34;UNID&#34;,
             
-            total      = &#34;2.0&#34;,
+            total      = &#34;10.0&#34;,
             impostos   = self.impostos,
         )</code></pre>
 </details>
@@ -4285,7 +4407,7 @@ not have a method with the specified name.</p></div>
             ncm        = &#34;62069000&#34;,
             quantidade = &#34;2.0&#34;,
             unidade    = &#34;UNID&#34;,
-            subtotal   = &#34;2.0&#34;,
+            subtotal   = &#34;5.0&#34;,
             
             impostos   = self.impostos,
         )</code></pre>
@@ -4310,8 +4432,8 @@ not have a method with the specified name.</p></div>
             ncm        = &#34;62069000&#34;,
             quantidade = &#34;2.0&#34;,
             
-            subtotal   = &#34;2.0&#34;,
-            total      = &#34;2.0&#34;,
+            subtotal   = &#34;5.0&#34;,
+            total      = &#34;10.0&#34;,
             impostos   = self.impostos,
         )</code></pre>
 </details>
@@ -4334,8 +4456,8 @@ not have a method with the specified name.</p></div>
         ncm        = &#34;62069000&#34;,
         quantidade = &#34;2.0&#34;,
         unidade    = &#34;UNID&#34;,
-        subtotal   = &#34;2.0&#34;,
-        total      = &#34;2.0&#34;,
+        subtotal   = &#34;5.0&#34;,
+        total      = &#34;10.0&#34;,
         impostos   = self.impostos,
     )
 
@@ -4346,8 +4468,8 @@ not have a method with the specified name.</p></div>
     self.assertEqual(produto.ncm       , &#39;62069000&#39;)
     self.assertEqual(produto.quantidade, &#39;2.0&#39;)
     self.assertEqual(produto.unidade   , &#39;UNID&#39;)
-    self.assertEqual(produto.subtotal  , &#39;2.0&#39;)
-    self.assertEqual(produto.total     , &#39;2.0&#39;)
+    self.assertEqual(produto.subtotal  , &#39;5.0&#39;)
+    self.assertEqual(produto.total     , &#39;10.0&#39;)
     self.assertEqual(produto.impostos  , self.impostos)</code></pre>
 </details>
 </dd>
@@ -4412,6 +4534,8 @@ not have a method with the specified name.</p></div>
 <li><code><a title="tests.test_nfe.ObjetoEmissaoNFeTestCase.test_campo_obrigatorio_serie" href="#tests.test_nfe.ObjetoEmissaoNFeTestCase.test_campo_obrigatorio_serie">test_campo_obrigatorio_serie</a></code></li>
 <li><code><a title="tests.test_nfe.ObjetoEmissaoNFeTestCase.test_finalidade_invalida" href="#tests.test_nfe.ObjetoEmissaoNFeTestCase.test_finalidade_invalida">test_finalidade_invalida</a></code></li>
 <li><code><a title="tests.test_nfe.ObjetoEmissaoNFeTestCase.test_modelo_invalido" href="#tests.test_nfe.ObjetoEmissaoNFeTestCase.test_modelo_invalido">test_modelo_invalido</a></code></li>
+<li><code><a title="tests.test_nfe.ObjetoEmissaoNFeTestCase.test_numero_nota_sequencial_maior_que_9_caracteres" href="#tests.test_nfe.ObjetoEmissaoNFeTestCase.test_numero_nota_sequencial_maior_que_9_caracteres">test_numero_nota_sequencial_maior_que_9_caracteres</a></code></li>
+<li><code><a title="tests.test_nfe.ObjetoEmissaoNFeTestCase.test_numero_nota_sequencial_menor_que_1_caracter" href="#tests.test_nfe.ObjetoEmissaoNFeTestCase.test_numero_nota_sequencial_menor_que_1_caracter">test_numero_nota_sequencial_menor_que_1_caracter</a></code></li>
 <li><code><a title="tests.test_nfe.ObjetoEmissaoNFeTestCase.test_operacao_invalida" href="#tests.test_nfe.ObjetoEmissaoNFeTestCase.test_operacao_invalida">test_operacao_invalida</a></code></li>
 <li><code><a title="tests.test_nfe.ObjetoEmissaoNFeTestCase.test_todos_campos_obrigatorios" href="#tests.test_nfe.ObjetoEmissaoNFeTestCase.test_todos_campos_obrigatorios">test_todos_campos_obrigatorios</a></code></li>
 </ul>
