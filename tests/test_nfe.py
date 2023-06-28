@@ -200,7 +200,7 @@ class NfeTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        result = nfe.validar(self.objeto, tipo_emissao='1', token_empresa=os.getenv('token-empresa'), token_secret_empresa=os.getenv('token-secret-empresa'))
+        result = nfe.validar(self.objeto, tipo_emissao='1', token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
         
         # Checando resultado:
         self.assertEqual('Sucesso', result['status'])
@@ -510,7 +510,7 @@ class NfeTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        result = nfe.emitir(self.objeto, tipo_emissao='1', token_empresa=os.getenv('token-empresa'), token_secret_empresa=os.getenv('token-secret-empresa'))
+        result = nfe.emitir(self.objeto, tipo_emissao='1', token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
         
         # Checando resultado:
         self.assertIn('status', result)
@@ -543,7 +543,7 @@ class NfeTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
          # Chamando a Função:
-        result = nfe.emitir(self.objeto, tipo_emissao='1', token_empresa=os.getenv('token-empresa'), token_secret_empresa=os.getenv('token-secret-empresa'))
+        result = nfe.emitir(self.objeto, tipo_emissao='1', token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
         
         # Checando resultado:
         self.assertIn('status', result)
