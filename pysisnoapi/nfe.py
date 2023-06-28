@@ -570,11 +570,12 @@ class PaginaNotas:
     itens           : Optional[List['NotaFiscal']] = None
 
 # =====================================================================
-@requires_emissor
-def emitir(objetoNfe: ObjetoEmissaoNFe,
-           tipo_emissao: str, 
+def emitir(token_emissor: str, 
+           token_secret_emissor: str,
            token_empresa: str, 
            token_secret_empresa: str,
+           objetoNfe: ObjetoEmissaoNFe,
+           tipo_emissao: str,
            *args, **kwargs):
     '''Endpoint utilizado para efetivamente emitir uma nota fiscal eletrônica.
 
@@ -590,6 +591,10 @@ def emitir(objetoNfe: ObjetoEmissaoNFe,
     headers = HEADERS.copy()
     
     # -----------------------------------------
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers['token-emissor']        = token_emissor
+    headers['token-secret-emissor'] = token_secret_emissor
+    
     validate_tokens(token_empresa, token_secret_empresa)
     headers['token-empresa']        = token_empresa
     headers['token-secret-empresa'] = token_secret_empresa
@@ -614,23 +619,26 @@ def emitir(objetoNfe: ObjetoEmissaoNFe,
         case _:
             return response.text
     
-@requires_emissor
-def corrigir(token_empresa:str, 
+def corrigir(token_emissor: str, 
+             token_secret_emissor: str, 
+             token_empresa:str, 
              token_secret_empresa:str, 
              *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-def cancelar(token_empresa:str, 
+def cancelar(token_emissor: str, 
+             token_secret_emissor: str,
+             token_empresa:str, 
              token_secret_empresa:str, 
              *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-def validar(objetoNfe:ObjetoEmissaoNFe, 
-            tipo_emissao:str,
+def validar(token_emissor: str, 
+            token_secret_emissor: str,
             token_empresa:str, 
             token_secret_empresa:str, 
+            objetoNfe:ObjetoEmissaoNFe, 
+            tipo_emissao:str,
             *args, **kwargs) -> str:
     '''Endpoint utilizado para validar a nota fiscal eletrônica antes de emitir.
 
@@ -646,6 +654,10 @@ def validar(objetoNfe:ObjetoEmissaoNFe,
     headers = HEADERS.copy()
     
     # -----------------------------------------
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers['token-emissor']        = token_emissor
+    headers['token-secret-emissor'] = token_secret_emissor
+    
     validate_tokens(token_empresa, token_secret_empresa)
     headers['token-empresa']        = token_empresa
     headers['token-secret-empresa'] = token_secret_empresa
@@ -666,8 +678,9 @@ def validar(objetoNfe:ObjetoEmissaoNFe,
         case _:
             return response.text
 
-@requires_emissor
-def listar(qtd:str = None, 
+def listar(token_emissor: str, 
+           token_secret_emissor: str,
+           qtd:str = None, 
            pagina:str = None, 
            *args, **kwargs) -> List[NotaFiscal]:
     '''Recupera as notas fiscais.
@@ -682,6 +695,11 @@ def listar(qtd:str = None,
         List[NotaFiscal]: Lista contendo as notas fiscais.
     '''
     headers = HEADERS.copy()
+    
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers['token-emissor']        = token_emissor
+    headers['token-secret-emissor'] = token_secret_emissor
+    
     params   = {}
     
     if qtd:
@@ -700,28 +718,33 @@ def listar(qtd:str = None,
         case _:
             return response.text
 
-@requires_emissor
-def buscar(*args, **kwargs):
+def buscar(token_emissor: str, 
+           token_secret_emissor: str, 
+           *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-def get_nota(*args, **kwargs):
+def get_nota(token_emissor: str, 
+             token_secret_emissor: str, 
+             *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-def inutilizar_numeracao(token_empresa:str, 
+def inutilizar_numeracao(token_emissor: str, 
+                         token_secret_emissor: str, 
+                         token_empresa:str, 
                          token_secret_empresa:str, 
                          *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-def get_pre_visualizacao(token_empresa:str, 
+def get_pre_visualizacao(token_emissor: str, 
+                         token_secret_emissor: str,
+                         token_empresa:str, 
                          token_secret_empresa:str, 
                          *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-def get_danfe(token_empresa:str, 
+def get_danfe(token_emissor: str, 
+              token_secret_emissor: str, 
+              token_empresa:str, 
               token_secret_empresa:str, 
               *args, **kwargs):
     raise NotImplementedError

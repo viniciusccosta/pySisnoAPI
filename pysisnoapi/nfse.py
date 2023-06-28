@@ -190,10 +190,12 @@ class Issqn:
             raise ValueError(f'Indicador de Incentivo Fiscal {self.indicador_incentivo_fiscal} inválido.')
     
 # =====================================================================
-@requires_emissor
-def emitir(objetoNfse: ObjetoEmissaoNFSe, 
+def emitir(token_emissor: str, 
+           token_secret_emissor: str,
            token_empresa: str, 
-           token_secret_empresa: str, *args, **kwargs):
+           token_secret_empresa: str, 
+           objetoNfse: ObjetoEmissaoNFSe, 
+           *args, **kwargs):
     '''Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
     
     Args:
@@ -207,6 +209,10 @@ def emitir(objetoNfse: ObjetoEmissaoNFSe,
     headers = HEADERS.copy()
     
     # -----------------------------------------
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers['token-emissor']        = token_emissor
+    headers['token-secret-emissor'] = token_secret_emissor
+    
     validate_tokens(token_empresa, token_secret_empresa)
     headers['token-empresa']        = token_empresa
     headers['token-secret-empresa'] = token_secret_empresa
@@ -223,17 +229,18 @@ def emitir(objetoNfse: ObjetoEmissaoNFSe,
         case _:
             return response.text
 
-@requires_emissor
-def buscar_notas(cnpjEmpresa:str=None, 
-    data_inicio:datetime=None, 
-    data_fim:datetime=None, 
-    ambiente:str=None, 
-    status:str=None, 
-    texto:str=None, 
-    pagina:str=None, 
-    qtd_por_pagina:str=None, 
-    ordencao:str=None, 
-    tipo_ordenacao:str=None, *args, **kwargs) -> List[NotaFiscalServico]:
+def buscar_notas(token_emissor: str, 
+                 token_secret_emissor: str,
+                 cnpjEmpresa:str=None, 
+                 data_inicio:datetime=None, 
+                 data_fim:datetime=None, 
+                 ambiente:str=None, 
+                 status:str=None, 
+                 texto:str=None, 
+                 pagina:str=None, 
+                 qtd_por_pagina:str=None, 
+                 ordencao:str=None, 
+                 tipo_ordenacao:str=None, *args, **kwargs) -> List[NotaFiscalServico]:
     '''Recupera as notas fiscais de serviço.
 
     Args:
@@ -285,6 +292,10 @@ def buscar_notas(cnpjEmpresa:str=None,
     
     headers = HEADERS.copy()
     
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers['token-emissor']        = token_emissor
+    headers['token-secret-emissor'] = token_secret_emissor
+    
     if cnpjEmpresa:
         headers['cnpjEmpresa'] = cnpjEmpresa
     if data_inicio:
@@ -321,15 +332,18 @@ def buscar_notas(cnpjEmpresa:str=None,
         case _:
             return response.text
 
-@requires_emissor
-def retransmitir(token_empresa:str, 
+def retransmitir(token_emissor: str, 
+                 token_secret_emissor: str,
+                 token_empresa:str, 
                  token_secret_empresa:str, *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-def recuperar_dados(id_nfse:int, 
+def recuperar_dados(token_emissor: str, 
+                    token_secret_emissor: str,
                     token_empresa:str, 
-                    token_secret_empresa:str, *args, **kwargs):
+                    token_secret_empresa:str, 
+                    id_nfse:int,
+                    *args, **kwargs):
     # TODO: Cada NFSe possui um ID mesmo que de empresas diferentes ?
     # TODO: Essa função deveria estar atrelada as chaves de API, uma vez que será através delas que emitiremos as notas por uma empresa ou por outra ?
 
@@ -337,6 +351,15 @@ def recuperar_dados(id_nfse:int,
         raise ValueError('Necessário informar um ID de NFSe válido.')
     
     headers  = HEADERS.copy()
+    
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers['token-emissor']        = token_emissor
+    headers['token-secret-emissor'] = token_secret_emissor
+    
+    validate_tokens(token_empresa, token_secret_empresa)
+    headers['token-empresa']        = token_empresa
+    headers['token-secret-empresa'] = token_secret_empresa
+    
     url      = f'{BASE_URL}/nfse/{id_nfse}'
     response = requests.get(url, headers=headers)
 
@@ -348,8 +371,9 @@ def recuperar_dados(id_nfse:int,
         case _:
             return
 
-@requires_emissor
-def cancelar(token_empresa:str,
+def cancelar(token_emissor: str, 
+             token_secret_emissor: str, 
+             token_empresa:str,
              token_secret_empresa:str, *args, **kwargs):
     raise NotImplementedError
 
