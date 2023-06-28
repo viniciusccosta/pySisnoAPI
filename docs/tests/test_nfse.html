@@ -154,7 +154,7 @@ class NfseTestCase(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        nfses = nfse.buscar_notas()
+        nfses = nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
         
         # Checando resultado:
         self.assertGreaterEqual(len(nfses), 1)
@@ -212,7 +212,7 @@ class NfseTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        resultado = nfse.emitir(self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+        resultado = nfse.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfse=self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
         
         self.assertIn(&#39;id&#39;, resultado)
         self.assertIn(&#39;empresa&#39;, resultado)
@@ -507,7 +507,7 @@ not have a method with the specified name.</p></div>
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        nfses = nfse.buscar_notas()
+        nfses = nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
         
         # Checando resultado:
         self.assertGreaterEqual(len(nfses), 1)
@@ -565,7 +565,7 @@ not have a method with the specified name.</p></div>
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        resultado = nfse.emitir(self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+        resultado = nfse.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfse=self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
         
         self.assertIn(&#39;id&#39;, resultado)
         self.assertIn(&#39;empresa&#39;, resultado)
@@ -725,7 +725,7 @@ not have a method with the specified name.</p></div>
     requests.get = MagicMock(return_value=mock_response)
     
     # Chamando a Função:
-    nfses = nfse.buscar_notas()
+    nfses = nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
     
     # Checando resultado:
     self.assertGreaterEqual(len(nfses), 1)</code></pre>
@@ -793,7 +793,7 @@ not have a method with the specified name.</p></div>
     requests.post = MagicMock(return_value=mock_response)
     
     # Chamando a Função:
-    resultado = nfse.emitir(self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+    resultado = nfse.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfse=self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
     
     self.assertIn(&#39;id&#39;, resultado)
     self.assertIn(&#39;empresa&#39;, resultado)

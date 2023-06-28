@@ -601,11 +601,12 @@ class PaginaNotas:
     itens           : Optional[List[&#39;NotaFiscal&#39;]] = None
 
 # =====================================================================
-@requires_emissor
-def emitir(objetoNfe: ObjetoEmissaoNFe,
-           tipo_emissao: str, 
+def emitir(token_emissor: str, 
+           token_secret_emissor: str,
            token_empresa: str, 
            token_secret_empresa: str,
+           objetoNfe: ObjetoEmissaoNFe,
+           tipo_emissao: str,
            *args, **kwargs):
     &#39;&#39;&#39;Endpoint utilizado para efetivamente emitir uma nota fiscal eletrônica.
 
@@ -621,6 +622,10 @@ def emitir(objetoNfe: ObjetoEmissaoNFe,
     headers = HEADERS.copy()
     
     # -----------------------------------------
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers[&#39;token-emissor&#39;]        = token_emissor
+    headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
+    
     validate_tokens(token_empresa, token_secret_empresa)
     headers[&#39;token-empresa&#39;]        = token_empresa
     headers[&#39;token-secret-empresa&#39;] = token_secret_empresa
@@ -645,23 +650,26 @@ def emitir(objetoNfe: ObjetoEmissaoNFe,
         case _:
             return response.text
     
-@requires_emissor
-def corrigir(token_empresa:str, 
+def corrigir(token_emissor: str, 
+             token_secret_emissor: str, 
+             token_empresa:str, 
              token_secret_empresa:str, 
              *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-def cancelar(token_empresa:str, 
+def cancelar(token_emissor: str, 
+             token_secret_emissor: str,
+             token_empresa:str, 
              token_secret_empresa:str, 
              *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-def validar(objetoNfe:ObjetoEmissaoNFe, 
-            tipo_emissao:str,
+def validar(token_emissor: str, 
+            token_secret_emissor: str,
             token_empresa:str, 
             token_secret_empresa:str, 
+            objetoNfe:ObjetoEmissaoNFe, 
+            tipo_emissao:str,
             *args, **kwargs) -&gt; str:
     &#39;&#39;&#39;Endpoint utilizado para validar a nota fiscal eletrônica antes de emitir.
 
@@ -677,6 +685,10 @@ def validar(objetoNfe:ObjetoEmissaoNFe,
     headers = HEADERS.copy()
     
     # -----------------------------------------
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers[&#39;token-emissor&#39;]        = token_emissor
+    headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
+    
     validate_tokens(token_empresa, token_secret_empresa)
     headers[&#39;token-empresa&#39;]        = token_empresa
     headers[&#39;token-secret-empresa&#39;] = token_secret_empresa
@@ -697,8 +709,9 @@ def validar(objetoNfe:ObjetoEmissaoNFe,
         case _:
             return response.text
 
-@requires_emissor
-def listar(qtd:str = None, 
+def listar(token_emissor: str, 
+           token_secret_emissor: str,
+           qtd:str = None, 
            pagina:str = None, 
            *args, **kwargs) -&gt; List[NotaFiscal]:
     &#39;&#39;&#39;Recupera as notas fiscais.
@@ -713,6 +726,11 @@ def listar(qtd:str = None,
         List[NotaFiscal]: Lista contendo as notas fiscais.
     &#39;&#39;&#39;
     headers = HEADERS.copy()
+    
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers[&#39;token-emissor&#39;]        = token_emissor
+    headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
+    
     params   = {}
     
     if qtd:
@@ -731,28 +749,33 @@ def listar(qtd:str = None,
         case _:
             return response.text
 
-@requires_emissor
-def buscar(*args, **kwargs):
+def buscar(token_emissor: str, 
+           token_secret_emissor: str, 
+           *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-def get_nota(*args, **kwargs):
+def get_nota(token_emissor: str, 
+             token_secret_emissor: str, 
+             *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-def inutilizar_numeracao(token_empresa:str, 
+def inutilizar_numeracao(token_emissor: str, 
+                         token_secret_emissor: str, 
+                         token_empresa:str, 
                          token_secret_empresa:str, 
                          *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-def get_pre_visualizacao(token_empresa:str, 
+def get_pre_visualizacao(token_emissor: str, 
+                         token_secret_emissor: str,
+                         token_empresa:str, 
                          token_secret_empresa:str, 
                          *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-def get_danfe(token_empresa:str, 
+def get_danfe(token_emissor: str, 
+              token_secret_emissor: str, 
+              token_empresa:str, 
               token_secret_empresa:str, 
               *args, **kwargs):
     raise NotImplementedError
@@ -768,7 +791,7 @@ def get_danfe(token_empresa:str,
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="pysisnoapi.nfe.buscar"><code class="name flex">
-<span>def <span class="ident">buscar</span></span>(<span>*args, **kwargs)</span>
+<span>def <span class="ident">buscar</span></span>(<span>token_emissor: str, token_secret_emissor: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -776,13 +799,14 @@ def get_danfe(token_empresa:str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_emissor
-def buscar(*args, **kwargs):
+<pre><code class="python">def buscar(token_emissor: str, 
+           token_secret_emissor: str, 
+           *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.cancelar"><code class="name flex">
-<span>def <span class="ident">cancelar</span></span>(<span>token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
+<span>def <span class="ident">cancelar</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -790,15 +814,16 @@ def buscar(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_emissor
-def cancelar(token_empresa:str, 
+<pre><code class="python">def cancelar(token_emissor: str, 
+             token_secret_emissor: str,
+             token_empresa:str, 
              token_secret_empresa:str, 
              *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.corrigir"><code class="name flex">
-<span>def <span class="ident">corrigir</span></span>(<span>token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
+<span>def <span class="ident">corrigir</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -806,15 +831,16 @@ def cancelar(token_empresa:str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_emissor
-def corrigir(token_empresa:str, 
+<pre><code class="python">def corrigir(token_emissor: str, 
+             token_secret_emissor: str, 
+             token_empresa:str, 
              token_secret_empresa:str, 
              *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.emitir"><code class="name flex">
-<span>def <span class="ident">emitir</span></span>(<span>objetoNfe: <a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a>, tipo_emissao: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
+<span>def <span class="ident">emitir</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, objetoNfe: <a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a>, tipo_emissao: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Endpoint utilizado para efetivamente emitir uma nota fiscal eletrônica.</p>
@@ -832,11 +858,12 @@ def corrigir(token_empresa:str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_emissor
-def emitir(objetoNfe: ObjetoEmissaoNFe,
-           tipo_emissao: str, 
+<pre><code class="python">def emitir(token_emissor: str, 
+           token_secret_emissor: str,
            token_empresa: str, 
            token_secret_empresa: str,
+           objetoNfe: ObjetoEmissaoNFe,
+           tipo_emissao: str,
            *args, **kwargs):
     &#39;&#39;&#39;Endpoint utilizado para efetivamente emitir uma nota fiscal eletrônica.
 
@@ -852,6 +879,10 @@ def emitir(objetoNfe: ObjetoEmissaoNFe,
     headers = HEADERS.copy()
     
     # -----------------------------------------
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers[&#39;token-emissor&#39;]        = token_emissor
+    headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
+    
     validate_tokens(token_empresa, token_secret_empresa)
     headers[&#39;token-empresa&#39;]        = token_empresa
     headers[&#39;token-secret-empresa&#39;] = token_secret_empresa
@@ -878,7 +909,7 @@ def emitir(objetoNfe: ObjetoEmissaoNFe,
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.get_danfe"><code class="name flex">
-<span>def <span class="ident">get_danfe</span></span>(<span>token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
+<span>def <span class="ident">get_danfe</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -886,15 +917,16 @@ def emitir(objetoNfe: ObjetoEmissaoNFe,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_emissor
-def get_danfe(token_empresa:str, 
+<pre><code class="python">def get_danfe(token_emissor: str, 
+              token_secret_emissor: str, 
+              token_empresa:str, 
               token_secret_empresa:str, 
               *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.get_nota"><code class="name flex">
-<span>def <span class="ident">get_nota</span></span>(<span>*args, **kwargs)</span>
+<span>def <span class="ident">get_nota</span></span>(<span>token_emissor: str, token_secret_emissor: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -902,13 +934,14 @@ def get_danfe(token_empresa:str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_emissor
-def get_nota(*args, **kwargs):
+<pre><code class="python">def get_nota(token_emissor: str, 
+             token_secret_emissor: str, 
+             *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.get_pre_visualizacao"><code class="name flex">
-<span>def <span class="ident">get_pre_visualizacao</span></span>(<span>token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
+<span>def <span class="ident">get_pre_visualizacao</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -916,15 +949,16 @@ def get_nota(*args, **kwargs):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_emissor
-def get_pre_visualizacao(token_empresa:str, 
+<pre><code class="python">def get_pre_visualizacao(token_emissor: str, 
+                         token_secret_emissor: str,
+                         token_empresa:str, 
                          token_secret_empresa:str, 
                          *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.inutilizar_numeracao"><code class="name flex">
-<span>def <span class="ident">inutilizar_numeracao</span></span>(<span>token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
+<span>def <span class="ident">inutilizar_numeracao</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -932,15 +966,16 @@ def get_pre_visualizacao(token_empresa:str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_emissor
-def inutilizar_numeracao(token_empresa:str, 
+<pre><code class="python">def inutilizar_numeracao(token_emissor: str, 
+                         token_secret_emissor: str, 
+                         token_empresa:str, 
                          token_secret_empresa:str, 
                          *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.listar"><code class="name flex">
-<span>def <span class="ident">listar</span></span>(<span>qtd: str = None, pagina: str = None, *args, **kwargs) ‑> List[<a title="pysisnoapi.NotaFiscal" href="index.html#pysisnoapi.NotaFiscal">NotaFiscal</a>]</span>
+<span>def <span class="ident">listar</span></span>(<span>token_emissor: str, token_secret_emissor: str, qtd: str = None, pagina: str = None, *args, **kwargs) ‑> List[<a title="pysisnoapi.NotaFiscal" href="index.html#pysisnoapi.NotaFiscal">NotaFiscal</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Recupera as notas fiscais.</p>
@@ -961,8 +996,9 @@ def inutilizar_numeracao(token_empresa:str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_emissor
-def listar(qtd:str = None, 
+<pre><code class="python">def listar(token_emissor: str, 
+           token_secret_emissor: str,
+           qtd:str = None, 
            pagina:str = None, 
            *args, **kwargs) -&gt; List[NotaFiscal]:
     &#39;&#39;&#39;Recupera as notas fiscais.
@@ -977,6 +1013,11 @@ def listar(qtd:str = None,
         List[NotaFiscal]: Lista contendo as notas fiscais.
     &#39;&#39;&#39;
     headers = HEADERS.copy()
+    
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers[&#39;token-emissor&#39;]        = token_emissor
+    headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
+    
     params   = {}
     
     if qtd:
@@ -997,7 +1038,7 @@ def listar(qtd:str = None,
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.validar"><code class="name flex">
-<span>def <span class="ident">validar</span></span>(<span>objetoNfe: <a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a>, tipo_emissao: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs) ‑> str</span>
+<span>def <span class="ident">validar</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, objetoNfe: <a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a>, tipo_emissao: str, *args, **kwargs) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Endpoint utilizado para validar a nota fiscal eletrônica antes de emitir.</p>
@@ -1015,11 +1056,12 @@ def listar(qtd:str = None,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_emissor
-def validar(objetoNfe:ObjetoEmissaoNFe, 
-            tipo_emissao:str,
+<pre><code class="python">def validar(token_emissor: str, 
+            token_secret_emissor: str,
             token_empresa:str, 
             token_secret_empresa:str, 
+            objetoNfe:ObjetoEmissaoNFe, 
+            tipo_emissao:str,
             *args, **kwargs) -&gt; str:
     &#39;&#39;&#39;Endpoint utilizado para validar a nota fiscal eletrônica antes de emitir.
 
@@ -1035,6 +1077,10 @@ def validar(objetoNfe:ObjetoEmissaoNFe,
     headers = HEADERS.copy()
     
     # -----------------------------------------
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers[&#39;token-emissor&#39;]        = token_emissor
+    headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
+    
     validate_tokens(token_empresa, token_secret_empresa)
     headers[&#39;token-empresa&#39;]        = token_empresa
     headers[&#39;token-secret-empresa&#39;] = token_secret_empresa

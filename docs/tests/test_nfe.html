@@ -207,7 +207,7 @@ class NfeTestCase(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        nfes = nfe.listar()
+        nfes = nfe.listar(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
         
         # Checando resultado:
         self.assertGreaterEqual(len(nfes), 1)
@@ -228,7 +228,7 @@ class NfeTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        result = nfe.validar(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+        result = nfe.validar(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
         
         # Checando resultado:
         self.assertEqual(&#39;Sucesso&#39;, result[&#39;status&#39;])
@@ -538,7 +538,7 @@ class NfeTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+        result = nfe.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
         
         # Checando resultado:
         self.assertIn(&#39;status&#39;, result)
@@ -571,7 +571,7 @@ class NfeTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
          # Chamando a Função:
-        result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+        result = nfe.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
         
         # Checando resultado:
         self.assertIn(&#39;status&#39;, result)
@@ -1792,7 +1792,7 @@ not have a method with the specified name.</p></div>
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        nfes = nfe.listar()
+        nfes = nfe.listar(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
         
         # Checando resultado:
         self.assertGreaterEqual(len(nfes), 1)
@@ -1813,7 +1813,7 @@ not have a method with the specified name.</p></div>
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        result = nfe.validar(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+        result = nfe.validar(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
         
         # Checando resultado:
         self.assertEqual(&#39;Sucesso&#39;, result[&#39;status&#39;])
@@ -2123,7 +2123,7 @@ not have a method with the specified name.</p></div>
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+        result = nfe.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
         
         # Checando resultado:
         self.assertIn(&#39;status&#39;, result)
@@ -2156,7 +2156,7 @@ not have a method with the specified name.</p></div>
         requests.post = MagicMock(return_value=mock_response)
         
          # Chamando a Função:
-        result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+        result = nfe.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
         
         # Checando resultado:
         self.assertIn(&#39;status&#39;, result)
@@ -2585,7 +2585,7 @@ Essa função realiza uma solicitação ao endpoint correspondente para emitir u
     requests.post = MagicMock(return_value=mock_response)
     
     # Chamando a Função:
-    result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+    result = nfe.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
     
     # Checando resultado:
     self.assertIn(&#39;status&#39;, result)
@@ -2633,7 +2633,7 @@ permitindo ao usuário realizar alterações nos campos pertinentes e tentar emi
     requests.post = MagicMock(return_value=mock_response)
     
      # Chamando a Função:
-    result = nfe.emitir(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+    result = nfe.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
     
     # Checando resultado:
     self.assertIn(&#39;status&#39;, result)
@@ -2732,7 +2732,7 @@ Essa função realiza uma solicitação ao endpoint correspondente e retorna uma
     requests.get = MagicMock(return_value=mock_response)
     
     # Chamando a Função:
-    nfes = nfe.listar()
+    nfes = nfe.listar(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
     
     # Checando resultado:
     self.assertGreaterEqual(len(nfes), 1)</code></pre>
@@ -2764,7 +2764,7 @@ Essa função realiza uma solicitação ao endpoint correspondente para validar 
     requests.post = MagicMock(return_value=mock_response)
     
     # Chamando a Função:
-    result = nfe.validar(self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+    result = nfe.validar(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
     
     # Checando resultado:
     self.assertEqual(&#39;Sucesso&#39;, result[&#39;status&#39;])

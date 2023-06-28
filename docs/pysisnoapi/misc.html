@@ -48,8 +48,10 @@ import requests
 from typing import List
 
 # ======================================================================================================================
-@requires_emissor
-def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
+def get_municipios(token_emissor: str, 
+                   token_secret_emissor: str, 
+                   uf: str, 
+                   *args, **kwargs) -&gt; List[Municipio]:
     &#39;&#39;&#39;Consulta os municípios de um determinado estado através de uma requisição à API.
 
     Essa função permite consultar os municípios de um estado específico através de uma requisição à API.
@@ -63,6 +65,11 @@ def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
     &#39;&#39;&#39;
 
     headers  = HEADERS.copy()
+    
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers[&#39;token-emissor&#39;]        = token_emissor
+    headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
+    
     url      = f&#39;{BASE_URL}/unidades-federativas/{uf}/municipios&#39;
     response = requests.get(url, headers=headers)
 
@@ -76,8 +83,9 @@ def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
         case _:
             return
 
-@requires_emissor
-def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
+def get_cfops(token_emissor: str, 
+              token_secret_emissor: str, 
+              *args, **kwargs) -&gt; List[Cfop]:
     &#39;&#39;&#39;Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
 
     Essa função permite obter a lista completa de CFOPs (Código Fiscal de Operações e Prestações) disponíveis através de uma requisição à API.
@@ -87,6 +95,11 @@ def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
     &#39;&#39;&#39;
 
     headers  = HEADERS.copy()
+    
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers[&#39;token-emissor&#39;]        = token_emissor
+    headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
+    
     url      = f&#39;{BASE_URL}/cfops&#39;
     response = requests.get(url, headers=headers)
 
@@ -100,10 +113,11 @@ def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
         case _:
             return
 
-@requires_emissor
-def get_ibpts(
-    cod_desc: str, 
-    uf: str, *args, **kwargs) -&gt; List[Ibpt]:
+def get_ibpts(token_emissor: str, 
+              token_secret_emissor: str, 
+              cod_desc: str, 
+              uf: str, 
+              *args, **kwargs) -&gt; List[Ibpt]:
     &#39;&#39;&#39;
     Obtém os IBPTs através de uma requisição à API.
 
@@ -124,6 +138,11 @@ def get_ibpts(
         raise Exception(&#39;Código ou Descrição precisa ter no mínimo 4 caracteres&#39;)
     
     headers  = HEADERS.copy()
+    
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers[&#39;token-emissor&#39;]        = token_emissor
+    headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
+    
     headers[&#39;codigo-ou-descricao&#39;] = cod_desc
     headers[&#39;uf&#39;] = uf
 
@@ -151,7 +170,7 @@ def get_ibpts(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="pysisnoapi.misc.get_cfops"><code class="name flex">
-<span>def <span class="ident">get_cfops</span></span>(<span>*args, **kwargs) ‑> List[<a title="pysisnoapi.Cfop" href="index.html#pysisnoapi.Cfop">Cfop</a>]</span>
+<span>def <span class="ident">get_cfops</span></span>(<span>token_emissor: str, token_secret_emissor: str, *args, **kwargs) ‑> List[<a title="pysisnoapi.Cfop" href="index.html#pysisnoapi.Cfop">Cfop</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.</p>
@@ -165,8 +184,9 @@ def get_ibpts(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_emissor
-def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
+<pre><code class="python">def get_cfops(token_emissor: str, 
+              token_secret_emissor: str, 
+              *args, **kwargs) -&gt; List[Cfop]:
     &#39;&#39;&#39;Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
 
     Essa função permite obter a lista completa de CFOPs (Código Fiscal de Operações e Prestações) disponíveis através de uma requisição à API.
@@ -176,6 +196,11 @@ def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
     &#39;&#39;&#39;
 
     headers  = HEADERS.copy()
+    
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers[&#39;token-emissor&#39;]        = token_emissor
+    headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
+    
     url      = f&#39;{BASE_URL}/cfops&#39;
     response = requests.get(url, headers=headers)
 
@@ -191,7 +216,7 @@ def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
 </details>
 </dd>
 <dt id="pysisnoapi.misc.get_ibpts"><code class="name flex">
-<span>def <span class="ident">get_ibpts</span></span>(<span>cod_desc: str, uf: str, *args, **kwargs) ‑> List[<a title="pysisnoapi.Ibpt" href="index.html#pysisnoapi.Ibpt">Ibpt</a>]</span>
+<span>def <span class="ident">get_ibpts</span></span>(<span>token_emissor: str, token_secret_emissor: str, cod_desc: str, uf: str, *args, **kwargs) ‑> List[<a title="pysisnoapi.Ibpt" href="index.html#pysisnoapi.Ibpt">Ibpt</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Obtém os IBPTs através de uma requisição à API.</p>
@@ -217,10 +242,11 @@ def get_cfops(*args, **kwargs) -&gt; List[Cfop]:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_emissor
-def get_ibpts(
-    cod_desc: str, 
-    uf: str, *args, **kwargs) -&gt; List[Ibpt]:
+<pre><code class="python">def get_ibpts(token_emissor: str, 
+              token_secret_emissor: str, 
+              cod_desc: str, 
+              uf: str, 
+              *args, **kwargs) -&gt; List[Ibpt]:
     &#39;&#39;&#39;
     Obtém os IBPTs através de uma requisição à API.
 
@@ -241,6 +267,11 @@ def get_ibpts(
         raise Exception(&#39;Código ou Descrição precisa ter no mínimo 4 caracteres&#39;)
     
     headers  = HEADERS.copy()
+    
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers[&#39;token-emissor&#39;]        = token_emissor
+    headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
+    
     headers[&#39;codigo-ou-descricao&#39;] = cod_desc
     headers[&#39;uf&#39;] = uf
 
@@ -259,7 +290,7 @@ def get_ibpts(
 </details>
 </dd>
 <dt id="pysisnoapi.misc.get_municipios"><code class="name flex">
-<span>def <span class="ident">get_municipios</span></span>(<span>uf: str, *args, **kwargs) ‑> List[<a title="pysisnoapi.Municipio" href="index.html#pysisnoapi.Municipio">Municipio</a>]</span>
+<span>def <span class="ident">get_municipios</span></span>(<span>token_emissor: str, token_secret_emissor: str, uf: str, *args, **kwargs) ‑> List[<a title="pysisnoapi.Municipio" href="index.html#pysisnoapi.Municipio">Municipio</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Consulta os municípios de um determinado estado através de uma requisição à API.</p>
@@ -279,8 +310,10 @@ Ela retorna uma lista de objetos Municipio contendo informações sobre cada mun
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@requires_emissor
-def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
+<pre><code class="python">def get_municipios(token_emissor: str, 
+                   token_secret_emissor: str, 
+                   uf: str, 
+                   *args, **kwargs) -&gt; List[Municipio]:
     &#39;&#39;&#39;Consulta os municípios de um determinado estado através de uma requisição à API.
 
     Essa função permite consultar os municípios de um estado específico através de uma requisição à API.
@@ -294,6 +327,11 @@ def get_municipios(uf: str, *args, **kwargs) -&gt; List[Municipio]:
     &#39;&#39;&#39;
 
     headers  = HEADERS.copy()
+    
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers[&#39;token-emissor&#39;]        = token_emissor
+    headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
+    
     url      = f&#39;{BASE_URL}/unidades-federativas/{uf}/municipios&#39;
     response = requests.get(url, headers=headers)
 
