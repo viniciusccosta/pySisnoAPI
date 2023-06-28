@@ -191,8 +191,9 @@ class Issqn:
     
 # =====================================================================
 @requires_emissor
-@requires_empresa
-def emitir(objetoNfse: ObjetoEmissaoNFSe, *args, **kwargs):
+def emitir(objetoNfse: ObjetoEmissaoNFSe, 
+           token_empresa: str, 
+           token_secret_empresa: str, *args, **kwargs):
     '''Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
     
     Args:
@@ -203,12 +204,19 @@ def emitir(objetoNfse: ObjetoEmissaoNFSe, *args, **kwargs):
         str: Com o response.text em caso de falha da requisição
     '''
 
+    headers = HEADERS.copy()
+    
+    # -----------------------------------------
+    validate_tokens(token_empresa, token_secret_empresa)
+    headers['token-empresa']        = token_empresa
+    headers['token-secret-empresa'] = token_secret_empresa
+    
+    # -----------------------------------------
     json_str = jsonpickle.encode(objetoNfse.as_filtered_dict(), unpicklable=False)
     
-    headers = HEADERS.copy()
     url     = f'{BASE_URL}/nfse'
     response = requests.post(url, headers=headers, json=json.loads(json_str))
-
+    
     match (response.status_code):
         case 200:
             return response.json()
@@ -314,13 +322,14 @@ def buscar_notas(cnpjEmpresa:str=None,
             return response.text
 
 @requires_emissor
-@requires_empresa
-def retransmitir(*args, **kwargs):
+def retransmitir(token_empresa:str, 
+                 token_secret_empresa:str, *args, **kwargs):
     raise NotImplementedError
 
 @requires_emissor
-@requires_empresa
-def recuperar_dados(id_nfse:int, *args, **kwargs):
+def recuperar_dados(id_nfse:int, 
+                    token_empresa:str, 
+                    token_secret_empresa:str, *args, **kwargs):
     # TODO: Cada NFSe possui um ID mesmo que de empresas diferentes ?
     # TODO: Essa função deveria estar atrelada as chaves de API, uma vez que será através delas que emitiremos as notas por uma empresa ou por outra ?
 
@@ -340,8 +349,8 @@ def recuperar_dados(id_nfse:int, *args, **kwargs):
             return
 
 @requires_emissor
-@requires_empresa
-def cancelar(*args, **kwargs):
+def cancelar(token_empresa:str,
+             token_secret_empresa:str, *args, **kwargs):
     raise NotImplementedError
 
 # =====================================================================

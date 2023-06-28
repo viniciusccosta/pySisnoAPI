@@ -28,8 +28,8 @@ BASE_URL = 'https://homolog.arkaonline.com.br/nfe-service'               # TODO:
 HEADERS  = {
     'token-emissor'         : os.getenv('token-emissor'       , ''),
     'token-secret-emissor'  : os.getenv('token-secret-emissor', ''),
-    'token-empresa'         : os.getenv('token-empresa'       , ''),
-    'token-secret-empresa'  : os.getenv('token-secret-empresa', ''),
+    # 'token-empresa'         : os.getenv('token-empresa'       , ''),
+    # 'token-secret-empresa'  : os.getenv('token-secret-empresa', ''),
     'accept'                : 'application/json',
     'Content-Type'          : 'application/json',
 }
@@ -238,19 +238,7 @@ def requires_emissor(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         for key in ['token-emissor', 'token-secret-emissor']:
-            if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
-                return func(*args, **kwargs)
-            else:
-                raise ValueError(f'Chave "{key}" não configurada.')
-    return wrapper
-
-def requires_empresa(func):
-    '''Esse decorador é utilizado para garantir que as chaves de API da empresa estão presentes no HEADERS antes da função ser executada.'''
-
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        for key in ['token-empresa', 'token-secret-empresa']:
-            if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) in (116, 775):
+            if key in HEADERS and HEADERS[key] is not None and len(HEADERS[key]) > 0:
                 return func(*args, **kwargs)
             else:
                 raise ValueError(f'Chave "{key}" não configurada.')
@@ -746,8 +734,8 @@ def alterar_empresa(token_empresa:str, token_secret_empresa:str):
     As chaves de API são utilizadas pela plataforma SISNO para identificar a empresa na qual a nota fiscal será emitida.
 
     Args:
-        token_empresa (str): String de 775 caracters fornecido pela plataforma SISNO para utilização da API.
-        token_secret_empresa (str): String de 166 caracters fornecido pela plataforma SISNO para utilização da API. Geralmente começa com "1000:".
+        token_empresa (str): String fornecida pela plataforma SISNO para utilização da API.
+        token_secret_empresa (str): String fornecida pela plataforma SISNO para utilização da API.
 
     Raises:
         Exception: Lançada caso alguma das chaves seja inválida.
@@ -755,13 +743,23 @@ def alterar_empresa(token_empresa:str, token_secret_empresa:str):
     
     # TODO: Realizar melhores validações
     
-    if not isinstance(token_empresa, str) or len(token_empresa) != 775:
+    if not isinstance(token_empresa, str) or len(token_empresa) < 1:
         raise Exception('Token Empresa inválido')
-    if not isinstance(token_secret_empresa, str) or len(token_secret_empresa) != 166:
+    if not isinstance(token_secret_empresa, str) or len(token_secret_empresa) < 1:
         raise Exception('Token Secret Empresa inválido')
     
     HEADERS['token-empresa']        = token_empresa
     HEADERS['token-secret-empresa'] = token_secret_empresa
+
+def validate_tokens(token_empresa:str, token_secret_empresa:str):
+    '''Verifica se os tokens informados pelo usuário estão corretos e válidos.'''
+    
+    if not isinstance(token_empresa, str) or len(token_empresa) < 1:
+        raise Exception('Token Empresa inválido')
+    if not isinstance(token_secret_empresa, str) or len(token_secret_empresa) < 1:
+        raise Exception('Token Secret Empresa inválido')
+    
+    return True
 
 def _dict_factory(x: List[Tuple]) -> Optional[Dict]:
     '''Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.

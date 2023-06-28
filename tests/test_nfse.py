@@ -184,7 +184,7 @@ class NfseTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        resultado = nfse.emitir(self.objeto,)
+        resultado = nfse.emitir(self.objeto, token_empresa=os.getenv('token-empresa'), token_secret_empresa=os.getenv('token-secret-empresa'))
         
         self.assertIn('id', resultado)
         self.assertIn('empresa', resultado)
