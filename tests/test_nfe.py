@@ -154,9 +154,9 @@ class NfeTestCase(unittest.TestCase):
                         "numero_nota": "50",
                         "chave_acesso": "53230500665143000112550010000000777777777777",
                         "protocolo": "353230007777777",
-                        "nome_destinatario": "NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL",
-                        "uf_destinatario": "DF",
-                        "cpf_cnpj_destinatario": "94346387047",  # https://www.4devs.com.br/gerador_de_cpf
+                        # "nome_destinatario": "NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL",
+                        # "uf_destinatario": "DF",
+                        # "cpf_cnpj_destinatario": "94346387047",  # https://www.4devs.com.br/gerador_de_cpf
                         "valor_total": "4.00",
                         "status": "Autorizada",
                         "motivo": "Autorizado o uso da NF-e",
@@ -169,17 +169,17 @@ class NfeTestCase(unittest.TestCase):
                         "tipo_emissao": "1"
                     }
                 ], 
-                'informacoesAdicionais': {
-                    'totalAutorizadas': 0.0, 
-                    'totalCanceladas': 0.0
-                },
+                # 'informacoesAdicionais': {
+                #     'totalAutorizadas': 0.0, 
+                #     'totalCanceladas': 0.0
+                # },
             }
         }
 
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        nfes = nfe.listar()
+        nfes = nfe.listar(token_emissor='token', token_secret_emissor='token-secret',)
         
         # Checando resultado:
         self.assertGreaterEqual(len(nfes), 1)
@@ -200,7 +200,7 @@ class NfeTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        result = nfe.validar(self.objeto, tipo_emissao='1')
+        result = nfe.validar(token_emissor='token', token_secret_emissor='token-secret', objetoNfe=self.objeto, tipo_emissao='1', token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
         
         # Checando resultado:
         self.assertEqual('Sucesso', result['status'])
@@ -510,7 +510,7 @@ class NfeTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        result = nfe.emitir(self.objeto, tipo_emissao='1')
+        result = nfe.emitir(token_emissor='token', token_secret_emissor='token-secret', objetoNfe=self.objeto, tipo_emissao='1', token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
         
         # Checando resultado:
         self.assertIn('status', result)
@@ -543,7 +543,7 @@ class NfeTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
          # Chamando a Função:
-        result = nfe.emitir(self.objeto, tipo_emissao='1')
+        result = nfe.emitir(token_emissor='token', token_secret_emissor='token-secret', objetoNfe=self.objeto, tipo_emissao='1', token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
         
         # Checando resultado:
         self.assertIn('status', result)
@@ -863,6 +863,40 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
             )
 
+    def test_numero_nota_sequencial_menor_que_1_caracter(self):
+        with self.assertRaises(ValueError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial= '',
+                serie                 = '1',
+                operacao              = '1',
+                natureza_operacao     = 'NATUREZA',
+                modelo                = '55',
+                finalidade            = '1',
+                ambiente              = '2',
+                cliente               = self.cliente,
+                produtos              = self.produtos,
+                pedido                = self.pedido,
+                data_entrada_saida    = self.data,
+                data_emissao          = self.data,
+            )
+    
+    def test_numero_nota_sequencial_maior_que_9_caracteres(self):
+        with self.assertRaises(ValueError):
+            nfe.ObjetoEmissaoNFe (
+                numero_nota_sequencial= '0123456789',
+                serie                 = '1',
+                operacao              = '1',
+                natureza_operacao     = 'NATUREZA',
+                modelo                = '55',
+                finalidade            = '1',
+                ambiente              = '2',
+                cliente               = self.cliente,
+                produtos              = self.produtos,
+                pedido                = self.pedido,
+                data_entrada_saida    = self.data,
+                data_emissao          = self.data,
+            )
+    
     def test_operacao_invalida(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (

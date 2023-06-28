@@ -32,7 +32,7 @@ class TestGetMunicipios(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
 
         # Chama a função:
-        municipios = misc.get_municipios(UF)
+        municipios = misc.get_municipios(token_emissor='token', token_secret_emissor='token-secret', uf=UF)
 
         # Checando resultado:
         self.assertIsInstance(municipios, List)
@@ -48,7 +48,7 @@ class TestGetMunicipios(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
 
         # Chama a função:
-        municipios = misc.get_municipios(UF)
+        municipios = misc.get_municipios(token_emissor='token', token_secret_emissor='token-secret', uf=UF)
 
         # Checando resultado:
         self.assertIsInstance(municipios, List)
@@ -61,7 +61,7 @@ class TestGetMunicipios(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
 
         # Chama a função:
-        municipios = misc.get_municipios(UF)
+        municipios = misc.get_municipios(token_emissor='token', token_secret_emissor='token-secret', uf=UF)
 
         # Checando resultado:
         assert municipios is None
@@ -90,7 +90,7 @@ class TestGetCfops(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando função:
-        cfops = misc.get_cfops()
+        cfops = misc.get_cfops(token_emissor='token', token_secret_emissor='token-secret',)
         
         # Checando resultados:
         self.assertEqual(len(cfops), 2)
@@ -108,7 +108,7 @@ class TestGetCfops(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando Função:
-        cfops = misc.get_cfops()
+        cfops = misc.get_cfops(token_emissor='token', token_secret_emissor='token-secret',)
         
         # Checando resultados:
         self.assertEqual(len(cfops), 0)
@@ -120,7 +120,7 @@ class TestGetCfops(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
 
         # Chama a função:
-        municipios = misc.get_cfops()
+        municipios = misc.get_cfops(token_emissor='token', token_secret_emissor='token-secret',)
 
         # Checando resultado:
         assert municipios is None

@@ -26,12 +26,66 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import unittest
+<pre><code class="python"># =================================================================
+import unittest
 import requests
+
 from unittest.mock import MagicMock
+
+from pysisnoapi import *
 from pysisnoapi import nfse
 
-class TestNfse(unittest.TestCase):
+# =================================================================
+class NfseTestCase(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        endereco = Endereco (
+            codigo_pais         = &#39;1058&#39;,
+            descricao_pais      = &#39;Brasil&#39;,
+            uf                  = &#39;DF&#39;,
+            codigo_municipio    = &#39;5300108&#39;,
+            descricao_municipio = &#39;Brasilia&#39;,
+            cep                 = &#39;70634300&#39;,
+            bairro              = &#39;Zona Industrial&#39;,
+            logradouro          = &#39;Quadra SOFN Quadra 3&#39;,
+            numero              = &#39;484&#39;,
+            complemento         = &#39;Gerado por 4devs&#39;,
+        )
+        
+        cliente  = Cliente(
+            consumidor_final = &#39;1&#39;,
+            contribuinte     = &#39;9&#39;,
+            pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
+            endereco         = endereco,
+        )
+        
+        impostos = nfse.ImpostosServico(
+            pis = Pis(
+                situacao_tributaria = &#39;99&#39;,
+                aliquota            = &#39;3.5&#39;,
+            ),
+            cofins = Cofins(
+                situacao_tributaria = &#39;99&#39;,
+                aliquota            = &#39;3.5&#39;,
+            ),
+            issqn = nfse.Issqn(
+                aliquota                    = &#34;3.5&#34;,
+                item_lista_servicos         = &#34;08.02&#34;,
+                indicador_incentivo_fiscal  = &#34;1&#34;,
+                indicador_exigibilidade_iss = &#34;1&#34;,
+            ),
+        )
+        
+        servico = nfse.Servico(
+            valor_servicos  = &#39;1.0&#39;,
+            discriminacao   = &#39;TESTE&#39;,
+            impostos        = impostos,
+        )
+        
+        self.objeto = nfse.ObjetoEmissaoNFSe(
+            cliente = cliente,
+            servico = servico,
+        )
+    
     def test_buscar_notas(self):
         # Mocking:
         mock_response = MagicMock()
@@ -100,13 +154,148 @@ class TestNfse(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        nfses = nfse.buscar_notas()
+        nfses = nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
         
         # Checando resultado:
         self.assertGreaterEqual(len(nfses), 1)
+        
+    def test_emitir_status_processando(self):
+        # Mocking:
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        
+        mock_response.json.return_value = {
+            &#34;id&#34;: 22,
+            &#34;empresa&#34;: {    # https://www.4devs.com.br/gerador_de_empresas
+                &#34;cnpj&#34;: &#34;47520244000169&#34;,
+                &#34;nome_fantasia&#34;: &#34;Amanda e Ricardo Ferragens ME&#34;,
+                &#34;razao_social&#34;: &#34;Amanda e Ricardo Ferragens ME&#34;,
+                &#34;endereco&#34;: {
+                    &#34;id&#34;: 76,
+                    &#34;codigo_pais&#34;: &#34;1058&#34;,
+                    &#34;descricao_pais&#34;: &#34;BRASIL&#34;,
+                    &#34;uf&#34;: &#34;DF&#34;,
+                    &#34;codigo_municipio&#34;: &#34;5300108&#34;,
+                    &#34;descricao_municipio&#34;: &#34;Brasilia&#34;,
+                    &#34;cep&#34;: &#34;71070-037&#34;,
+                    &#34;bairro&#34;: &#34;TAGUATINGA&#34;,
+                    &#34;logradouro&#34;: &#34;Quadra QE 44 Conjunto C&#34;,
+                    &#34;numero&#34;: &#34;503&#34;,
+                    &#34;complemento&#34;: &#34;COMPLEMENTO&#34;
+                },
+                &#34;telefone&#34;: &#34;(61) 2622-0226&#34;,
+                &#34;inscricao_estadual&#34;: &#34;0727000600110&#34;,
+                &#34;regime_tributario&#34;: &#34;1&#34;,
+                &#34;classificacao_nacional_atividades_economicas&#34;: &#34;8512100&#34;,
+                &#34;ambiente&#34;: &#34;2&#34;,
+                &#34;id_csc&#34;: &#34;1&#34;,
+                &#34;csc&#34;: &#34;A55B7362-874F-4F97-B752-F7DAAF8697F1&#34;,
+                &#34;codigo_regime_especial_tributacao&#34;: &#34;6&#34;,
+                &#34;site&#34;: &#34;almoxarifado@amandaericardoferragensme.com.br&#34;,
+                &#34;utiliza_tributos_aproximados&#34;: True,
+                &#34;informacoes_complementares&#34;: &#34;Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200&#34;,
+                &#34;senha_portal_prefeitura&#34;: &#34;eyJlbmMiOiJBMTI7R7NNIiwiYWxnIjoiUlNBLU7BRVAtMjU7In0.CUFL72ld7_tcjqcE-djx0JTxWG7BnPhVkIF7LR7fLIzKyIJ0XreUq7mG_Ed9kR7AyorVbNMH6qaL7ACHELdcUhVoKsEQfCtQxM7kqhs6hXOm-ylmHr6I7pg1Z3SMNxTaQDzXzVUO3HiRRsu9JrlRyE6V9TcdX_U2ZnsAedIl86D3UkZF0In2-OKwyHHxW0Hi58ar0jzqRvN6he__kLhnA5Fxf-1k1qnlg5wq5Xrpdjz16JhVzjTTjDv8DvqCe27pxhbZ7HJHLkoySoYCHwFmq71N-tW2Sx7XOW8YecAEgc7q8nemWSkltjkK9N6GuCLX_zmA-7ISmPWx0hcBrCvZQg.mcbaIXUxn7uIqYgb.dSTq5dovLYxJ73MIzik7_OOuTpsZjXat7UjNvZSLyuqoKN-_wl69s5w0eRu4Y668HuF745wgJgTP6lPDhOUrYSCJdtWLMx-Gvudw5_l0a4o.Xohm6iR1rw1NHzGsAED9Jw&#34;
+            },
+            &#34;uuid&#34;: &#34;57d502a5-8f28-4177-acfd-a8e04929b682&#34;,
+            &#34;modelo&#34;: &#34;nfse&#34;,
+            &#34;status&#34;: &#34;processando&#34;,
+            &#34;motivo&#34;: &#34;Lote enviado para processamento&#34;,
+            &#34;nome_destinatario&#34;: &#34;Tânia Aurora Mariah Moura&#34;, # https://www.4devs.com.br/gerador_de_pessoas
+            &#34;uf_destinatario&#34;: &#34;DF&#34;,
+            &#34;cpf_cnpj_destinatario&#34;: &#34;016.968.211-00&#34;,
+            &#34;valor_total&#34;: &#34;5.00&#34;,
+            &#34;data_emissao&#34;: &#34;Jun 21, 2023 6:08:18 PM&#34;,
+            &#34;ambiente&#34;: &#34;2&#34;,
+            &#34;json_objeto_nfse&#34;: &#34;&#34;
+        }
+        
+        requests.post = MagicMock(return_value=mock_response)
+        
+        # Chamando a Função:
+        resultado = nfse.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfse=self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+        
+        self.assertIn(&#39;id&#39;, resultado)
+        self.assertIn(&#39;empresa&#39;, resultado)
+        self.assertIn(&#39;uuid&#39;, resultado)
+        self.assertIn(&#39;modelo&#39;, resultado)
+        self.assertIn(&#39;status&#39;, resultado)
+        self.assertIn(&#39;motivo&#39;, resultado)
+        self.assertIn(&#39;nome_destinatario&#39;, resultado)
+        self.assertIn(&#39;uf_destinatario&#39;, resultado)
+        self.assertIn(&#39;cpf_cnpj_destinatario&#39;, resultado)
+        self.assertIn(&#39;valor_total&#39;, resultado)
+        self.assertIn(&#39;data_emissao&#39;, resultado)
+        self.assertIn(&#39;ambiente&#39;, resultado)
+        self.assertIn(&#39;json_objeto_nfse&#39;, resultado)
+        
+        self.assertEqual(resultado[&#39;status&#39;], &#39;processando&#39;)
 
+# =================================================================
+class ServicoTestCase(unittest.TestCase):
+    def setUp(self) -&gt; None:       
+        self.impostos = nfse.ImpostosServico(
+            pis = Pis(
+                situacao_tributaria = &#39;99&#39;,
+                aliquota            = &#39;3.5&#39;,
+            ),
+            cofins = Cofins(
+                situacao_tributaria = &#39;99&#39;,
+                aliquota            = &#39;3.5&#39;,
+            ),
+            issqn = nfse.Issqn(
+                aliquota                    = &#34;3.5&#34;,
+                item_lista_servicos         = &#34;08.02&#34;,
+                indicador_incentivo_fiscal  = &#34;1&#34;,
+                indicador_exigibilidade_iss = &#34;1&#34;,
+            ),
+        )
+    
+    def test_todos_campos_obrigatorios(self):
+        servico = nfse.Servico(
+            valor_servicos = &#34;1.00&#34;,
+            discriminacao  = &#34;TESTE&#34;,
+            impostos       = self.impostos
+        )
+        
+        self.assertEqual(servico.valor_servicos, &#34;1.00&#34;)
+        self.assertEqual(servico.discriminacao, &#34;TESTE&#34;)
+        self.assertEqual(servico.impostos, self.impostos)
+        
+    def test_campo_obrigatorio_valor_servicos(self):
+        with self.assertRaises(TypeError):
+            nfse.Servico(
+                
+                discriminacao  = &#34;TESTE&#34;,
+                impostos       = self.impostos
+            )
+            
+    def test_campo_obrigatorio_discriminacao(self):
+        with self.assertRaises(TypeError):
+            nfse.Servico(
+                valor_servicos = &#34;1.00&#34;,
+                
+                impostos       = self.impostos
+            )
+            
+    def test_campo_obrigatorio_impostos(self):
+        with self.assertRaises(TypeError):
+            nfse.Servico(
+                valor_servicos = &#34;1.00&#34;,
+                discriminacao  = &#34;TESTE&#34;,
+
+            )
+
+class ImpostosServicoTestCase(unittest.TestCase):
+    ...
+    
+class ObjetoEmissaoNFSeTestCase(unittest.TestCase):
+    ...
+
+# =================================================================
 if __name__ == &#34;__main__&#34;:
-    unittest.main()</code></pre>
+    unittest.main()
+
+# =================================================================</code></pre>
 </details>
 </section>
 <section>
@@ -118,8 +307,8 @@ if __name__ == &#34;__main__&#34;:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="tests.test_nfse.TestNfse"><code class="flex name class">
-<span>class <span class="ident">TestNfse</span></span>
+<dt id="tests.test_nfse.ImpostosServicoTestCase"><code class="flex name class">
+<span>class <span class="ident">ImpostosServicoTestCase</span></span>
 <span>(</span><span>methodName='runTest')</span>
 </code></dt>
 <dd>
@@ -155,7 +344,101 @@ not have a method with the specified name.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TestNfse(unittest.TestCase):
+<pre><code class="python">class ImpostosServicoTestCase(unittest.TestCase):
+    ...</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>unittest.case.TestCase</li>
+</ul>
+</dd>
+<dt id="tests.test_nfse.NfseTestCase"><code class="flex name class">
+<span>class <span class="ident">NfseTestCase</span></span>
+<span>(</span><span>methodName='runTest')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A class whose instances are single test cases.</p>
+<p>By default, the test code itself should be placed in a method named
+'runTest'.</p>
+<p>If the fixture may be used for many test cases, create as
+many test methods as are needed. When instantiating such a TestCase
+subclass, specify in the constructor arguments the name of the test method
+that the instance is to execute.</p>
+<p>Test authors should subclass TestCase for their own tests. Construction
+and deconstruction of the test's environment ('fixture') can be
+implemented by overriding the 'setUp' and 'tearDown' methods respectively.</p>
+<p>If it is necessary to override the <strong>init</strong> method, the base class
+<strong>init</strong> method must always be called. It is important that subclasses
+should not change the signature of their <strong>init</strong> method, since instances
+of the classes are instantiated automatically by parts of the framework
+in order to be run.</p>
+<p>When subclassing TestCase, you can set these attributes:
+* failureException: determines which exception will be raised when
+the instance's assertion methods fail; test methods raising this
+exception will be deemed to have 'failed' rather than 'errored'.
+* longMessage: determines whether long messages (including repr of
+objects used in assert methods) will be printed on failure in <em>addition</em>
+to any explicit message passed.
+* maxDiff: sets the maximum length of a diff in failure messages
+by assert methods using difflib. It is looked up as an instance
+attribute so can be configured by individual tests if required.</p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NfseTestCase(unittest.TestCase):
+    def setUp(self) -&gt; None:
+        endereco = Endereco (
+            codigo_pais         = &#39;1058&#39;,
+            descricao_pais      = &#39;Brasil&#39;,
+            uf                  = &#39;DF&#39;,
+            codigo_municipio    = &#39;5300108&#39;,
+            descricao_municipio = &#39;Brasilia&#39;,
+            cep                 = &#39;70634300&#39;,
+            bairro              = &#39;Zona Industrial&#39;,
+            logradouro          = &#39;Quadra SOFN Quadra 3&#39;,
+            numero              = &#39;484&#39;,
+            complemento         = &#39;Gerado por 4devs&#39;,
+        )
+        
+        cliente  = Cliente(
+            consumidor_final = &#39;1&#39;,
+            contribuinte     = &#39;9&#39;,
+            pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
+            endereco         = endereco,
+        )
+        
+        impostos = nfse.ImpostosServico(
+            pis = Pis(
+                situacao_tributaria = &#39;99&#39;,
+                aliquota            = &#39;3.5&#39;,
+            ),
+            cofins = Cofins(
+                situacao_tributaria = &#39;99&#39;,
+                aliquota            = &#39;3.5&#39;,
+            ),
+            issqn = nfse.Issqn(
+                aliquota                    = &#34;3.5&#34;,
+                item_lista_servicos         = &#34;08.02&#34;,
+                indicador_incentivo_fiscal  = &#34;1&#34;,
+                indicador_exigibilidade_iss = &#34;1&#34;,
+            ),
+        )
+        
+        servico = nfse.Servico(
+            valor_servicos  = &#39;1.0&#39;,
+            discriminacao   = &#39;TESTE&#39;,
+            impostos        = impostos,
+        )
+        
+        self.objeto = nfse.ObjetoEmissaoNFSe(
+            cliente = cliente,
+            servico = servico,
+        )
+    
     def test_buscar_notas(self):
         # Mocking:
         mock_response = MagicMock()
@@ -224,10 +507,81 @@ not have a method with the specified name.</p></div>
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        nfses = nfse.buscar_notas()
+        nfses = nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
         
         # Checando resultado:
-        self.assertGreaterEqual(len(nfses), 1)</code></pre>
+        self.assertGreaterEqual(len(nfses), 1)
+        
+    def test_emitir_status_processando(self):
+        # Mocking:
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        
+        mock_response.json.return_value = {
+            &#34;id&#34;: 22,
+            &#34;empresa&#34;: {    # https://www.4devs.com.br/gerador_de_empresas
+                &#34;cnpj&#34;: &#34;47520244000169&#34;,
+                &#34;nome_fantasia&#34;: &#34;Amanda e Ricardo Ferragens ME&#34;,
+                &#34;razao_social&#34;: &#34;Amanda e Ricardo Ferragens ME&#34;,
+                &#34;endereco&#34;: {
+                    &#34;id&#34;: 76,
+                    &#34;codigo_pais&#34;: &#34;1058&#34;,
+                    &#34;descricao_pais&#34;: &#34;BRASIL&#34;,
+                    &#34;uf&#34;: &#34;DF&#34;,
+                    &#34;codigo_municipio&#34;: &#34;5300108&#34;,
+                    &#34;descricao_municipio&#34;: &#34;Brasilia&#34;,
+                    &#34;cep&#34;: &#34;71070-037&#34;,
+                    &#34;bairro&#34;: &#34;TAGUATINGA&#34;,
+                    &#34;logradouro&#34;: &#34;Quadra QE 44 Conjunto C&#34;,
+                    &#34;numero&#34;: &#34;503&#34;,
+                    &#34;complemento&#34;: &#34;COMPLEMENTO&#34;
+                },
+                &#34;telefone&#34;: &#34;(61) 2622-0226&#34;,
+                &#34;inscricao_estadual&#34;: &#34;0727000600110&#34;,
+                &#34;regime_tributario&#34;: &#34;1&#34;,
+                &#34;classificacao_nacional_atividades_economicas&#34;: &#34;8512100&#34;,
+                &#34;ambiente&#34;: &#34;2&#34;,
+                &#34;id_csc&#34;: &#34;1&#34;,
+                &#34;csc&#34;: &#34;A55B7362-874F-4F97-B752-F7DAAF8697F1&#34;,
+                &#34;codigo_regime_especial_tributacao&#34;: &#34;6&#34;,
+                &#34;site&#34;: &#34;almoxarifado@amandaericardoferragensme.com.br&#34;,
+                &#34;utiliza_tributos_aproximados&#34;: True,
+                &#34;informacoes_complementares&#34;: &#34;Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200&#34;,
+                &#34;senha_portal_prefeitura&#34;: &#34;eyJlbmMiOiJBMTI7R7NNIiwiYWxnIjoiUlNBLU7BRVAtMjU7In0.CUFL72ld7_tcjqcE-djx0JTxWG7BnPhVkIF7LR7fLIzKyIJ0XreUq7mG_Ed9kR7AyorVbNMH6qaL7ACHELdcUhVoKsEQfCtQxM7kqhs6hXOm-ylmHr6I7pg1Z3SMNxTaQDzXzVUO3HiRRsu9JrlRyE6V9TcdX_U2ZnsAedIl86D3UkZF0In2-OKwyHHxW0Hi58ar0jzqRvN6he__kLhnA5Fxf-1k1qnlg5wq5Xrpdjz16JhVzjTTjDv8DvqCe27pxhbZ7HJHLkoySoYCHwFmq71N-tW2Sx7XOW8YecAEgc7q8nemWSkltjkK9N6GuCLX_zmA-7ISmPWx0hcBrCvZQg.mcbaIXUxn7uIqYgb.dSTq5dovLYxJ73MIzik7_OOuTpsZjXat7UjNvZSLyuqoKN-_wl69s5w0eRu4Y668HuF745wgJgTP6lPDhOUrYSCJdtWLMx-Gvudw5_l0a4o.Xohm6iR1rw1NHzGsAED9Jw&#34;
+            },
+            &#34;uuid&#34;: &#34;57d502a5-8f28-4177-acfd-a8e04929b682&#34;,
+            &#34;modelo&#34;: &#34;nfse&#34;,
+            &#34;status&#34;: &#34;processando&#34;,
+            &#34;motivo&#34;: &#34;Lote enviado para processamento&#34;,
+            &#34;nome_destinatario&#34;: &#34;Tânia Aurora Mariah Moura&#34;, # https://www.4devs.com.br/gerador_de_pessoas
+            &#34;uf_destinatario&#34;: &#34;DF&#34;,
+            &#34;cpf_cnpj_destinatario&#34;: &#34;016.968.211-00&#34;,
+            &#34;valor_total&#34;: &#34;5.00&#34;,
+            &#34;data_emissao&#34;: &#34;Jun 21, 2023 6:08:18 PM&#34;,
+            &#34;ambiente&#34;: &#34;2&#34;,
+            &#34;json_objeto_nfse&#34;: &#34;&#34;
+        }
+        
+        requests.post = MagicMock(return_value=mock_response)
+        
+        # Chamando a Função:
+        resultado = nfse.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfse=self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+        
+        self.assertIn(&#39;id&#39;, resultado)
+        self.assertIn(&#39;empresa&#39;, resultado)
+        self.assertIn(&#39;uuid&#39;, resultado)
+        self.assertIn(&#39;modelo&#39;, resultado)
+        self.assertIn(&#39;status&#39;, resultado)
+        self.assertIn(&#39;motivo&#39;, resultado)
+        self.assertIn(&#39;nome_destinatario&#39;, resultado)
+        self.assertIn(&#39;uf_destinatario&#39;, resultado)
+        self.assertIn(&#39;cpf_cnpj_destinatario&#39;, resultado)
+        self.assertIn(&#39;valor_total&#39;, resultado)
+        self.assertIn(&#39;data_emissao&#39;, resultado)
+        self.assertIn(&#39;ambiente&#39;, resultado)
+        self.assertIn(&#39;json_objeto_nfse&#39;, resultado)
+        
+        self.assertEqual(resultado[&#39;status&#39;], &#39;processando&#39;)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -235,7 +589,66 @@ not have a method with the specified name.</p></div>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="tests.test_nfse.TestNfse.test_buscar_notas"><code class="name flex">
+<dt id="tests.test_nfse.NfseTestCase.setUp"><code class="name flex">
+<span>def <span class="ident">setUp</span></span>(<span>self) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Hook method for setting up the test fixture before exercising it.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def setUp(self) -&gt; None:
+    endereco = Endereco (
+        codigo_pais         = &#39;1058&#39;,
+        descricao_pais      = &#39;Brasil&#39;,
+        uf                  = &#39;DF&#39;,
+        codigo_municipio    = &#39;5300108&#39;,
+        descricao_municipio = &#39;Brasilia&#39;,
+        cep                 = &#39;70634300&#39;,
+        bairro              = &#39;Zona Industrial&#39;,
+        logradouro          = &#39;Quadra SOFN Quadra 3&#39;,
+        numero              = &#39;484&#39;,
+        complemento         = &#39;Gerado por 4devs&#39;,
+    )
+    
+    cliente  = Cliente(
+        consumidor_final = &#39;1&#39;,
+        contribuinte     = &#39;9&#39;,
+        pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
+        endereco         = endereco,
+    )
+    
+    impostos = nfse.ImpostosServico(
+        pis = Pis(
+            situacao_tributaria = &#39;99&#39;,
+            aliquota            = &#39;3.5&#39;,
+        ),
+        cofins = Cofins(
+            situacao_tributaria = &#39;99&#39;,
+            aliquota            = &#39;3.5&#39;,
+        ),
+        issqn = nfse.Issqn(
+            aliquota                    = &#34;3.5&#34;,
+            item_lista_servicos         = &#34;08.02&#34;,
+            indicador_incentivo_fiscal  = &#34;1&#34;,
+            indicador_exigibilidade_iss = &#34;1&#34;,
+        ),
+    )
+    
+    servico = nfse.Servico(
+        valor_servicos  = &#39;1.0&#39;,
+        discriminacao   = &#39;TESTE&#39;,
+        impostos        = impostos,
+    )
+    
+    self.objeto = nfse.ObjetoEmissaoNFSe(
+        cliente = cliente,
+        servico = servico,
+    )</code></pre>
+</details>
+</dd>
+<dt id="tests.test_nfse.NfseTestCase.test_buscar_notas"><code class="name flex">
 <span>def <span class="ident">test_buscar_notas</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -312,10 +725,338 @@ not have a method with the specified name.</p></div>
     requests.get = MagicMock(return_value=mock_response)
     
     # Chamando a Função:
-    nfses = nfse.buscar_notas()
+    nfses = nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
     
     # Checando resultado:
     self.assertGreaterEqual(len(nfses), 1)</code></pre>
+</details>
+</dd>
+<dt id="tests.test_nfse.NfseTestCase.test_emitir_status_processando"><code class="name flex">
+<span>def <span class="ident">test_emitir_status_processando</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_emitir_status_processando(self):
+    # Mocking:
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    
+    mock_response.json.return_value = {
+        &#34;id&#34;: 22,
+        &#34;empresa&#34;: {    # https://www.4devs.com.br/gerador_de_empresas
+            &#34;cnpj&#34;: &#34;47520244000169&#34;,
+            &#34;nome_fantasia&#34;: &#34;Amanda e Ricardo Ferragens ME&#34;,
+            &#34;razao_social&#34;: &#34;Amanda e Ricardo Ferragens ME&#34;,
+            &#34;endereco&#34;: {
+                &#34;id&#34;: 76,
+                &#34;codigo_pais&#34;: &#34;1058&#34;,
+                &#34;descricao_pais&#34;: &#34;BRASIL&#34;,
+                &#34;uf&#34;: &#34;DF&#34;,
+                &#34;codigo_municipio&#34;: &#34;5300108&#34;,
+                &#34;descricao_municipio&#34;: &#34;Brasilia&#34;,
+                &#34;cep&#34;: &#34;71070-037&#34;,
+                &#34;bairro&#34;: &#34;TAGUATINGA&#34;,
+                &#34;logradouro&#34;: &#34;Quadra QE 44 Conjunto C&#34;,
+                &#34;numero&#34;: &#34;503&#34;,
+                &#34;complemento&#34;: &#34;COMPLEMENTO&#34;
+            },
+            &#34;telefone&#34;: &#34;(61) 2622-0226&#34;,
+            &#34;inscricao_estadual&#34;: &#34;0727000600110&#34;,
+            &#34;regime_tributario&#34;: &#34;1&#34;,
+            &#34;classificacao_nacional_atividades_economicas&#34;: &#34;8512100&#34;,
+            &#34;ambiente&#34;: &#34;2&#34;,
+            &#34;id_csc&#34;: &#34;1&#34;,
+            &#34;csc&#34;: &#34;A55B7362-874F-4F97-B752-F7DAAF8697F1&#34;,
+            &#34;codigo_regime_especial_tributacao&#34;: &#34;6&#34;,
+            &#34;site&#34;: &#34;almoxarifado@amandaericardoferragensme.com.br&#34;,
+            &#34;utiliza_tributos_aproximados&#34;: True,
+            &#34;informacoes_complementares&#34;: &#34;Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200&#34;,
+            &#34;senha_portal_prefeitura&#34;: &#34;eyJlbmMiOiJBMTI7R7NNIiwiYWxnIjoiUlNBLU7BRVAtMjU7In0.CUFL72ld7_tcjqcE-djx0JTxWG7BnPhVkIF7LR7fLIzKyIJ0XreUq7mG_Ed9kR7AyorVbNMH6qaL7ACHELdcUhVoKsEQfCtQxM7kqhs6hXOm-ylmHr6I7pg1Z3SMNxTaQDzXzVUO3HiRRsu9JrlRyE6V9TcdX_U2ZnsAedIl86D3UkZF0In2-OKwyHHxW0Hi58ar0jzqRvN6he__kLhnA5Fxf-1k1qnlg5wq5Xrpdjz16JhVzjTTjDv8DvqCe27pxhbZ7HJHLkoySoYCHwFmq71N-tW2Sx7XOW8YecAEgc7q8nemWSkltjkK9N6GuCLX_zmA-7ISmPWx0hcBrCvZQg.mcbaIXUxn7uIqYgb.dSTq5dovLYxJ73MIzik7_OOuTpsZjXat7UjNvZSLyuqoKN-_wl69s5w0eRu4Y668HuF745wgJgTP6lPDhOUrYSCJdtWLMx-Gvudw5_l0a4o.Xohm6iR1rw1NHzGsAED9Jw&#34;
+        },
+        &#34;uuid&#34;: &#34;57d502a5-8f28-4177-acfd-a8e04929b682&#34;,
+        &#34;modelo&#34;: &#34;nfse&#34;,
+        &#34;status&#34;: &#34;processando&#34;,
+        &#34;motivo&#34;: &#34;Lote enviado para processamento&#34;,
+        &#34;nome_destinatario&#34;: &#34;Tânia Aurora Mariah Moura&#34;, # https://www.4devs.com.br/gerador_de_pessoas
+        &#34;uf_destinatario&#34;: &#34;DF&#34;,
+        &#34;cpf_cnpj_destinatario&#34;: &#34;016.968.211-00&#34;,
+        &#34;valor_total&#34;: &#34;5.00&#34;,
+        &#34;data_emissao&#34;: &#34;Jun 21, 2023 6:08:18 PM&#34;,
+        &#34;ambiente&#34;: &#34;2&#34;,
+        &#34;json_objeto_nfse&#34;: &#34;&#34;
+    }
+    
+    requests.post = MagicMock(return_value=mock_response)
+    
+    # Chamando a Função:
+    resultado = nfse.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfse=self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+    
+    self.assertIn(&#39;id&#39;, resultado)
+    self.assertIn(&#39;empresa&#39;, resultado)
+    self.assertIn(&#39;uuid&#39;, resultado)
+    self.assertIn(&#39;modelo&#39;, resultado)
+    self.assertIn(&#39;status&#39;, resultado)
+    self.assertIn(&#39;motivo&#39;, resultado)
+    self.assertIn(&#39;nome_destinatario&#39;, resultado)
+    self.assertIn(&#39;uf_destinatario&#39;, resultado)
+    self.assertIn(&#39;cpf_cnpj_destinatario&#39;, resultado)
+    self.assertIn(&#39;valor_total&#39;, resultado)
+    self.assertIn(&#39;data_emissao&#39;, resultado)
+    self.assertIn(&#39;ambiente&#39;, resultado)
+    self.assertIn(&#39;json_objeto_nfse&#39;, resultado)
+    
+    self.assertEqual(resultado[&#39;status&#39;], &#39;processando&#39;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="tests.test_nfse.ObjetoEmissaoNFSeTestCase"><code class="flex name class">
+<span>class <span class="ident">ObjetoEmissaoNFSeTestCase</span></span>
+<span>(</span><span>methodName='runTest')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A class whose instances are single test cases.</p>
+<p>By default, the test code itself should be placed in a method named
+'runTest'.</p>
+<p>If the fixture may be used for many test cases, create as
+many test methods as are needed. When instantiating such a TestCase
+subclass, specify in the constructor arguments the name of the test method
+that the instance is to execute.</p>
+<p>Test authors should subclass TestCase for their own tests. Construction
+and deconstruction of the test's environment ('fixture') can be
+implemented by overriding the 'setUp' and 'tearDown' methods respectively.</p>
+<p>If it is necessary to override the <strong>init</strong> method, the base class
+<strong>init</strong> method must always be called. It is important that subclasses
+should not change the signature of their <strong>init</strong> method, since instances
+of the classes are instantiated automatically by parts of the framework
+in order to be run.</p>
+<p>When subclassing TestCase, you can set these attributes:
+* failureException: determines which exception will be raised when
+the instance's assertion methods fail; test methods raising this
+exception will be deemed to have 'failed' rather than 'errored'.
+* longMessage: determines whether long messages (including repr of
+objects used in assert methods) will be printed on failure in <em>addition</em>
+to any explicit message passed.
+* maxDiff: sets the maximum length of a diff in failure messages
+by assert methods using difflib. It is looked up as an instance
+attribute so can be configured by individual tests if required.</p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ObjetoEmissaoNFSeTestCase(unittest.TestCase):
+    ...</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>unittest.case.TestCase</li>
+</ul>
+</dd>
+<dt id="tests.test_nfse.ServicoTestCase"><code class="flex name class">
+<span>class <span class="ident">ServicoTestCase</span></span>
+<span>(</span><span>methodName='runTest')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A class whose instances are single test cases.</p>
+<p>By default, the test code itself should be placed in a method named
+'runTest'.</p>
+<p>If the fixture may be used for many test cases, create as
+many test methods as are needed. When instantiating such a TestCase
+subclass, specify in the constructor arguments the name of the test method
+that the instance is to execute.</p>
+<p>Test authors should subclass TestCase for their own tests. Construction
+and deconstruction of the test's environment ('fixture') can be
+implemented by overriding the 'setUp' and 'tearDown' methods respectively.</p>
+<p>If it is necessary to override the <strong>init</strong> method, the base class
+<strong>init</strong> method must always be called. It is important that subclasses
+should not change the signature of their <strong>init</strong> method, since instances
+of the classes are instantiated automatically by parts of the framework
+in order to be run.</p>
+<p>When subclassing TestCase, you can set these attributes:
+* failureException: determines which exception will be raised when
+the instance's assertion methods fail; test methods raising this
+exception will be deemed to have 'failed' rather than 'errored'.
+* longMessage: determines whether long messages (including repr of
+objects used in assert methods) will be printed on failure in <em>addition</em>
+to any explicit message passed.
+* maxDiff: sets the maximum length of a diff in failure messages
+by assert methods using difflib. It is looked up as an instance
+attribute so can be configured by individual tests if required.</p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ServicoTestCase(unittest.TestCase):
+    def setUp(self) -&gt; None:       
+        self.impostos = nfse.ImpostosServico(
+            pis = Pis(
+                situacao_tributaria = &#39;99&#39;,
+                aliquota            = &#39;3.5&#39;,
+            ),
+            cofins = Cofins(
+                situacao_tributaria = &#39;99&#39;,
+                aliquota            = &#39;3.5&#39;,
+            ),
+            issqn = nfse.Issqn(
+                aliquota                    = &#34;3.5&#34;,
+                item_lista_servicos         = &#34;08.02&#34;,
+                indicador_incentivo_fiscal  = &#34;1&#34;,
+                indicador_exigibilidade_iss = &#34;1&#34;,
+            ),
+        )
+    
+    def test_todos_campos_obrigatorios(self):
+        servico = nfse.Servico(
+            valor_servicos = &#34;1.00&#34;,
+            discriminacao  = &#34;TESTE&#34;,
+            impostos       = self.impostos
+        )
+        
+        self.assertEqual(servico.valor_servicos, &#34;1.00&#34;)
+        self.assertEqual(servico.discriminacao, &#34;TESTE&#34;)
+        self.assertEqual(servico.impostos, self.impostos)
+        
+    def test_campo_obrigatorio_valor_servicos(self):
+        with self.assertRaises(TypeError):
+            nfse.Servico(
+                
+                discriminacao  = &#34;TESTE&#34;,
+                impostos       = self.impostos
+            )
+            
+    def test_campo_obrigatorio_discriminacao(self):
+        with self.assertRaises(TypeError):
+            nfse.Servico(
+                valor_servicos = &#34;1.00&#34;,
+                
+                impostos       = self.impostos
+            )
+            
+    def test_campo_obrigatorio_impostos(self):
+        with self.assertRaises(TypeError):
+            nfse.Servico(
+                valor_servicos = &#34;1.00&#34;,
+                discriminacao  = &#34;TESTE&#34;,
+
+            )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>unittest.case.TestCase</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="tests.test_nfse.ServicoTestCase.setUp"><code class="name flex">
+<span>def <span class="ident">setUp</span></span>(<span>self) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Hook method for setting up the test fixture before exercising it.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def setUp(self) -&gt; None:       
+    self.impostos = nfse.ImpostosServico(
+        pis = Pis(
+            situacao_tributaria = &#39;99&#39;,
+            aliquota            = &#39;3.5&#39;,
+        ),
+        cofins = Cofins(
+            situacao_tributaria = &#39;99&#39;,
+            aliquota            = &#39;3.5&#39;,
+        ),
+        issqn = nfse.Issqn(
+            aliquota                    = &#34;3.5&#34;,
+            item_lista_servicos         = &#34;08.02&#34;,
+            indicador_incentivo_fiscal  = &#34;1&#34;,
+            indicador_exigibilidade_iss = &#34;1&#34;,
+        ),
+    )</code></pre>
+</details>
+</dd>
+<dt id="tests.test_nfse.ServicoTestCase.test_campo_obrigatorio_discriminacao"><code class="name flex">
+<span>def <span class="ident">test_campo_obrigatorio_discriminacao</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_campo_obrigatorio_discriminacao(self):
+    with self.assertRaises(TypeError):
+        nfse.Servico(
+            valor_servicos = &#34;1.00&#34;,
+            
+            impostos       = self.impostos
+        )</code></pre>
+</details>
+</dd>
+<dt id="tests.test_nfse.ServicoTestCase.test_campo_obrigatorio_impostos"><code class="name flex">
+<span>def <span class="ident">test_campo_obrigatorio_impostos</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_campo_obrigatorio_impostos(self):
+    with self.assertRaises(TypeError):
+        nfse.Servico(
+            valor_servicos = &#34;1.00&#34;,
+            discriminacao  = &#34;TESTE&#34;,
+
+        )</code></pre>
+</details>
+</dd>
+<dt id="tests.test_nfse.ServicoTestCase.test_campo_obrigatorio_valor_servicos"><code class="name flex">
+<span>def <span class="ident">test_campo_obrigatorio_valor_servicos</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_campo_obrigatorio_valor_servicos(self):
+    with self.assertRaises(TypeError):
+        nfse.Servico(
+            
+            discriminacao  = &#34;TESTE&#34;,
+            impostos       = self.impostos
+        )</code></pre>
+</details>
+</dd>
+<dt id="tests.test_nfse.ServicoTestCase.test_todos_campos_obrigatorios"><code class="name flex">
+<span>def <span class="ident">test_todos_campos_obrigatorios</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_todos_campos_obrigatorios(self):
+    servico = nfse.Servico(
+        valor_servicos = &#34;1.00&#34;,
+        discriminacao  = &#34;TESTE&#34;,
+        impostos       = self.impostos
+    )
+    
+    self.assertEqual(servico.valor_servicos, &#34;1.00&#34;)
+    self.assertEqual(servico.discriminacao, &#34;TESTE&#34;)
+    self.assertEqual(servico.impostos, self.impostos)</code></pre>
 </details>
 </dd>
 </dl>
@@ -337,9 +1078,27 @@ not have a method with the specified name.</p></div>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="tests.test_nfse.TestNfse" href="#tests.test_nfse.TestNfse">TestNfse</a></code></h4>
+<h4><code><a title="tests.test_nfse.ImpostosServicoTestCase" href="#tests.test_nfse.ImpostosServicoTestCase">ImpostosServicoTestCase</a></code></h4>
+</li>
+<li>
+<h4><code><a title="tests.test_nfse.NfseTestCase" href="#tests.test_nfse.NfseTestCase">NfseTestCase</a></code></h4>
 <ul class="">
-<li><code><a title="tests.test_nfse.TestNfse.test_buscar_notas" href="#tests.test_nfse.TestNfse.test_buscar_notas">test_buscar_notas</a></code></li>
+<li><code><a title="tests.test_nfse.NfseTestCase.setUp" href="#tests.test_nfse.NfseTestCase.setUp">setUp</a></code></li>
+<li><code><a title="tests.test_nfse.NfseTestCase.test_buscar_notas" href="#tests.test_nfse.NfseTestCase.test_buscar_notas">test_buscar_notas</a></code></li>
+<li><code><a title="tests.test_nfse.NfseTestCase.test_emitir_status_processando" href="#tests.test_nfse.NfseTestCase.test_emitir_status_processando">test_emitir_status_processando</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="tests.test_nfse.ObjetoEmissaoNFSeTestCase" href="#tests.test_nfse.ObjetoEmissaoNFSeTestCase">ObjetoEmissaoNFSeTestCase</a></code></h4>
+</li>
+<li>
+<h4><code><a title="tests.test_nfse.ServicoTestCase" href="#tests.test_nfse.ServicoTestCase">ServicoTestCase</a></code></h4>
+<ul class="">
+<li><code><a title="tests.test_nfse.ServicoTestCase.setUp" href="#tests.test_nfse.ServicoTestCase.setUp">setUp</a></code></li>
+<li><code><a title="tests.test_nfse.ServicoTestCase.test_campo_obrigatorio_discriminacao" href="#tests.test_nfse.ServicoTestCase.test_campo_obrigatorio_discriminacao">test_campo_obrigatorio_discriminacao</a></code></li>
+<li><code><a title="tests.test_nfse.ServicoTestCase.test_campo_obrigatorio_impostos" href="#tests.test_nfse.ServicoTestCase.test_campo_obrigatorio_impostos">test_campo_obrigatorio_impostos</a></code></li>
+<li><code><a title="tests.test_nfse.ServicoTestCase.test_campo_obrigatorio_valor_servicos" href="#tests.test_nfse.ServicoTestCase.test_campo_obrigatorio_valor_servicos">test_campo_obrigatorio_valor_servicos</a></code></li>
+<li><code><a title="tests.test_nfse.ServicoTestCase.test_todos_campos_obrigatorios" href="#tests.test_nfse.ServicoTestCase.test_todos_campos_obrigatorios">test_todos_campos_obrigatorios</a></code></li>
 </ul>
 </li>
 </ul>

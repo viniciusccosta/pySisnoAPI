@@ -126,7 +126,7 @@ class NfseTestCase(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        nfses = nfse.buscar_notas()
+        nfses = nfse.buscar_notas(token_emissor='token', token_secret_emissor='token-secret',)
         
         # Checando resultado:
         self.assertGreaterEqual(len(nfses), 1)
@@ -184,7 +184,7 @@ class NfseTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        resultado = nfse.emitir(self.objeto,)
+        resultado = nfse.emitir(token_emissor='token', token_secret_emissor='token-secret', objetoNfse=self.objeto, token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
         
         self.assertIn('id', resultado)
         self.assertIn('empresa', resultado)

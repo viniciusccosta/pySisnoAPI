@@ -15,8 +15,10 @@ import requests
 from typing import List
 
 # ======================================================================================================================
-@requires_emissor
-def get_municipios(uf: str, *args, **kwargs) -> List[Municipio]:
+def get_municipios(token_emissor: str, 
+                   token_secret_emissor: str, 
+                   uf: str, 
+                   *args, **kwargs) -> List[Municipio]:
     '''Consulta os municípios de um determinado estado através de uma requisição à API.
 
     Essa função permite consultar os municípios de um estado específico através de uma requisição à API.
@@ -30,6 +32,11 @@ def get_municipios(uf: str, *args, **kwargs) -> List[Municipio]:
     '''
 
     headers  = HEADERS.copy()
+    
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers['token-emissor']        = token_emissor
+    headers['token-secret-emissor'] = token_secret_emissor
+    
     url      = f'{BASE_URL}/unidades-federativas/{uf}/municipios'
     response = requests.get(url, headers=headers)
 
@@ -43,8 +50,9 @@ def get_municipios(uf: str, *args, **kwargs) -> List[Municipio]:
         case _:
             return
 
-@requires_emissor
-def get_cfops(*args, **kwargs) -> List[Cfop]:
+def get_cfops(token_emissor: str, 
+              token_secret_emissor: str, 
+              *args, **kwargs) -> List[Cfop]:
     '''Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
 
     Essa função permite obter a lista completa de CFOPs (Código Fiscal de Operações e Prestações) disponíveis através de uma requisição à API.
@@ -54,6 +62,11 @@ def get_cfops(*args, **kwargs) -> List[Cfop]:
     '''
 
     headers  = HEADERS.copy()
+    
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers['token-emissor']        = token_emissor
+    headers['token-secret-emissor'] = token_secret_emissor
+    
     url      = f'{BASE_URL}/cfops'
     response = requests.get(url, headers=headers)
 
@@ -67,10 +80,11 @@ def get_cfops(*args, **kwargs) -> List[Cfop]:
         case _:
             return
 
-@requires_emissor
-def get_ibpts(
-    cod_desc: str, 
-    uf: str, *args, **kwargs) -> List[Ibpt]:
+def get_ibpts(token_emissor: str, 
+              token_secret_emissor: str, 
+              cod_desc: str, 
+              uf: str, 
+              *args, **kwargs) -> List[Ibpt]:
     '''
     Obtém os IBPTs através de uma requisição à API.
 
@@ -91,6 +105,11 @@ def get_ibpts(
         raise Exception('Código ou Descrição precisa ter no mínimo 4 caracteres')
     
     headers  = HEADERS.copy()
+    
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers['token-emissor']        = token_emissor
+    headers['token-secret-emissor'] = token_secret_emissor
+    
     headers['codigo-ou-descricao'] = cod_desc
     headers['uf'] = uf
 

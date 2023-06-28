@@ -174,6 +174,12 @@ TIPOS_COMBUSTIVEL = {
     '18': 'Gasolina/Elétrico',
 }
 
+TIPOS_EMISSAO = {
+    '1': 'Normal',
+    '6': 'Contigência SNC-AN',
+    '7': 'Contigência SVC-R',
+}
+
 TIPOS_OPERACAO = {
     '0': 'Outros',
     '1': 'Venda concessionária',
@@ -227,10 +233,17 @@ class ObjetoEmissaoNFe(BaseClass):
     informacao_intermediador: Optional['InformacaoIntermediador'] = None
     
     def __post_init__(self):
+        self.validate_numero_nota_sequencial()
         self.validate_operacao()
         self.validate_modelo()
         self.validate_finalidade()
         self.validate_ambiente()
+    
+    def validate_numero_nota_sequencial(self):
+        if not isinstance(self.numero_nota_sequencial, str):
+            raise TypeError(f'numero_nota_sequencialdeve ser string.')
+        if len(self.numero_nota_sequencial) < 1 or len(self.numero_nota_sequencial) > 9:
+            raise ValueError(f'numero_nota_sequencial deve conter entre 1 e 9 caracteres.')
     
     def validate_operacao(self):
         if self.operacao not in OPERACOES:
@@ -557,10 +570,13 @@ class PaginaNotas:
     itens           : Optional[List['NotaFiscal']] = None
 
 # =====================================================================
-@requires_emissor
-@requires_empresa
-def emitir(objetoNfe:ObjetoEmissaoNFe, 
-    tipo_emissao:str, *args, **kwargs) -> str:
+def emitir(token_emissor: str, 
+           token_secret_emissor: str,
+           token_empresa: str, 
+           token_secret_empresa: str,
+           objetoNfe: ObjetoEmissaoNFe,
+           tipo_emissao: str,
+           *args, **kwargs):
     '''Endpoint utilizado para efetivamente emitir uma nota fiscal eletrônica.
 
     Args:
@@ -573,7 +589,23 @@ def emitir(objetoNfe:ObjetoEmissaoNFe,
     '''
 
     headers = HEADERS.copy()
-    headers['tipo-emissao'] = tipo_emissao    # TODO: Validar antes
+    
+    # -----------------------------------------
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers['token-emissor']        = token_emissor
+    headers['token-secret-emissor'] = token_secret_emissor
+    
+    validate_tokens(token_empresa, token_secret_empresa)
+    headers['token-empresa']        = token_empresa
+    headers['token-secret-empresa'] = token_secret_empresa
+    
+    # -----------------------------------------
+    if not tipo_emissao or tipo_emissao not in TIPOS_EMISSAO:
+        raise ValueError(f'Tipo de Emissão {tipo_emissao} inválido')
+    
+    headers['tipo-emissao'] = tipo_emissao
+    
+    # -----------------------------------------
     json_str = jsonpickle.encode(objetoNfe.as_filtered_dict(), unpicklable=False)
     
     url = f'{BASE_URL}/nfe'
@@ -587,20 +619,27 @@ def emitir(objetoNfe:ObjetoEmissaoNFe,
         case _:
             return response.text
     
-@requires_emissor
-@requires_empresa
-def corrigir(*args, **kwargs):
+def corrigir(token_emissor: str, 
+             token_secret_emissor: str, 
+             token_empresa:str, 
+             token_secret_empresa:str, 
+             *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-@requires_empresa
-def cancelar(*args, **kwargs):
+def cancelar(token_emissor: str, 
+             token_secret_emissor: str,
+             token_empresa:str, 
+             token_secret_empresa:str, 
+             *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-@requires_empresa
-def validar(objetoNfe:ObjetoEmissaoNFe, 
-    tipo_emissao:str, *args, **kwargs) -> str:
+def validar(token_emissor: str, 
+            token_secret_emissor: str,
+            token_empresa:str, 
+            token_secret_empresa:str, 
+            objetoNfe:ObjetoEmissaoNFe, 
+            tipo_emissao:str,
+            *args, **kwargs) -> str:
     '''Endpoint utilizado para validar a nota fiscal eletrônica antes de emitir.
 
     Args:
@@ -611,8 +650,23 @@ def validar(objetoNfe:ObjetoEmissaoNFe,
             6: Contigência SNC-AN  
             7: Contigência SVC-RS  
     '''
+    
     headers = HEADERS.copy()
-    headers['tipo-emissao'] = tipo_emissao    # TODO: Validar antes
+    
+    # -----------------------------------------
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers['token-emissor']        = token_emissor
+    headers['token-secret-emissor'] = token_secret_emissor
+    
+    validate_tokens(token_empresa, token_secret_empresa)
+    headers['token-empresa']        = token_empresa
+    headers['token-secret-empresa'] = token_secret_empresa
+    
+    # -----------------------------------------
+    if not tipo_emissao or tipo_emissao not in TIPOS_EMISSAO:
+        raise ValueError(f'Tipo de Emissão {tipo_emissao} inválido')
+    
+    headers['tipo-emissao'] = tipo_emissao
     json_str = jsonpickle.encode(objetoNfe.as_filtered_dict(), unpicklable=False)
     
     url = f'{BASE_URL}/nfe/validacao-nota'
@@ -624,9 +678,11 @@ def validar(objetoNfe:ObjetoEmissaoNFe,
         case _:
             return response.text
 
-@requires_emissor
-def listar(qtd:str = None, 
-    pagina:str = None, *args, **kwargs) -> List[NotaFiscal]:
+def listar(token_emissor: str, 
+           token_secret_emissor: str,
+           qtd:str = None, 
+           pagina:str = None, 
+           *args, **kwargs) -> List[NotaFiscal]:
     '''Recupera as notas fiscais.
     
     No Distrito Federal (DF), antes de 01/2023, as notas fiscais de serviço eram emitidas como NFe.
@@ -639,6 +695,11 @@ def listar(qtd:str = None,
         List[NotaFiscal]: Lista contendo as notas fiscais.
     '''
     headers = HEADERS.copy()
+    
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers['token-emissor']        = token_emissor
+    headers['token-secret-emissor'] = token_secret_emissor
+    
     params   = {}
     
     if qtd:
@@ -657,27 +718,35 @@ def listar(qtd:str = None,
         case _:
             return response.text
 
-@requires_emissor
-def buscar(*args, **kwargs):
+def buscar(token_emissor: str, 
+           token_secret_emissor: str, 
+           *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-def get_nota(*args, **kwargs):
+def get_nota(token_emissor: str, 
+             token_secret_emissor: str, 
+             *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-@requires_empresa
-def inutilizar_numeracao(*args, **kwargs):
+def inutilizar_numeracao(token_emissor: str, 
+                         token_secret_emissor: str, 
+                         token_empresa:str, 
+                         token_secret_empresa:str, 
+                         *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-@requires_empresa
-def get_pre_visualizacao(*args, **kwargs):
+def get_pre_visualizacao(token_emissor: str, 
+                         token_secret_emissor: str,
+                         token_empresa:str, 
+                         token_secret_empresa:str, 
+                         *args, **kwargs):
     raise NotImplementedError
 
-@requires_emissor
-@requires_empresa
-def get_danfe(*args, **kwargs):
+def get_danfe(token_emissor: str, 
+              token_secret_emissor: str, 
+              token_empresa:str, 
+              token_secret_empresa:str, 
+              *args, **kwargs):
     raise NotImplementedError
 
 # =====================================================================
