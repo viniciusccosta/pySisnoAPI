@@ -24,8 +24,8 @@ from dateutil    import parser
 BASE_URL = 'https://homolog.arkaonline.com.br/nfe-service'               # TODO: Provisório, em breve voltará para 'https://homolog.sisno.com.br/nfe-service/'
 
 HEADERS  = {
-    'accept'                : 'application/json',
-    'Content-Type'          : 'application/json',
+    'accept'      : 'application/json',
+    'Content-Type': 'application/json',
 }
 
 # -------------------------------------------
@@ -361,7 +361,7 @@ class DeclaracaoImportacaoAdicao:
     drawback         : Optional[str] = None
     
 @dataclass
-class Empresa:
+class Empresa:  
     '''
         Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
         Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
@@ -369,8 +369,8 @@ class Empresa:
     '''
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                                          : Optional[str]         = None
-    token                                       : Optional[str]         = None
-    token_secret                                : Optional[str]         = None
+    token                                       : Optional[str]         = None # Necessário para emitir, mas não para consultar
+    token_secret                                : Optional[str]         = None # Necessário para emitir, mas não para consultar
     cnpj                                        : Optional[str]         = None
     nome_fantasia                               : Optional[str]         = None
     razao_social                                : Optional[str]         = None
@@ -391,6 +391,10 @@ class Empresa:
     utiliza_tributos_aproximados                : Optional[bool]        = None  # TODO: Não consta na documentação da API
     informacoes_complementares                  : Optional[str]         = None  # TODO: Não consta na documentação da API
     senha_portal_prefeitura                     : Optional[str]         = None  # TODO: Não consta na documentação da API
+    serie_rps                                   : Optional[str]         = None  # TODO: Não consta na documentação da API 
+    proximo_numero_rps                          : Optional[str]         = None  # TODO: Não consta na documentação da API 
+    proximo_numero_rps_homologacao              : Optional[str]         = None  # TODO: Não consta na documentação da API 
+    numero_lote_rps                             : Optional[str]         = None  # TODO: Não consta na documentação da API 
     
     @classmethod
     def from_json(cls, **kwargs):
