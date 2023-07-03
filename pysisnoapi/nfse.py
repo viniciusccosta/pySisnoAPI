@@ -116,7 +116,7 @@ class ObjetoEmissaoNFSe(BaseClass):
     construcao_civil: Optional['ConstrucaoCivil'] = None
 
 @dataclass
-class NotaFiscalServico:
+class NotaFiscalServico(BaseClass):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     
     id                   : Optional[int]        = None
@@ -138,6 +138,9 @@ class NotaFiscalServico:
     municipio_prestacao  : Optional[Municipio]  = None
     ambiente             : Optional[str]        = None
     json_objeto_nfse     : Optional[str]        = None  # TODO: Não consta na documentação da API
+    xml                  : Optional[str]        = None  # TODO: Não consta na documentação da API
+    
+    numer_nota           : Optional[str]        = None  # TODO: EXCLUIR! É um typo de "numero_nota", adicionei hoje (03/07/2023) apenas para o package não parar de funcionar.
     
     @classmethod
     def from_json(cls, **kwargs):
@@ -152,6 +155,10 @@ class NotaFiscalServico:
         
         return cls(empresa=empresa, uf_prestacao=uf, municipio_prestacao=municipio, **kwargs)
 
+    def to_json(self, *args, **kwargs):
+        json_str = jsonpickle.encode(self.as_filtered_dict(), unpicklable=False)
+        return json_str
+    
 @dataclass
 class PaginaNotasServico:
     total           : Optional[str]                       = None
@@ -289,6 +296,7 @@ def buscar_notas(token_emissor: str,
     # TODO: o endpoint ignora o parâmetro cnpjEmpresa em alguns casos, descrir quais os casos.
     # TODO: textoBusca é case sensitive e leva em consideração acentos.
     # TODO: dataFim não precisa de dataInicio
+    # TODO: Mesmo sendo /nfse o endpoint está retornando NFe
     
     headers = HEADERS.copy()
     
