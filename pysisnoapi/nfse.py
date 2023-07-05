@@ -116,7 +116,7 @@ class ObjetoEmissaoNFSe(BaseClass):
     construcao_civil: Optional['ConstrucaoCivil'] = None
 
 @dataclass
-class NotaFiscalServico:
+class NotaFiscalServico(BaseClass):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     
     id                   : Optional[int]        = None
@@ -138,6 +138,9 @@ class NotaFiscalServico:
     municipio_prestacao  : Optional[Municipio]  = None
     ambiente             : Optional[str]        = None
     json_objeto_nfse     : Optional[str]        = None  # TODO: Não consta na documentação da API
+    xml                  : Optional[str]        = None  # TODO: Não consta na documentação da API
+    
+    numer_nota           : Optional[str]        = None  # TODO: EXCLUIR! É um typo de "numero_nota", adicionei hoje (03/07/2023) apenas para o package não parar de funcionar.
     
     @classmethod
     def from_json(cls, **kwargs):
@@ -152,6 +155,10 @@ class NotaFiscalServico:
         
         return cls(empresa=empresa, uf_prestacao=uf, municipio_prestacao=municipio, **kwargs)
 
+    def to_json(self, *args, **kwargs):
+        json_str = jsonpickle.encode(self.as_filtered_dict(), unpicklable=False)
+        return json_str
+    
 @dataclass
 class PaginaNotasServico:
     total           : Optional[str]                       = None
@@ -237,10 +244,11 @@ def buscar_notas(token_emissor: str,
                  ambiente:str=None, 
                  status:str=None, 
                  texto:str=None, 
-                 pagina:str=None, 
-                 qtd_por_pagina:str=None, 
+                 pagina:int=None, 
+                 qtd_por_pagina:int=None, 
                  ordencao:str=None, 
-                 tipo_ordenacao:str=None, *args, **kwargs) -> List[NotaFiscalServico]:
+                 tipo_ordenacao:str=None,
+                 *args, **kwargs) -> List[NotaFiscalServico]:
     '''Recupera as notas fiscais de serviço.
 
     Args:
@@ -296,46 +304,50 @@ def buscar_notas(token_emissor: str,
     headers['token-emissor']        = token_emissor
     headers['token-secret-emissor'] = token_secret_emissor
     
+    params = {}
     if cnpjEmpresa:
-        headers['cnpjEmpresa'] = cnpjEmpresa
+        params['cnpjEmpresa'] = cnpjEmpresa
     if data_inicio:
-        headers['dataInicio'] = data_inicio.strftime('%d/%m/%Y %H:%M:%S')
+        params['dataInicio'] = data_inicio.strftime('%d/%m/%Y %H:%M:%S')
     if data_fim:
-        headers['dataFim'] = data_fim.strftime('%d/%m/%Y %H:%M:%S')
+        params['dataFim'] = data_fim.strftime('%d/%m/%Y %H:%M:%S')
     if ambiente:
         if ambiente not in AMBIENTES:
             raise ValueError(f'Ambiente {ambiente} inválido.')
-        headers['ambiente'] = ambiente      
+        params['ambiente'] = ambiente      
     if status:
         if status not in STATUS:
             raise ValueError(f'Status {status} inválido.')
-        headers['status'] = status
+        params['status'] = status
     if texto:
-        headers['textoBusca'] = texto
+        params['textoBusca'] = texto
     if pagina:
-        headers['pagina'] = pagina                  # TODO: Na documentação diz que deve ser inteiro, mas "Header part (1) from ('pagina', 1) must be of type str or bytes, not <class 'int'>"
+        params['pagina'] = str(pagina)
     if qtd_por_pagina:
-        headers['qtdPorPagina'] = qtd_por_pagina    # TODO: Na documentação diz que deve ser inteiro, mas "Header part (10) from ('qtdPorPagina', 10) must be of type str or bytes, not <class 'int'>"
+        params['qtdPorPagina'] = str(qtd_por_pagina)
     if ordencao:
-        headers['ordenacao'] = ordencao
+        params['ordenacao'] = ordencao
     if tipo_ordenacao:
-        headers['tipoOrdenacao'] = tipo_ordenacao
+        params['tipoOrdenacao'] = tipo_ordenacao
 
     url = f'{BASE_URL}/nfse'
-    response = requests.get(url, headers=headers)
+    
+    response  = requests.get(url, headers=headers, params=params)
+    resp_dict = response.json()
 
     match (response.status_code):
         case 200:
-            json_data = response.json().get('dados')
-            nfses = [NotaFiscalServico.from_json(**d) for d in json_data['itens']]
-            return nfses
-        case _:
-            return response.text
+            json_dados = resp_dict.get('dados')
+            nfses      = [NotaFiscalServico.from_json(**d) for d in json_dados['itens']]
+            return (resp_dict, nfses)
+    
+    return (resp_dict, None)
 
 def retransmitir(token_emissor: str, 
                  token_secret_emissor: str,
                  token_empresa:str, 
-                 token_secret_empresa:str, *args, **kwargs):
+                 token_secret_empresa:str, 
+                 *args, **kwargs):
     raise NotImplementedError
 
 def recuperar_dados(token_emissor: str, 
@@ -374,7 +386,8 @@ def recuperar_dados(token_emissor: str,
 def cancelar(token_emissor: str, 
              token_secret_emissor: str, 
              token_empresa:str,
-             token_secret_empresa:str, *args, **kwargs):
+             token_secret_empresa:str, 
+             *args, **kwargs):
     raise NotImplementedError
 
 # =====================================================================
