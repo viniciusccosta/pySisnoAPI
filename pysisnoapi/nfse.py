@@ -341,7 +341,7 @@ def buscar_notas(token_emissor: str,
             nfses      = [NotaFiscalServico.from_json(**d) for d in json_dados['itens']]
             return (resp_dict, nfses)
     
-    return (resp_dict,)
+    return (resp_dict, None)
 
 def retransmitir(token_emissor: str, 
                  token_secret_emissor: str,
