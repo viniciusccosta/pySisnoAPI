@@ -25,8 +25,6 @@ Para instalar a biblioteca pySisnoAPI, execute o seguinte comando:
 pip install pysisnoapi
 ```
 
-**OBS: Ainda não está disponível para instalação via pip**
-
 ## Contribuição
 Contribuições são bem-vindas! Se você deseja contribuir para o projeto, siga as etapas abaixo:
 
