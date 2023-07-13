@@ -126,10 +126,44 @@ class NfseTestCase(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        nfses = nfse.buscar_notas(token_emissor='token', token_secret_emissor='token-secret',)
+        response, nfses = nfse.buscar_notas(token_emissor='token', token_secret_emissor='token-secret',)
         
         # Checando resultado:
+        self.assertEquals(response.status_code, 200)
         self.assertGreaterEqual(len(nfses), 1)
+        
+    def test_buscar_notas_servidor_fora_dor_ar(self):
+        # Mocking:
+        mock_response = MagicMock()
+        mock_response.status_code       = 502
+        mock_response.headers           = {
+            'Server'        : 'nginx/1.10.3 (Ubuntu)',
+            'Date'          : 'Wed, 12 Jul 2023 15:04:23 GMT',
+            'Content-Type'  : 'text/html',
+            'Content-Length': '182',
+            'Connection'    : 'keep-alive'
+        }
+        mock_response._content          = b'<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body bgcolor="white">\r\n<center><h1>502 Bad Gateway</h1></center>\r\n<hr><center>nginx/1.10.3 (Ubuntu)</center>\r\n</body>\r\n</html>\r\n'
+        mock_response._content_consumed = True
+        mock_response._next             = None
+        mock_response.encoding          = 'ISO-8859-1'
+        mock_response.history           = []
+        mock_response.reason            = 'Bad Gateway'
+        
+        requests.get = MagicMock(return_value=mock_response)
+        
+        # Chamando a Função:
+        response, nfses = nfse.buscar_notas(token_emissor='token', token_secret_emissor='token-secret',)
+        
+        # Checando resultado:
+        self.assertEquals(response.status_code, 502)
+        self.assertEquals(response._content, b'<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body bgcolor="white">\r\n<center><h1>502 Bad Gateway</h1></center>\r\n<hr><center>nginx/1.10.3 (Ubuntu)</center>\r\n</body>\r\n</html>\r\n')
+        self.assertEquals(response._content_consumed, True)
+        self.assertEquals(response._next, None)
+        self.assertEquals(response.encoding, 'ISO-8859-1')
+        self.assertEquals(len(response.history), 0)
+        self.assertEquals(response.reason, 'Bad Gateway')
+        self.assertEquals(nfses, None)
         
     def test_emitir_status_processando(self):
         # Mocking:

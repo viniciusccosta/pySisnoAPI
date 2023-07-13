@@ -333,15 +333,14 @@ def buscar_notas(token_emissor: str,
     url = f'{BASE_URL}/nfse'
     
     response  = requests.get(url, headers=headers, params=params)
-    resp_dict = response.json()
 
     match (response.status_code):
         case 200:
-            json_dados = resp_dict.get('dados')
+            json_dados = response.json().get('dados')
             nfses      = [NotaFiscalServico.from_json(**d) for d in json_dados['itens']]
-            return (resp_dict, nfses)
+            return (response, nfses)
     
-    return (resp_dict, None)
+    return (response, None)
 
 def retransmitir(token_emissor: str, 
                  token_secret_emissor: str,
