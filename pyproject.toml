@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pysisnoapi"
 version = "0.1.1"
-description = ""
+description = "Wrapper para API da plataforma SISNO."
 authors = ["Vinícius Costa <viniciusccosta95@gmail.com>"]
 license = "MIT"
 readme = "README.md"
