@@ -58,8 +58,8 @@ from dateutil    import parser
 BASE_URL = &#39;https://homolog.arkaonline.com.br/nfe-service&#39;               # TODO: Provisório, em breve voltará para &#39;https://homolog.sisno.com.br/nfe-service/&#39;
 
 HEADERS  = {
-    &#39;accept&#39;                : &#39;application/json&#39;,
-    &#39;Content-Type&#39;          : &#39;application/json&#39;,
+    &#39;accept&#39;      : &#39;application/json&#39;,
+    &#39;Content-Type&#39;: &#39;application/json&#39;,
 }
 
 # -------------------------------------------
@@ -395,7 +395,7 @@ class DeclaracaoImportacaoAdicao:
     drawback         : Optional[str] = None
     
 @dataclass
-class Empresa:
+class Empresa:  
     &#39;&#39;&#39;
         Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
         Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
@@ -403,8 +403,8 @@ class Empresa:
     &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                                          : Optional[str]         = None
-    token                                       : Optional[str]         = None
-    token_secret                                : Optional[str]         = None
+    token                                       : Optional[str]         = None # Necessário para emitir, mas não para consultar
+    token_secret                                : Optional[str]         = None # Necessário para emitir, mas não para consultar
     cnpj                                        : Optional[str]         = None
     nome_fantasia                               : Optional[str]         = None
     razao_social                                : Optional[str]         = None
@@ -425,6 +425,10 @@ class Empresa:
     utiliza_tributos_aproximados                : Optional[bool]        = None  # TODO: Não consta na documentação da API
     informacoes_complementares                  : Optional[str]         = None  # TODO: Não consta na documentação da API
     senha_portal_prefeitura                     : Optional[str]         = None  # TODO: Não consta na documentação da API
+    serie_rps                                   : Optional[str]         = None  # TODO: Não consta na documentação da API 
+    proximo_numero_rps                          : Optional[str]         = None  # TODO: Não consta na documentação da API 
+    proximo_numero_rps_homologacao              : Optional[str]         = None  # TODO: Não consta na documentação da API 
+    numero_lote_rps                             : Optional[str]         = None  # TODO: Não consta na documentação da API 
     
     @classmethod
     def from_json(cls, **kwargs):
@@ -854,6 +858,7 @@ class BaseClass:
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="nfe.html#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a></li>
+<li><a title="pysisnoapi.nfse.NotaFiscalServico" href="nfse.html#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a></li>
 <li><a title="pysisnoapi.nfse.ObjetoEmissaoNFSe" href="nfse.html#pysisnoapi.nfse.ObjetoEmissaoNFSe">ObjetoEmissaoNFSe</a></li>
 </ul>
 <h3>Methods</h3>
@@ -1255,7 +1260,7 @@ class DeclaracaoImportacaoAdicao:
 </dd>
 <dt id="pysisnoapi.Empresa"><code class="flex name class">
 <span>class <span class="ident">Empresa</span></span>
-<span>(</span><span>id: Optional[str] = None, token: Optional[str] = None, token_secret: Optional[str] = None, cnpj: Optional[str] = None, nome_fantasia: Optional[str] = None, razao_social: Optional[str] = None, endereco: Optional[ForwardRef('<a title="pysisnoapi.Endereco" href="#pysisnoapi.Endereco">Endereco</a>')] = None, telefone: Optional[str] = None, inscricao_estadual: Optional[str] = None, inscricao_municipal: Optional[str] = None, inscricao_estadual_substituicao_tributaria: Optional[str] = None, regime_tributario: Optional[str] = None, classificacao_nacional_atividades_economicas: Optional[str] = None, ambiente: Optional[str] = None, id_csc: Optional[str] = None, csc: Optional[str] = None, codigo_regime_especial_tributacao: Optional[str] = None, porcentagem_icms_aproveitado: Optional[str] = None, site: Optional[str] = None, email: Optional[str] = None, utiliza_tributos_aproximados: Optional[bool] = None, informacoes_complementares: Optional[str] = None, senha_portal_prefeitura: Optional[str] = None)</span>
+<span>(</span><span>id: Optional[str] = None, token: Optional[str] = None, token_secret: Optional[str] = None, cnpj: Optional[str] = None, nome_fantasia: Optional[str] = None, razao_social: Optional[str] = None, endereco: Optional[ForwardRef('<a title="pysisnoapi.Endereco" href="#pysisnoapi.Endereco">Endereco</a>')] = None, telefone: Optional[str] = None, inscricao_estadual: Optional[str] = None, inscricao_municipal: Optional[str] = None, inscricao_estadual_substituicao_tributaria: Optional[str] = None, regime_tributario: Optional[str] = None, classificacao_nacional_atividades_economicas: Optional[str] = None, ambiente: Optional[str] = None, id_csc: Optional[str] = None, csc: Optional[str] = None, codigo_regime_especial_tributacao: Optional[str] = None, porcentagem_icms_aproveitado: Optional[str] = None, site: Optional[str] = None, email: Optional[str] = None, utiliza_tributos_aproximados: Optional[bool] = None, informacoes_complementares: Optional[str] = None, senha_portal_prefeitura: Optional[str] = None, serie_rps: Optional[str] = None, proximo_numero_rps: Optional[str] = None, proximo_numero_rps_homologacao: Optional[str] = None, numero_lote_rps: Optional[str] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
@@ -1266,7 +1271,7 @@ Em resumo: não há necessidade de se preocupar com os campos, caso não saiba a
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
-class Empresa:
+class Empresa:  
     &#39;&#39;&#39;
         Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
         Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
@@ -1274,8 +1279,8 @@ class Empresa:
     &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     id                                          : Optional[str]         = None
-    token                                       : Optional[str]         = None
-    token_secret                                : Optional[str]         = None
+    token                                       : Optional[str]         = None # Necessário para emitir, mas não para consultar
+    token_secret                                : Optional[str]         = None # Necessário para emitir, mas não para consultar
     cnpj                                        : Optional[str]         = None
     nome_fantasia                               : Optional[str]         = None
     razao_social                                : Optional[str]         = None
@@ -1296,6 +1301,10 @@ class Empresa:
     utiliza_tributos_aproximados                : Optional[bool]        = None  # TODO: Não consta na documentação da API
     informacoes_complementares                  : Optional[str]         = None  # TODO: Não consta na documentação da API
     senha_portal_prefeitura                     : Optional[str]         = None  # TODO: Não consta na documentação da API
+    serie_rps                                   : Optional[str]         = None  # TODO: Não consta na documentação da API 
+    proximo_numero_rps                          : Optional[str]         = None  # TODO: Não consta na documentação da API 
+    proximo_numero_rps_homologacao              : Optional[str]         = None  # TODO: Não consta na documentação da API 
+    numero_lote_rps                             : Optional[str]         = None  # TODO: Não consta na documentação da API 
     
     @classmethod
     def from_json(cls, **kwargs):
@@ -1362,7 +1371,19 @@ class Empresa:
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="pysisnoapi.Empresa.numero_lote_rps"><code class="name">var <span class="ident">numero_lote_rps</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="pysisnoapi.Empresa.porcentagem_icms_aproveitado"><code class="name">var <span class="ident">porcentagem_icms_aproveitado</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.proximo_numero_rps"><code class="name">var <span class="ident">proximo_numero_rps</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.proximo_numero_rps_homologacao"><code class="name">var <span class="ident">proximo_numero_rps_homologacao</span> : Optional[str]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1375,6 +1396,10 @@ class Empresa:
 <div class="desc"></div>
 </dd>
 <dt id="pysisnoapi.Empresa.senha_portal_prefeitura"><code class="name">var <span class="ident">senha_portal_prefeitura</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.serie_rps"><code class="name">var <span class="ident">serie_rps</span> : Optional[str]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2618,10 +2643,14 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.Empresa.inscricao_estadual_substituicao_tributaria" href="#pysisnoapi.Empresa.inscricao_estadual_substituicao_tributaria">inscricao_estadual_substituicao_tributaria</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.inscricao_municipal" href="#pysisnoapi.Empresa.inscricao_municipal">inscricao_municipal</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.nome_fantasia" href="#pysisnoapi.Empresa.nome_fantasia">nome_fantasia</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.numero_lote_rps" href="#pysisnoapi.Empresa.numero_lote_rps">numero_lote_rps</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.porcentagem_icms_aproveitado" href="#pysisnoapi.Empresa.porcentagem_icms_aproveitado">porcentagem_icms_aproveitado</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.proximo_numero_rps" href="#pysisnoapi.Empresa.proximo_numero_rps">proximo_numero_rps</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.proximo_numero_rps_homologacao" href="#pysisnoapi.Empresa.proximo_numero_rps_homologacao">proximo_numero_rps_homologacao</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.razao_social" href="#pysisnoapi.Empresa.razao_social">razao_social</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.regime_tributario" href="#pysisnoapi.Empresa.regime_tributario">regime_tributario</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.senha_portal_prefeitura" href="#pysisnoapi.Empresa.senha_portal_prefeitura">senha_portal_prefeitura</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.serie_rps" href="#pysisnoapi.Empresa.serie_rps">serie_rps</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.site" href="#pysisnoapi.Empresa.site">site</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.telefone" href="#pysisnoapi.Empresa.telefone">telefone</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.token" href="#pysisnoapi.Empresa.token">token</a></code></li>

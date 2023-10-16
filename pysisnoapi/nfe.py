@@ -570,7 +570,7 @@ class PaginaNotas:
     itens           : Optional[List['NotaFiscal']] = None
 
 # =====================================================================
-def emitir(token_emissor: str, 
+async def emitir(token_emissor: str, 
            token_secret_emissor: str,
            token_empresa: str, 
            token_secret_empresa: str,
@@ -609,7 +609,7 @@ def emitir(token_emissor: str,
     json_str = jsonpickle.encode(objetoNfe.as_filtered_dict(), unpicklable=False)
     
     url = f'{BASE_URL}/nfe'
-    response = requests.post(url, headers=headers, json=json.loads(json_str))
+    response = await requests.post(url, headers=headers, json=json.loads(json_str))
         
     match response.status_code:
         case 200:
@@ -619,21 +619,21 @@ def emitir(token_emissor: str,
         case _:
             return response.text
     
-def corrigir(token_emissor: str, 
+async def corrigir(token_emissor: str, 
              token_secret_emissor: str, 
              token_empresa:str, 
              token_secret_empresa:str, 
              *args, **kwargs):
     raise NotImplementedError
 
-def cancelar(token_emissor: str, 
+async def cancelar(token_emissor: str, 
              token_secret_emissor: str,
              token_empresa:str, 
              token_secret_empresa:str, 
              *args, **kwargs):
     raise NotImplementedError
 
-def validar(token_emissor: str, 
+async def validar(token_emissor: str, 
             token_secret_emissor: str,
             token_empresa:str, 
             token_secret_empresa:str, 
@@ -670,7 +670,7 @@ def validar(token_emissor: str,
     json_str = jsonpickle.encode(objetoNfe.as_filtered_dict(), unpicklable=False)
     
     url = f'{BASE_URL}/nfe/validacao-nota'
-    response = requests.post(url, headers=headers, json=json.loads(json_str))
+    response = await requests.post(url, headers=headers, json=json.loads(json_str))
     
     match response.status_code:
         case 200:
@@ -678,7 +678,7 @@ def validar(token_emissor: str,
         case _:
             return response.text
 
-def listar(token_emissor: str, 
+async def listar(token_emissor: str, 
            token_secret_emissor: str,
            qtd:str = None, 
            pagina:str = None, 
@@ -708,7 +708,7 @@ def listar(token_emissor: str,
         params['pagina'] = pagina
     
     url = f'{BASE_URL}/nfe/lista-notas'
-    response = requests.get(url, params, headers=headers)
+    response = await requests.get(url, params, headers=headers)
     
     match (response.status_code):
         case 200:
@@ -718,31 +718,31 @@ def listar(token_emissor: str,
         case _:
             return response.text
 
-def buscar(token_emissor: str, 
+async def buscar(token_emissor: str, 
            token_secret_emissor: str, 
            *args, **kwargs):
     raise NotImplementedError
 
-def get_nota(token_emissor: str, 
+async def get_nota(token_emissor: str, 
              token_secret_emissor: str, 
              *args, **kwargs):
     raise NotImplementedError
 
-def inutilizar_numeracao(token_emissor: str, 
+async def inutilizar_numeracao(token_emissor: str, 
                          token_secret_emissor: str, 
                          token_empresa:str, 
                          token_secret_empresa:str, 
                          *args, **kwargs):
     raise NotImplementedError
 
-def get_pre_visualizacao(token_emissor: str, 
+async def get_pre_visualizacao(token_emissor: str, 
                          token_secret_emissor: str,
                          token_empresa:str, 
                          token_secret_empresa:str, 
                          *args, **kwargs):
     raise NotImplementedError
 
-def get_danfe(token_emissor: str, 
+async def get_danfe(token_emissor: str, 
               token_secret_emissor: str, 
               token_empresa:str, 
               token_secret_empresa:str, 

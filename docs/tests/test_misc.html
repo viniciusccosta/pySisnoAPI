@@ -39,7 +39,7 @@ UF = &#39;MG&#39;
 
 # ==========================================================================
 class TestGetMunicipios(unittest.TestCase):
-    def test_get_municipios_success(self):
+    async def test_get_municipios_success(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -60,7 +60,7 @@ class TestGetMunicipios(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
 
         # Chama a função:
-        municipios = misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
+        municipios = await misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
 
         # Checando resultado:
         self.assertIsInstance(municipios, List)
@@ -69,33 +69,33 @@ class TestGetMunicipios(unittest.TestCase):
         self.assertEqual(municipios[0].descricao, &#39;Belo Horizonte&#39;)
         self.assertEqual(municipios[1].codigo_ibge, 3118601)
         
-    def test_get_municipios_falha_412(self):
+    async def test_get_municipios_falha_412(self):
         # Nocking:
         mock_response = MagicMock()
         mock_response.status_code = 412
         requests.get = MagicMock(return_value=mock_response)
 
         # Chama a função:
-        municipios = misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
+        municipios = await misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
 
         # Checando resultado:
         self.assertIsInstance(municipios, List)
         self.assertEqual(len(municipios), 0)
 
-    def test_get_municipios_falha_outros(self):
+    async def test_get_municipios_falha_outros(self):
         # Nocking:
         mock_response = MagicMock()
         mock_response.status_code = 500
         requests.get = MagicMock(return_value=mock_response)
 
         # Chama a função:
-        municipios = misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
+        municipios = await misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
 
         # Checando resultado:
         assert municipios is None
 
 class TestGetCfops(unittest.TestCase):
-    def test_get_cfops_success(self):
+    async def test_get_cfops_success(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -118,7 +118,7 @@ class TestGetCfops(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando função:
-        cfops = misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
+        cfops = await misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
         
         # Checando resultados:
         self.assertEqual(len(cfops), 2)
@@ -129,26 +129,26 @@ class TestGetCfops(unittest.TestCase):
         self.assertEqual(cfops[1].codigo, &#39;5929&#39;)
         self.assertEqual(cfops[1].descricao, &#39;Outra saída de mercadoria ou prestação de serviço não especificado&#39;)
 
-    def test_get_cfops_falha_412(self):
+    async def test_get_cfops_falha_412(self):
         # Mocking
         mock_response = MagicMock()
         mock_response.status_code = 412
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando Função:
-        cfops = misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
+        cfops = await misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
         
         # Checando resultados:
         self.assertEqual(len(cfops), 0)
         
-    def test_get_cfops_falha_outros(self):
+    async def test_get_cfops_falha_outros(self):
         # Nocking:
         mock_response = MagicMock()
         mock_response.status_code = 500
         requests.get = MagicMock(return_value=mock_response)
 
         # Chama a função:
-        municipios = misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
+        municipios = await misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
 
         # Checando resultado:
         assert municipios is None
@@ -207,7 +207,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class TestGetCfops(unittest.TestCase):
-    def test_get_cfops_success(self):
+    async def test_get_cfops_success(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -230,7 +230,7 @@ not have a method with the specified name.</p></div>
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando função:
-        cfops = misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
+        cfops = await misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
         
         # Checando resultados:
         self.assertEqual(len(cfops), 2)
@@ -241,26 +241,26 @@ not have a method with the specified name.</p></div>
         self.assertEqual(cfops[1].codigo, &#39;5929&#39;)
         self.assertEqual(cfops[1].descricao, &#39;Outra saída de mercadoria ou prestação de serviço não especificado&#39;)
 
-    def test_get_cfops_falha_412(self):
+    async def test_get_cfops_falha_412(self):
         # Mocking
         mock_response = MagicMock()
         mock_response.status_code = 412
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando Função:
-        cfops = misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
+        cfops = await misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
         
         # Checando resultados:
         self.assertEqual(len(cfops), 0)
         
-    def test_get_cfops_falha_outros(self):
+    async def test_get_cfops_falha_outros(self):
         # Nocking:
         mock_response = MagicMock()
         mock_response.status_code = 500
         requests.get = MagicMock(return_value=mock_response)
 
         # Chama a função:
-        municipios = misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
+        municipios = await misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
 
         # Checando resultado:
         assert municipios is None</code></pre>
@@ -272,7 +272,7 @@ not have a method with the specified name.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="tests.test_misc.TestGetCfops.test_get_cfops_falha_412"><code class="name flex">
-<span>def <span class="ident">test_get_cfops_falha_412</span></span>(<span>self)</span>
+<span>async def <span class="ident">test_get_cfops_falha_412</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -280,21 +280,21 @@ not have a method with the specified name.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_get_cfops_falha_412(self):
+<pre><code class="python">async def test_get_cfops_falha_412(self):
     # Mocking
     mock_response = MagicMock()
     mock_response.status_code = 412
     requests.get = MagicMock(return_value=mock_response)
     
     # Chamando Função:
-    cfops = misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
+    cfops = await misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
     
     # Checando resultados:
     self.assertEqual(len(cfops), 0)</code></pre>
 </details>
 </dd>
 <dt id="tests.test_misc.TestGetCfops.test_get_cfops_falha_outros"><code class="name flex">
-<span>def <span class="ident">test_get_cfops_falha_outros</span></span>(<span>self)</span>
+<span>async def <span class="ident">test_get_cfops_falha_outros</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -302,21 +302,21 @@ not have a method with the specified name.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_get_cfops_falha_outros(self):
+<pre><code class="python">async def test_get_cfops_falha_outros(self):
     # Nocking:
     mock_response = MagicMock()
     mock_response.status_code = 500
     requests.get = MagicMock(return_value=mock_response)
 
     # Chama a função:
-    municipios = misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
+    municipios = await misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
 
     # Checando resultado:
     assert municipios is None</code></pre>
 </details>
 </dd>
 <dt id="tests.test_misc.TestGetCfops.test_get_cfops_success"><code class="name flex">
-<span>def <span class="ident">test_get_cfops_success</span></span>(<span>self)</span>
+<span>async def <span class="ident">test_get_cfops_success</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -324,7 +324,7 @@ not have a method with the specified name.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_get_cfops_success(self):
+<pre><code class="python">async def test_get_cfops_success(self):
     # Mocking:
     mock_response = MagicMock()
     mock_response.status_code = 200
@@ -347,7 +347,7 @@ not have a method with the specified name.</p></div>
     requests.get = MagicMock(return_value=mock_response)
     
     # Chamando função:
-    cfops = misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
+    cfops = await misc.get_cfops(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
     
     # Checando resultados:
     self.assertEqual(len(cfops), 2)
@@ -399,7 +399,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class TestGetMunicipios(unittest.TestCase):
-    def test_get_municipios_success(self):
+    async def test_get_municipios_success(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -420,7 +420,7 @@ not have a method with the specified name.</p></div>
         requests.get = MagicMock(return_value=mock_response)
 
         # Chama a função:
-        municipios = misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
+        municipios = await misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
 
         # Checando resultado:
         self.assertIsInstance(municipios, List)
@@ -429,27 +429,27 @@ not have a method with the specified name.</p></div>
         self.assertEqual(municipios[0].descricao, &#39;Belo Horizonte&#39;)
         self.assertEqual(municipios[1].codigo_ibge, 3118601)
         
-    def test_get_municipios_falha_412(self):
+    async def test_get_municipios_falha_412(self):
         # Nocking:
         mock_response = MagicMock()
         mock_response.status_code = 412
         requests.get = MagicMock(return_value=mock_response)
 
         # Chama a função:
-        municipios = misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
+        municipios = await misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
 
         # Checando resultado:
         self.assertIsInstance(municipios, List)
         self.assertEqual(len(municipios), 0)
 
-    def test_get_municipios_falha_outros(self):
+    async def test_get_municipios_falha_outros(self):
         # Nocking:
         mock_response = MagicMock()
         mock_response.status_code = 500
         requests.get = MagicMock(return_value=mock_response)
 
         # Chama a função:
-        municipios = misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
+        municipios = await misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
 
         # Checando resultado:
         assert municipios is None</code></pre>
@@ -461,7 +461,7 @@ not have a method with the specified name.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="tests.test_misc.TestGetMunicipios.test_get_municipios_falha_412"><code class="name flex">
-<span>def <span class="ident">test_get_municipios_falha_412</span></span>(<span>self)</span>
+<span>async def <span class="ident">test_get_municipios_falha_412</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -469,14 +469,14 @@ not have a method with the specified name.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_get_municipios_falha_412(self):
+<pre><code class="python">async def test_get_municipios_falha_412(self):
     # Nocking:
     mock_response = MagicMock()
     mock_response.status_code = 412
     requests.get = MagicMock(return_value=mock_response)
 
     # Chama a função:
-    municipios = misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
+    municipios = await misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
 
     # Checando resultado:
     self.assertIsInstance(municipios, List)
@@ -484,7 +484,7 @@ not have a method with the specified name.</p></div>
 </details>
 </dd>
 <dt id="tests.test_misc.TestGetMunicipios.test_get_municipios_falha_outros"><code class="name flex">
-<span>def <span class="ident">test_get_municipios_falha_outros</span></span>(<span>self)</span>
+<span>async def <span class="ident">test_get_municipios_falha_outros</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -492,21 +492,21 @@ not have a method with the specified name.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_get_municipios_falha_outros(self):
+<pre><code class="python">async def test_get_municipios_falha_outros(self):
     # Nocking:
     mock_response = MagicMock()
     mock_response.status_code = 500
     requests.get = MagicMock(return_value=mock_response)
 
     # Chama a função:
-    municipios = misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
+    municipios = await misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
 
     # Checando resultado:
     assert municipios is None</code></pre>
 </details>
 </dd>
 <dt id="tests.test_misc.TestGetMunicipios.test_get_municipios_success"><code class="name flex">
-<span>def <span class="ident">test_get_municipios_success</span></span>(<span>self)</span>
+<span>async def <span class="ident">test_get_municipios_success</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -514,7 +514,7 @@ not have a method with the specified name.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_get_municipios_success(self):
+<pre><code class="python">async def test_get_municipios_success(self):
     # Mocking:
     mock_response = MagicMock()
     mock_response.status_code = 200
@@ -535,7 +535,7 @@ not have a method with the specified name.</p></div>
     requests.get = MagicMock(return_value=mock_response)
 
     # Chama a função:
-    municipios = misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
+    municipios = await misc.get_municipios(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, uf=UF)
 
     # Checando resultado:
     self.assertIsInstance(municipios, List)

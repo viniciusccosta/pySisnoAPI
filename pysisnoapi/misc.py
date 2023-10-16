@@ -15,7 +15,7 @@ import requests
 from typing import List
 
 # ======================================================================================================================
-def get_municipios(token_emissor: str, 
+async def get_municipios(token_emissor: str, 
                    token_secret_emissor: str, 
                    uf: str, 
                    *args, **kwargs) -> List[Municipio]:
@@ -38,7 +38,7 @@ def get_municipios(token_emissor: str,
     headers['token-secret-emissor'] = token_secret_emissor
     
     url      = f'{BASE_URL}/unidades-federativas/{uf}/municipios'
-    response = requests.get(url, headers=headers)
+    response = await requests.get(url, headers=headers)
 
     match (response.status_code):
         case 200:
@@ -50,7 +50,7 @@ def get_municipios(token_emissor: str,
         case _:
             return
 
-def get_cfops(token_emissor: str, 
+async def get_cfops(token_emissor: str, 
               token_secret_emissor: str, 
               *args, **kwargs) -> List[Cfop]:
     '''Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
@@ -68,7 +68,7 @@ def get_cfops(token_emissor: str,
     headers['token-secret-emissor'] = token_secret_emissor
     
     url      = f'{BASE_URL}/cfops'
-    response = requests.get(url, headers=headers)
+    response = await requests.get(url, headers=headers)
 
     match (response.status_code):
         case 200:
@@ -80,7 +80,7 @@ def get_cfops(token_emissor: str,
         case _:
             return
 
-def get_ibpts(token_emissor: str, 
+async def get_ibpts(token_emissor: str, 
               token_secret_emissor: str, 
               cod_desc: str, 
               uf: str, 
@@ -114,7 +114,7 @@ def get_ibpts(token_emissor: str,
     headers['uf'] = uf
 
     url      = f'{BASE_URL}/ibpts'
-    response = requests.get(url, headers=headers)
+    response = await requests.get(url, headers=headers)
 
     match (response.status_code):
         case 200:

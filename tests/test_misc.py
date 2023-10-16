@@ -11,7 +11,7 @@ UF = 'MG'
 
 # ==========================================================================
 class TestGetMunicipios(unittest.TestCase):
-    def test_get_municipios_success(self):
+    async def test_get_municipios_success(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -32,7 +32,7 @@ class TestGetMunicipios(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
 
         # Chama a função:
-        municipios = misc.get_municipios(token_emissor='token', token_secret_emissor='token-secret', uf=UF)
+        municipios = await misc.get_municipios(token_emissor='token', token_secret_emissor='token-secret', uf=UF)
 
         # Checando resultado:
         self.assertIsInstance(municipios, List)
@@ -41,33 +41,33 @@ class TestGetMunicipios(unittest.TestCase):
         self.assertEqual(municipios[0].descricao, 'Belo Horizonte')
         self.assertEqual(municipios[1].codigo_ibge, 3118601)
         
-    def test_get_municipios_falha_412(self):
+    async def test_get_municipios_falha_412(self):
         # Nocking:
         mock_response = MagicMock()
         mock_response.status_code = 412
         requests.get = MagicMock(return_value=mock_response)
 
         # Chama a função:
-        municipios = misc.get_municipios(token_emissor='token', token_secret_emissor='token-secret', uf=UF)
+        municipios = await misc.get_municipios(token_emissor='token', token_secret_emissor='token-secret', uf=UF)
 
         # Checando resultado:
         self.assertIsInstance(municipios, List)
         self.assertEqual(len(municipios), 0)
 
-    def test_get_municipios_falha_outros(self):
+    async def test_get_municipios_falha_outros(self):
         # Nocking:
         mock_response = MagicMock()
         mock_response.status_code = 500
         requests.get = MagicMock(return_value=mock_response)
 
         # Chama a função:
-        municipios = misc.get_municipios(token_emissor='token', token_secret_emissor='token-secret', uf=UF)
+        municipios = await misc.get_municipios(token_emissor='token', token_secret_emissor='token-secret', uf=UF)
 
         # Checando resultado:
         assert municipios is None
 
 class TestGetCfops(unittest.TestCase):
-    def test_get_cfops_success(self):
+    async def test_get_cfops_success(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -90,7 +90,7 @@ class TestGetCfops(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando função:
-        cfops = misc.get_cfops(token_emissor='token', token_secret_emissor='token-secret',)
+        cfops = await misc.get_cfops(token_emissor='token', token_secret_emissor='token-secret',)
         
         # Checando resultados:
         self.assertEqual(len(cfops), 2)
@@ -101,26 +101,26 @@ class TestGetCfops(unittest.TestCase):
         self.assertEqual(cfops[1].codigo, '5929')
         self.assertEqual(cfops[1].descricao, 'Outra saída de mercadoria ou prestação de serviço não especificado')
 
-    def test_get_cfops_falha_412(self):
+    async def test_get_cfops_falha_412(self):
         # Mocking
         mock_response = MagicMock()
         mock_response.status_code = 412
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando Função:
-        cfops = misc.get_cfops(token_emissor='token', token_secret_emissor='token-secret',)
+        cfops = await misc.get_cfops(token_emissor='token', token_secret_emissor='token-secret',)
         
         # Checando resultados:
         self.assertEqual(len(cfops), 0)
         
-    def test_get_cfops_falha_outros(self):
+    async def test_get_cfops_falha_outros(self):
         # Nocking:
         mock_response = MagicMock()
         mock_response.status_code = 500
         requests.get = MagicMock(return_value=mock_response)
 
         # Chama a função:
-        municipios = misc.get_cfops(token_emissor='token', token_secret_emissor='token-secret',)
+        municipios = await misc.get_cfops(token_emissor='token', token_secret_emissor='token-secret',)
 
         # Checando resultado:
         assert municipios is None
