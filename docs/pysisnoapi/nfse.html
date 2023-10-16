@@ -147,7 +147,7 @@ class ObjetoEmissaoNFSe(BaseClass):
     construcao_civil: Optional[&#39;ConstrucaoCivil&#39;] = None
 
 @dataclass
-class NotaFiscalServico:
+class NotaFiscalServico(BaseClass):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     
     id                   : Optional[int]        = None
@@ -169,6 +169,9 @@ class NotaFiscalServico:
     municipio_prestacao  : Optional[Municipio]  = None
     ambiente             : Optional[str]        = None
     json_objeto_nfse     : Optional[str]        = None  # TODO: Não consta na documentação da API
+    xml                  : Optional[str]        = None  # TODO: Não consta na documentação da API
+    
+    numer_nota           : Optional[str]        = None  # TODO: EXCLUIR! É um typo de &#34;numero_nota&#34;, adicionei hoje (03/07/2023) apenas para o package não parar de funcionar.
     
     @classmethod
     def from_json(cls, **kwargs):
@@ -183,6 +186,10 @@ class NotaFiscalServico:
         
         return cls(empresa=empresa, uf_prestacao=uf, municipio_prestacao=municipio, **kwargs)
 
+    def to_json(self, *args, **kwargs):
+        json_str = jsonpickle.encode(self.as_filtered_dict(), unpicklable=False)
+        return json_str
+    
 @dataclass
 class PaginaNotasServico:
     total           : Optional[str]                       = None
@@ -268,10 +275,11 @@ def buscar_notas(token_emissor: str,
                  ambiente:str=None, 
                  status:str=None, 
                  texto:str=None, 
-                 pagina:str=None, 
-                 qtd_por_pagina:str=None, 
+                 pagina:int=None, 
+                 qtd_por_pagina:int=None, 
                  ordencao:str=None, 
-                 tipo_ordenacao:str=None, *args, **kwargs) -&gt; List[NotaFiscalServico]:
+                 tipo_ordenacao:str=None,
+                 *args, **kwargs) -&gt; List[NotaFiscalServico]:
     &#39;&#39;&#39;Recupera as notas fiscais de serviço.
 
     Args:
@@ -327,46 +335,49 @@ def buscar_notas(token_emissor: str,
     headers[&#39;token-emissor&#39;]        = token_emissor
     headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
     
+    params = {}
     if cnpjEmpresa:
-        headers[&#39;cnpjEmpresa&#39;] = cnpjEmpresa
+        params[&#39;cnpjEmpresa&#39;] = cnpjEmpresa
     if data_inicio:
-        headers[&#39;dataInicio&#39;] = data_inicio.strftime(&#39;%d/%m/%Y %H:%M:%S&#39;)
+        params[&#39;dataInicio&#39;] = data_inicio.strftime(&#39;%d/%m/%Y %H:%M:%S&#39;)
     if data_fim:
-        headers[&#39;dataFim&#39;] = data_fim.strftime(&#39;%d/%m/%Y %H:%M:%S&#39;)
+        params[&#39;dataFim&#39;] = data_fim.strftime(&#39;%d/%m/%Y %H:%M:%S&#39;)
     if ambiente:
         if ambiente not in AMBIENTES:
             raise ValueError(f&#39;Ambiente {ambiente} inválido.&#39;)
-        headers[&#39;ambiente&#39;] = ambiente      
+        params[&#39;ambiente&#39;] = ambiente      
     if status:
         if status not in STATUS:
             raise ValueError(f&#39;Status {status} inválido.&#39;)
-        headers[&#39;status&#39;] = status
+        params[&#39;status&#39;] = status
     if texto:
-        headers[&#39;textoBusca&#39;] = texto
+        params[&#39;textoBusca&#39;] = texto
     if pagina:
-        headers[&#39;pagina&#39;] = pagina                  # TODO: Na documentação diz que deve ser inteiro, mas &#34;Header part (1) from (&#39;pagina&#39;, 1) must be of type str or bytes, not &lt;class &#39;int&#39;&gt;&#34;
+        params[&#39;pagina&#39;] = str(pagina)
     if qtd_por_pagina:
-        headers[&#39;qtdPorPagina&#39;] = qtd_por_pagina    # TODO: Na documentação diz que deve ser inteiro, mas &#34;Header part (10) from (&#39;qtdPorPagina&#39;, 10) must be of type str or bytes, not &lt;class &#39;int&#39;&gt;&#34;
+        params[&#39;qtdPorPagina&#39;] = str(qtd_por_pagina)
     if ordencao:
-        headers[&#39;ordenacao&#39;] = ordencao
+        params[&#39;ordenacao&#39;] = ordencao
     if tipo_ordenacao:
-        headers[&#39;tipoOrdenacao&#39;] = tipo_ordenacao
+        params[&#39;tipoOrdenacao&#39;] = tipo_ordenacao
 
     url = f&#39;{BASE_URL}/nfse&#39;
-    response = requests.get(url, headers=headers)
+    
+    response  = requests.get(url, headers=headers, params=params)
 
     match (response.status_code):
         case 200:
-            json_data = response.json().get(&#39;dados&#39;)
-            nfses = [NotaFiscalServico.from_json(**d) for d in json_data[&#39;itens&#39;]]
-            return nfses
-        case _:
-            return response.text
+            json_dados = response.json().get(&#39;dados&#39;)
+            nfses      = [NotaFiscalServico.from_json(**d) for d in json_dados[&#39;itens&#39;]]
+            return (response, nfses)
+    
+    return (response, None)
 
 def retransmitir(token_emissor: str, 
                  token_secret_emissor: str,
                  token_empresa:str, 
-                 token_secret_empresa:str, *args, **kwargs):
+                 token_secret_empresa:str, 
+                 *args, **kwargs):
     raise NotImplementedError
 
 def recuperar_dados(token_emissor: str, 
@@ -405,7 +416,8 @@ def recuperar_dados(token_emissor: str,
 def cancelar(token_emissor: str, 
              token_secret_emissor: str, 
              token_empresa:str,
-             token_secret_empresa:str, *args, **kwargs):
+             token_secret_empresa:str, 
+             *args, **kwargs):
     raise NotImplementedError
 
 # =====================================================================</code></pre>
@@ -419,7 +431,7 @@ def cancelar(token_emissor: str,
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="pysisnoapi.nfse.buscar_notas"><code class="name flex">
-<span>def <span class="ident">buscar_notas</span></span>(<span>token_emissor: str, token_secret_emissor: str, cnpjEmpresa: str = None, data_inicio: datetime.datetime = None, data_fim: datetime.datetime = None, ambiente: str = None, status: str = None, texto: str = None, pagina: str = None, qtd_por_pagina: str = None, ordencao: str = None, tipo_ordenacao: str = None, *args, **kwargs) ‑> List[<a title="pysisnoapi.nfse.NotaFiscalServico" href="#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a>]</span>
+<span>def <span class="ident">buscar_notas</span></span>(<span>token_emissor: str, token_secret_emissor: str, cnpjEmpresa: str = None, data_inicio: datetime.datetime = None, data_fim: datetime.datetime = None, ambiente: str = None, status: str = None, texto: str = None, pagina: int = None, qtd_por_pagina: int = None, ordencao: str = None, tipo_ordenacao: str = None, *args, **kwargs) ‑> List[<a title="pysisnoapi.nfse.NotaFiscalServico" href="#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Recupera as notas fiscais de serviço.</p>
@@ -481,10 +493,11 @@ def cancelar(token_emissor: str,
                  ambiente:str=None, 
                  status:str=None, 
                  texto:str=None, 
-                 pagina:str=None, 
-                 qtd_por_pagina:str=None, 
+                 pagina:int=None, 
+                 qtd_por_pagina:int=None, 
                  ordencao:str=None, 
-                 tipo_ordenacao:str=None, *args, **kwargs) -&gt; List[NotaFiscalServico]:
+                 tipo_ordenacao:str=None,
+                 *args, **kwargs) -&gt; List[NotaFiscalServico]:
     &#39;&#39;&#39;Recupera as notas fiscais de serviço.
 
     Args:
@@ -540,41 +553,43 @@ def cancelar(token_emissor: str,
     headers[&#39;token-emissor&#39;]        = token_emissor
     headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
     
+    params = {}
     if cnpjEmpresa:
-        headers[&#39;cnpjEmpresa&#39;] = cnpjEmpresa
+        params[&#39;cnpjEmpresa&#39;] = cnpjEmpresa
     if data_inicio:
-        headers[&#39;dataInicio&#39;] = data_inicio.strftime(&#39;%d/%m/%Y %H:%M:%S&#39;)
+        params[&#39;dataInicio&#39;] = data_inicio.strftime(&#39;%d/%m/%Y %H:%M:%S&#39;)
     if data_fim:
-        headers[&#39;dataFim&#39;] = data_fim.strftime(&#39;%d/%m/%Y %H:%M:%S&#39;)
+        params[&#39;dataFim&#39;] = data_fim.strftime(&#39;%d/%m/%Y %H:%M:%S&#39;)
     if ambiente:
         if ambiente not in AMBIENTES:
             raise ValueError(f&#39;Ambiente {ambiente} inválido.&#39;)
-        headers[&#39;ambiente&#39;] = ambiente      
+        params[&#39;ambiente&#39;] = ambiente      
     if status:
         if status not in STATUS:
             raise ValueError(f&#39;Status {status} inválido.&#39;)
-        headers[&#39;status&#39;] = status
+        params[&#39;status&#39;] = status
     if texto:
-        headers[&#39;textoBusca&#39;] = texto
+        params[&#39;textoBusca&#39;] = texto
     if pagina:
-        headers[&#39;pagina&#39;] = pagina                  # TODO: Na documentação diz que deve ser inteiro, mas &#34;Header part (1) from (&#39;pagina&#39;, 1) must be of type str or bytes, not &lt;class &#39;int&#39;&gt;&#34;
+        params[&#39;pagina&#39;] = str(pagina)
     if qtd_por_pagina:
-        headers[&#39;qtdPorPagina&#39;] = qtd_por_pagina    # TODO: Na documentação diz que deve ser inteiro, mas &#34;Header part (10) from (&#39;qtdPorPagina&#39;, 10) must be of type str or bytes, not &lt;class &#39;int&#39;&gt;&#34;
+        params[&#39;qtdPorPagina&#39;] = str(qtd_por_pagina)
     if ordencao:
-        headers[&#39;ordenacao&#39;] = ordencao
+        params[&#39;ordenacao&#39;] = ordencao
     if tipo_ordenacao:
-        headers[&#39;tipoOrdenacao&#39;] = tipo_ordenacao
+        params[&#39;tipoOrdenacao&#39;] = tipo_ordenacao
 
     url = f&#39;{BASE_URL}/nfse&#39;
-    response = requests.get(url, headers=headers)
+    
+    response  = requests.get(url, headers=headers, params=params)
 
     match (response.status_code):
         case 200:
-            json_data = response.json().get(&#39;dados&#39;)
-            nfses = [NotaFiscalServico.from_json(**d) for d in json_data[&#39;itens&#39;]]
-            return nfses
-        case _:
-            return response.text</code></pre>
+            json_dados = response.json().get(&#39;dados&#39;)
+            nfses      = [NotaFiscalServico.from_json(**d) for d in json_dados[&#39;itens&#39;]]
+            return (response, nfses)
+    
+    return (response, None)</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfse.cancelar"><code class="name flex">
@@ -589,7 +604,8 @@ def cancelar(token_emissor: str,
 <pre><code class="python">def cancelar(token_emissor: str, 
              token_secret_emissor: str, 
              token_empresa:str,
-             token_secret_empresa:str, *args, **kwargs):
+             token_secret_empresa:str, 
+             *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
@@ -709,7 +725,8 @@ def cancelar(token_emissor: str,
 <pre><code class="python">def retransmitir(token_emissor: str, 
                  token_secret_emissor: str,
                  token_empresa:str, 
-                 token_secret_empresa:str, *args, **kwargs):
+                 token_secret_empresa:str, 
+                 *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
@@ -884,16 +901,16 @@ class Issqn:
 </dd>
 <dt id="pysisnoapi.nfse.NotaFiscalServico"><code class="flex name class">
 <span>class <span class="ident">NotaFiscalServico</span></span>
-<span>(</span><span>id: Optional[int] = None, empresa: Optional[<a title="pysisnoapi.Empresa" href="index.html#pysisnoapi.Empresa">Empresa</a>] = None, uuid: Optional[str] = None, modelo: Optional[str] = None, status: Optional[str] = None, motivo: Optional[str] = None, numero_nota: Optional[str] = None, codigo_verificacao: Optional[str] = None, protocolo: Optional[str] = None, nome_destinatario: Optional[str] = None, uf_destinatario: Optional[str] = None, cpf_cnpj_destinatario: Optional[str] = None, valor_total: Optional[str] = None, data_emissao: Optional[str] = None, data_competencia: Optional[str] = None, uf_prestacao: Optional[<a title="pysisnoapi.Uf" href="index.html#pysisnoapi.Uf">Uf</a>] = None, municipio_prestacao: Optional[<a title="pysisnoapi.Municipio" href="index.html#pysisnoapi.Municipio">Municipio</a>] = None, ambiente: Optional[str] = None, json_objeto_nfse: Optional[str] = None)</span>
+<span>(</span><span>id: Optional[int] = None, empresa: Optional[<a title="pysisnoapi.Empresa" href="index.html#pysisnoapi.Empresa">Empresa</a>] = None, uuid: Optional[str] = None, modelo: Optional[str] = None, status: Optional[str] = None, motivo: Optional[str] = None, numero_nota: Optional[str] = None, codigo_verificacao: Optional[str] = None, protocolo: Optional[str] = None, nome_destinatario: Optional[str] = None, uf_destinatario: Optional[str] = None, cpf_cnpj_destinatario: Optional[str] = None, valor_total: Optional[str] = None, data_emissao: Optional[str] = None, data_competencia: Optional[str] = None, uf_prestacao: Optional[<a title="pysisnoapi.Uf" href="index.html#pysisnoapi.Uf">Uf</a>] = None, municipio_prestacao: Optional[<a title="pysisnoapi.Municipio" href="index.html#pysisnoapi.Municipio">Municipio</a>] = None, ambiente: Optional[str] = None, json_objeto_nfse: Optional[str] = None, xml: Optional[str] = None, numer_nota: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>NotaFiscalServico(id: Optional[int] = None, empresa: Optional[pysisnoapi.Empresa] = None, uuid: Optional[str] = None, modelo: Optional[str] = None, status: Optional[str] = None, motivo: Optional[str] = None, numero_nota: Optional[str] = None, codigo_verificacao: Optional[str] = None, protocolo: Optional[str] = None, nome_destinatario: Optional[str] = None, uf_destinatario: Optional[str] = None, cpf_cnpj_destinatario: Optional[str] = None, valor_total: Optional[str] = None, data_emissao: Optional[str] = None, data_competencia: Optional[str] = None, uf_prestacao: Optional[pysisnoapi.Uf] = None, municipio_prestacao: Optional[pysisnoapi.Municipio] = None, ambiente: Optional[str] = None, json_objeto_nfse: Optional[str] = None)</p></div>
+<div class="desc"><p>NotaFiscalServico(id: Optional[int] = None, empresa: Optional[pysisnoapi.Empresa] = None, uuid: Optional[str] = None, modelo: Optional[str] = None, status: Optional[str] = None, motivo: Optional[str] = None, numero_nota: Optional[str] = None, codigo_verificacao: Optional[str] = None, protocolo: Optional[str] = None, nome_destinatario: Optional[str] = None, uf_destinatario: Optional[str] = None, cpf_cnpj_destinatario: Optional[str] = None, valor_total: Optional[str] = None, data_emissao: Optional[str] = None, data_competencia: Optional[str] = None, uf_prestacao: Optional[pysisnoapi.Uf] = None, municipio_prestacao: Optional[pysisnoapi.Municipio] = None, ambiente: Optional[str] = None, json_objeto_nfse: Optional[str] = None, xml: Optional[str] = None, numer_nota: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass
-class NotaFiscalServico:
+class NotaFiscalServico(BaseClass):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     
     id                   : Optional[int]        = None
@@ -915,6 +932,9 @@ class NotaFiscalServico:
     municipio_prestacao  : Optional[Municipio]  = None
     ambiente             : Optional[str]        = None
     json_objeto_nfse     : Optional[str]        = None  # TODO: Não consta na documentação da API
+    xml                  : Optional[str]        = None  # TODO: Não consta na documentação da API
+    
+    numer_nota           : Optional[str]        = None  # TODO: EXCLUIR! É um typo de &#34;numero_nota&#34;, adicionei hoje (03/07/2023) apenas para o package não parar de funcionar.
     
     @classmethod
     def from_json(cls, **kwargs):
@@ -927,8 +947,16 @@ class NotaFiscalServico:
         municipio_dict = kwargs.pop(&#39;municipio_prestacao&#39;, {})
         municipio = Municipio.from_json(**municipio_dict)
         
-        return cls(empresa=empresa, uf_prestacao=uf, municipio_prestacao=municipio, **kwargs)</code></pre>
+        return cls(empresa=empresa, uf_prestacao=uf, municipio_prestacao=municipio, **kwargs)
+
+    def to_json(self, *args, **kwargs):
+        json_str = jsonpickle.encode(self.as_filtered_dict(), unpicklable=False)
+        return json_str</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pysisnoapi.BaseClass" href="index.html#pysisnoapi.BaseClass">BaseClass</a></li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.nfse.NotaFiscalServico.ambiente"><code class="name">var <span class="ident">ambiente</span> : Optional[str]</code></dt>
@@ -979,6 +1007,10 @@ class NotaFiscalServico:
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.numer_nota"><code class="name">var <span class="ident">numer_nota</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="pysisnoapi.nfse.NotaFiscalServico.numero_nota"><code class="name">var <span class="ident">numero_nota</span> : Optional[str]</code></dt>
 <dd>
 <div class="desc"></div>
@@ -1004,6 +1036,10 @@ class NotaFiscalServico:
 <div class="desc"></div>
 </dd>
 <dt id="pysisnoapi.nfse.NotaFiscalServico.valor_total"><code class="name">var <span class="ident">valor_total</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.xml"><code class="name">var <span class="ident">xml</span> : Optional[str]</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1034,6 +1070,31 @@ def from_json(cls, **kwargs):
 </details>
 </dd>
 </dl>
+<h3>Methods</h3>
+<dl>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.to_json"><code class="name flex">
+<span>def <span class="ident">to_json</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_json(self, *args, **kwargs):
+    json_str = jsonpickle.encode(self.as_filtered_dict(), unpicklable=False)
+    return json_str</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="pysisnoapi.BaseClass" href="index.html#pysisnoapi.BaseClass">BaseClass</a></b></code>:
+<ul class="hlist">
+<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="index.html#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="pysisnoapi.nfse.ObjetoEmissaoNFSe"><code class="flex name class">
 <span>class <span class="ident">ObjetoEmissaoNFSe</span></span>
@@ -1330,13 +1391,16 @@ class Servico:
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.motivo" href="#pysisnoapi.nfse.NotaFiscalServico.motivo">motivo</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.municipio_prestacao" href="#pysisnoapi.nfse.NotaFiscalServico.municipio_prestacao">municipio_prestacao</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.nome_destinatario" href="#pysisnoapi.nfse.NotaFiscalServico.nome_destinatario">nome_destinatario</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.numer_nota" href="#pysisnoapi.nfse.NotaFiscalServico.numer_nota">numer_nota</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.numero_nota" href="#pysisnoapi.nfse.NotaFiscalServico.numero_nota">numero_nota</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.protocolo" href="#pysisnoapi.nfse.NotaFiscalServico.protocolo">protocolo</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.status" href="#pysisnoapi.nfse.NotaFiscalServico.status">status</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.to_json" href="#pysisnoapi.nfse.NotaFiscalServico.to_json">to_json</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.uf_destinatario" href="#pysisnoapi.nfse.NotaFiscalServico.uf_destinatario">uf_destinatario</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.uf_prestacao" href="#pysisnoapi.nfse.NotaFiscalServico.uf_prestacao">uf_prestacao</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.uuid" href="#pysisnoapi.nfse.NotaFiscalServico.uuid">uuid</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.valor_total" href="#pysisnoapi.nfse.NotaFiscalServico.valor_total">valor_total</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.xml" href="#pysisnoapi.nfse.NotaFiscalServico.xml">xml</a></code></li>
 </ul>
 </li>
 <li>

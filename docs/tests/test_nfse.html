@@ -86,7 +86,7 @@ class NfseTestCase(unittest.TestCase):
             servico = servico,
         )
     
-    def test_buscar_notas(self):
+    async def test_buscar_notas(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -154,12 +154,46 @@ class NfseTestCase(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        nfses = nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
+        response, nfses = await nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
         
         # Checando resultado:
+        self.assertEquals(response.status_code, 200)
         self.assertGreaterEqual(len(nfses), 1)
         
-    def test_emitir_status_processando(self):
+    async def test_buscar_notas_servidor_fora_dor_ar(self):
+        # Mocking:
+        mock_response = MagicMock()
+        mock_response.status_code       = 502
+        mock_response.headers           = {
+            &#39;Server&#39;        : &#39;nginx/1.10.3 (Ubuntu)&#39;,
+            &#39;Date&#39;          : &#39;Wed, 12 Jul 2023 15:04:23 GMT&#39;,
+            &#39;Content-Type&#39;  : &#39;text/html&#39;,
+            &#39;Content-Length&#39;: &#39;182&#39;,
+            &#39;Connection&#39;    : &#39;keep-alive&#39;
+        }
+        mock_response._content          = b&#39;&lt;html&gt;\r\n&lt;head&gt;&lt;title&gt;502 Bad Gateway&lt;/title&gt;&lt;/head&gt;\r\n&lt;body bgcolor=&#34;white&#34;&gt;\r\n&lt;center&gt;&lt;h1&gt;502 Bad Gateway&lt;/h1&gt;&lt;/center&gt;\r\n&lt;hr&gt;&lt;center&gt;nginx/1.10.3 (Ubuntu)&lt;/center&gt;\r\n&lt;/body&gt;\r\n&lt;/html&gt;\r\n&#39;
+        mock_response._content_consumed = True
+        mock_response._next             = None
+        mock_response.encoding          = &#39;ISO-8859-1&#39;
+        mock_response.history           = []
+        mock_response.reason            = &#39;Bad Gateway&#39;
+        
+        requests.get = MagicMock(return_value=mock_response)
+        
+        # Chamando a Função:
+        response, nfses = await nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
+        
+        # Checando resultado:
+        self.assertEquals(response.status_code, 502)
+        self.assertEquals(response._content, b&#39;&lt;html&gt;\r\n&lt;head&gt;&lt;title&gt;502 Bad Gateway&lt;/title&gt;&lt;/head&gt;\r\n&lt;body bgcolor=&#34;white&#34;&gt;\r\n&lt;center&gt;&lt;h1&gt;502 Bad Gateway&lt;/h1&gt;&lt;/center&gt;\r\n&lt;hr&gt;&lt;center&gt;nginx/1.10.3 (Ubuntu)&lt;/center&gt;\r\n&lt;/body&gt;\r\n&lt;/html&gt;\r\n&#39;)
+        self.assertEquals(response._content_consumed, True)
+        self.assertEquals(response._next, None)
+        self.assertEquals(response.encoding, &#39;ISO-8859-1&#39;)
+        self.assertEquals(len(response.history), 0)
+        self.assertEquals(response.reason, &#39;Bad Gateway&#39;)
+        self.assertEquals(nfses, None)
+        
+    async def test_emitir_status_processando(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -212,7 +246,7 @@ class NfseTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        resultado = nfse.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfse=self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+        resultado = await nfse.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfse=self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
         
         self.assertIn(&#39;id&#39;, resultado)
         self.assertIn(&#39;empresa&#39;, resultado)
@@ -439,7 +473,7 @@ not have a method with the specified name.</p></div>
             servico = servico,
         )
     
-    def test_buscar_notas(self):
+    async def test_buscar_notas(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -507,12 +541,46 @@ not have a method with the specified name.</p></div>
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        nfses = nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
+        response, nfses = await nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
         
         # Checando resultado:
+        self.assertEquals(response.status_code, 200)
         self.assertGreaterEqual(len(nfses), 1)
         
-    def test_emitir_status_processando(self):
+    async def test_buscar_notas_servidor_fora_dor_ar(self):
+        # Mocking:
+        mock_response = MagicMock()
+        mock_response.status_code       = 502
+        mock_response.headers           = {
+            &#39;Server&#39;        : &#39;nginx/1.10.3 (Ubuntu)&#39;,
+            &#39;Date&#39;          : &#39;Wed, 12 Jul 2023 15:04:23 GMT&#39;,
+            &#39;Content-Type&#39;  : &#39;text/html&#39;,
+            &#39;Content-Length&#39;: &#39;182&#39;,
+            &#39;Connection&#39;    : &#39;keep-alive&#39;
+        }
+        mock_response._content          = b&#39;&lt;html&gt;\r\n&lt;head&gt;&lt;title&gt;502 Bad Gateway&lt;/title&gt;&lt;/head&gt;\r\n&lt;body bgcolor=&#34;white&#34;&gt;\r\n&lt;center&gt;&lt;h1&gt;502 Bad Gateway&lt;/h1&gt;&lt;/center&gt;\r\n&lt;hr&gt;&lt;center&gt;nginx/1.10.3 (Ubuntu)&lt;/center&gt;\r\n&lt;/body&gt;\r\n&lt;/html&gt;\r\n&#39;
+        mock_response._content_consumed = True
+        mock_response._next             = None
+        mock_response.encoding          = &#39;ISO-8859-1&#39;
+        mock_response.history           = []
+        mock_response.reason            = &#39;Bad Gateway&#39;
+        
+        requests.get = MagicMock(return_value=mock_response)
+        
+        # Chamando a Função:
+        response, nfses = await nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
+        
+        # Checando resultado:
+        self.assertEquals(response.status_code, 502)
+        self.assertEquals(response._content, b&#39;&lt;html&gt;\r\n&lt;head&gt;&lt;title&gt;502 Bad Gateway&lt;/title&gt;&lt;/head&gt;\r\n&lt;body bgcolor=&#34;white&#34;&gt;\r\n&lt;center&gt;&lt;h1&gt;502 Bad Gateway&lt;/h1&gt;&lt;/center&gt;\r\n&lt;hr&gt;&lt;center&gt;nginx/1.10.3 (Ubuntu)&lt;/center&gt;\r\n&lt;/body&gt;\r\n&lt;/html&gt;\r\n&#39;)
+        self.assertEquals(response._content_consumed, True)
+        self.assertEquals(response._next, None)
+        self.assertEquals(response.encoding, &#39;ISO-8859-1&#39;)
+        self.assertEquals(len(response.history), 0)
+        self.assertEquals(response.reason, &#39;Bad Gateway&#39;)
+        self.assertEquals(nfses, None)
+        
+    async def test_emitir_status_processando(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -565,7 +633,7 @@ not have a method with the specified name.</p></div>
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        resultado = nfse.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfse=self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+        resultado = await nfse.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfse=self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
         
         self.assertIn(&#39;id&#39;, resultado)
         self.assertIn(&#39;empresa&#39;, resultado)
@@ -649,7 +717,7 @@ not have a method with the specified name.</p></div>
 </details>
 </dd>
 <dt id="tests.test_nfse.NfseTestCase.test_buscar_notas"><code class="name flex">
-<span>def <span class="ident">test_buscar_notas</span></span>(<span>self)</span>
+<span>async def <span class="ident">test_buscar_notas</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -657,7 +725,7 @@ not have a method with the specified name.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_buscar_notas(self):
+<pre><code class="python">async def test_buscar_notas(self):
     # Mocking:
     mock_response = MagicMock()
     mock_response.status_code = 200
@@ -725,14 +793,15 @@ not have a method with the specified name.</p></div>
     requests.get = MagicMock(return_value=mock_response)
     
     # Chamando a Função:
-    nfses = nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
+    response, nfses = await nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
     
     # Checando resultado:
+    self.assertEquals(response.status_code, 200)
     self.assertGreaterEqual(len(nfses), 1)</code></pre>
 </details>
 </dd>
-<dt id="tests.test_nfse.NfseTestCase.test_emitir_status_processando"><code class="name flex">
-<span>def <span class="ident">test_emitir_status_processando</span></span>(<span>self)</span>
+<dt id="tests.test_nfse.NfseTestCase.test_buscar_notas_servidor_fora_dor_ar"><code class="name flex">
+<span>async def <span class="ident">test_buscar_notas_servidor_fora_dor_ar</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -740,7 +809,50 @@ not have a method with the specified name.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def test_emitir_status_processando(self):
+<pre><code class="python">async def test_buscar_notas_servidor_fora_dor_ar(self):
+    # Mocking:
+    mock_response = MagicMock()
+    mock_response.status_code       = 502
+    mock_response.headers           = {
+        &#39;Server&#39;        : &#39;nginx/1.10.3 (Ubuntu)&#39;,
+        &#39;Date&#39;          : &#39;Wed, 12 Jul 2023 15:04:23 GMT&#39;,
+        &#39;Content-Type&#39;  : &#39;text/html&#39;,
+        &#39;Content-Length&#39;: &#39;182&#39;,
+        &#39;Connection&#39;    : &#39;keep-alive&#39;
+    }
+    mock_response._content          = b&#39;&lt;html&gt;\r\n&lt;head&gt;&lt;title&gt;502 Bad Gateway&lt;/title&gt;&lt;/head&gt;\r\n&lt;body bgcolor=&#34;white&#34;&gt;\r\n&lt;center&gt;&lt;h1&gt;502 Bad Gateway&lt;/h1&gt;&lt;/center&gt;\r\n&lt;hr&gt;&lt;center&gt;nginx/1.10.3 (Ubuntu)&lt;/center&gt;\r\n&lt;/body&gt;\r\n&lt;/html&gt;\r\n&#39;
+    mock_response._content_consumed = True
+    mock_response._next             = None
+    mock_response.encoding          = &#39;ISO-8859-1&#39;
+    mock_response.history           = []
+    mock_response.reason            = &#39;Bad Gateway&#39;
+    
+    requests.get = MagicMock(return_value=mock_response)
+    
+    # Chamando a Função:
+    response, nfses = await nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
+    
+    # Checando resultado:
+    self.assertEquals(response.status_code, 502)
+    self.assertEquals(response._content, b&#39;&lt;html&gt;\r\n&lt;head&gt;&lt;title&gt;502 Bad Gateway&lt;/title&gt;&lt;/head&gt;\r\n&lt;body bgcolor=&#34;white&#34;&gt;\r\n&lt;center&gt;&lt;h1&gt;502 Bad Gateway&lt;/h1&gt;&lt;/center&gt;\r\n&lt;hr&gt;&lt;center&gt;nginx/1.10.3 (Ubuntu)&lt;/center&gt;\r\n&lt;/body&gt;\r\n&lt;/html&gt;\r\n&#39;)
+    self.assertEquals(response._content_consumed, True)
+    self.assertEquals(response._next, None)
+    self.assertEquals(response.encoding, &#39;ISO-8859-1&#39;)
+    self.assertEquals(len(response.history), 0)
+    self.assertEquals(response.reason, &#39;Bad Gateway&#39;)
+    self.assertEquals(nfses, None)</code></pre>
+</details>
+</dd>
+<dt id="tests.test_nfse.NfseTestCase.test_emitir_status_processando"><code class="name flex">
+<span>async def <span class="ident">test_emitir_status_processando</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">async def test_emitir_status_processando(self):
     # Mocking:
     mock_response = MagicMock()
     mock_response.status_code = 200
@@ -793,7 +905,7 @@ not have a method with the specified name.</p></div>
     requests.post = MagicMock(return_value=mock_response)
     
     # Chamando a Função:
-    resultado = nfse.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfse=self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
+    resultado = await nfse.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfse=self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
     
     self.assertIn(&#39;id&#39;, resultado)
     self.assertIn(&#39;empresa&#39;, resultado)
@@ -1085,6 +1197,7 @@ not have a method with the specified name.</p></div>
 <ul class="">
 <li><code><a title="tests.test_nfse.NfseTestCase.setUp" href="#tests.test_nfse.NfseTestCase.setUp">setUp</a></code></li>
 <li><code><a title="tests.test_nfse.NfseTestCase.test_buscar_notas" href="#tests.test_nfse.NfseTestCase.test_buscar_notas">test_buscar_notas</a></code></li>
+<li><code><a title="tests.test_nfse.NfseTestCase.test_buscar_notas_servidor_fora_dor_ar" href="#tests.test_nfse.NfseTestCase.test_buscar_notas_servidor_fora_dor_ar">test_buscar_notas_servidor_fora_dor_ar</a></code></li>
 <li><code><a title="tests.test_nfse.NfseTestCase.test_emitir_status_processando" href="#tests.test_nfse.NfseTestCase.test_emitir_status_processando">test_emitir_status_processando</a></code></li>
 </ul>
 </li>
