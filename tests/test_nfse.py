@@ -58,7 +58,7 @@ class NfseTestCase(unittest.TestCase):
             servico = servico,
         )
     
-    def test_buscar_notas(self):
+    async def test_buscar_notas(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -126,13 +126,13 @@ class NfseTestCase(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        response, nfses = nfse.buscar_notas(token_emissor='token', token_secret_emissor='token-secret',)
+        response, nfses = await nfse.buscar_notas(token_emissor='token', token_secret_emissor='token-secret',)
         
         # Checando resultado:
         self.assertEquals(response.status_code, 200)
         self.assertGreaterEqual(len(nfses), 1)
         
-    def test_buscar_notas_servidor_fora_dor_ar(self):
+    async def test_buscar_notas_servidor_fora_dor_ar(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code       = 502
@@ -153,7 +153,7 @@ class NfseTestCase(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        response, nfses = nfse.buscar_notas(token_emissor='token', token_secret_emissor='token-secret',)
+        response, nfses = await nfse.buscar_notas(token_emissor='token', token_secret_emissor='token-secret',)
         
         # Checando resultado:
         self.assertEquals(response.status_code, 502)
@@ -165,7 +165,7 @@ class NfseTestCase(unittest.TestCase):
         self.assertEquals(response.reason, 'Bad Gateway')
         self.assertEquals(nfses, None)
         
-    def test_emitir_status_processando(self):
+    async def test_emitir_status_processando(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -218,7 +218,7 @@ class NfseTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        resultado = nfse.emitir(token_emissor='token', token_secret_emissor='token-secret', objetoNfse=self.objeto, token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
+        resultado = await nfse.emitir(token_emissor='token', token_secret_emissor='token-secret', objetoNfse=self.objeto, token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
         
         self.assertIn('id', resultado)
         self.assertIn('empresa', resultado)

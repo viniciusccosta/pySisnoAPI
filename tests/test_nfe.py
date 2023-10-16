@@ -100,7 +100,7 @@ class NfeTestCase(unittest.TestCase):
             data_emissao          = data,
         )
     
-    def test_listar(self):
+    async def test_listar(self):
         """Função responsável por testar a função nfe.listar() utilizando dados falsos. 
         Essa função realiza uma solicitação ao endpoint correspondente e retorna uma lista de objetos NotaFiscal.
         """
@@ -179,12 +179,12 @@ class NfeTestCase(unittest.TestCase):
         requests.get = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        nfes = nfe.listar(token_emissor='token', token_secret_emissor='token-secret',)
+        nfes = await nfe.listar(token_emissor='token', token_secret_emissor='token-secret',)
         
         # Checando resultado:
         self.assertGreaterEqual(len(nfes), 1)
         
-    def test_validar(self):
+    async def test_validar(self):
         """Função responsável por testar a função nfe.validar() utilizando dados falsos. 
         Essa função realiza uma solicitação ao endpoint correspondente para validar uma nota fiscal antes de emiti-la.
         """
@@ -200,13 +200,13 @@ class NfeTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        result = nfe.validar(token_emissor='token', token_secret_emissor='token-secret', objetoNfe=self.objeto, tipo_emissao='1', token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
+        result = await nfe.validar(token_emissor='token', token_secret_emissor='token-secret', objetoNfe=self.objeto, tipo_emissao='1', token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
         
         # Checando resultado:
         self.assertEqual('Sucesso', result['status'])
         self.assertEqual('Nota validada pela API', result['message'])
 
-    def test_emitir(self):
+    async def test_emitir(self):
         """Função responsável por testar a função nfe.emitir() utilizando dados falsos. 
         Essa função realiza uma solicitação ao endpoint correspondente para emitir uma nota fiscal.
         """
@@ -510,7 +510,7 @@ class NfeTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
         # Chamando a Função:
-        result = nfe.emitir(token_emissor='token', token_secret_emissor='token-secret', objetoNfe=self.objeto, tipo_emissao='1', token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
+        result = await nfe.emitir(token_emissor='token', token_secret_emissor='token-secret', objetoNfe=self.objeto, tipo_emissao='1', token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
         
         # Checando resultado:
         self.assertIn('status', result)
@@ -521,7 +521,7 @@ class NfeTestCase(unittest.TestCase):
         self.assertEqual(result['status'], 'Sucesso', )
         self.assertEqual(result['descricao'], 'Lote enviado com sucesso.')
         
-    def test_emitir_nota_ja_autorizada(self):
+    async def test_emitir_nota_ja_autorizada(self):
         """Função que simula a tentativa de emissão de uma nota fiscal já autorizada, utilizando dados falsos.
 
             O endpoint requer o número da nota fiscal como um dos parâmetro e
@@ -543,7 +543,7 @@ class NfeTestCase(unittest.TestCase):
         requests.post = MagicMock(return_value=mock_response)
         
          # Chamando a Função:
-        result = nfe.emitir(token_emissor='token', token_secret_emissor='token-secret', objetoNfe=self.objeto, tipo_emissao='1', token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
+        result = await nfe.emitir(token_emissor='token', token_secret_emissor='token-secret', objetoNfe=self.objeto, tipo_emissao='1', token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
         
         # Checando resultado:
         self.assertIn('status', result)

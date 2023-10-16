@@ -197,7 +197,7 @@ class Issqn:
             raise ValueError(f'Indicador de Incentivo Fiscal {self.indicador_incentivo_fiscal} inválido.')
     
 # =====================================================================
-def emitir(token_emissor: str, 
+async def emitir(token_emissor: str, 
            token_secret_emissor: str,
            token_empresa: str, 
            token_secret_empresa: str, 
@@ -228,7 +228,7 @@ def emitir(token_emissor: str,
     json_str = jsonpickle.encode(objetoNfse.as_filtered_dict(), unpicklable=False)
     
     url     = f'{BASE_URL}/nfse'
-    response = requests.post(url, headers=headers, json=json.loads(json_str))
+    response = await requests.post(url, headers=headers, json=json.loads(json_str))
     
     match (response.status_code):
         case 200:
@@ -236,7 +236,7 @@ def emitir(token_emissor: str,
         case _:
             return response.text
 
-def buscar_notas(token_emissor: str, 
+async def buscar_notas(token_emissor: str, 
                  token_secret_emissor: str,
                  cnpjEmpresa:str=None, 
                  data_inicio:datetime=None, 
@@ -332,7 +332,7 @@ def buscar_notas(token_emissor: str,
 
     url = f'{BASE_URL}/nfse'
     
-    response  = requests.get(url, headers=headers, params=params)
+    response  = await requests.get(url, headers=headers, params=params)
 
     match (response.status_code):
         case 200:
@@ -342,14 +342,14 @@ def buscar_notas(token_emissor: str,
     
     return (response, None)
 
-def retransmitir(token_emissor: str, 
+async def retransmitir(token_emissor: str, 
                  token_secret_emissor: str,
                  token_empresa:str, 
                  token_secret_empresa:str, 
                  *args, **kwargs):
     raise NotImplementedError
 
-def recuperar_dados(token_emissor: str, 
+async def recuperar_dados(token_emissor: str, 
                     token_secret_emissor: str,
                     token_empresa:str, 
                     token_secret_empresa:str, 
@@ -372,7 +372,7 @@ def recuperar_dados(token_emissor: str,
     headers['token-secret-empresa'] = token_secret_empresa
     
     url      = f'{BASE_URL}/nfse/{id_nfse}'
-    response = requests.get(url, headers=headers)
+    response = await requests.get(url, headers=headers)
 
     match (response.status_code):
         case 200:
@@ -382,7 +382,7 @@ def recuperar_dados(token_emissor: str,
         case _:
             return
 
-def cancelar(token_emissor: str, 
+async def cancelar(token_emissor: str, 
              token_secret_emissor: str, 
              token_empresa:str,
              token_secret_empresa:str, 
