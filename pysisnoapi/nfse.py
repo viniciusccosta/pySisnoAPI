@@ -242,7 +242,7 @@ async def emitir(token_emissor: str,
 
 async def buscar_notas(token_emissor: str, 
                  token_secret_emissor: str,
-                 cnpjEmpresa:str=None, 
+                 cnpjEmpresa:list=None, 
                  data_inicio:datetime=None, 
                  data_fim:datetime=None, 
                  ambiente:str=None, 
