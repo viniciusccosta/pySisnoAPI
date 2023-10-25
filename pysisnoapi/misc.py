@@ -11,7 +11,7 @@
 # ======================================================================================================================
 from . import *
 
-import requests
+import httpx
 from typing import List
 
 # ======================================================================================================================
@@ -38,7 +38,8 @@ async def get_municipios(token_emissor: str,
     headers['token-secret-emissor'] = token_secret_emissor
     
     url      = f'{BASE_URL}/unidades-federativas/{uf}/municipios'
-    response = await requests.get(url, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
 
     match (response.status_code):
         case 200:
@@ -68,7 +69,8 @@ async def get_cfops(token_emissor: str,
     headers['token-secret-emissor'] = token_secret_emissor
     
     url      = f'{BASE_URL}/cfops'
-    response = await requests.get(url, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
 
     match (response.status_code):
         case 200:
@@ -114,7 +116,8 @@ async def get_ibpts(token_emissor: str,
     headers['uf'] = uf
 
     url      = f'{BASE_URL}/ibpts'
-    response = await requests.get(url, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
 
     match (response.status_code):
         case 200:

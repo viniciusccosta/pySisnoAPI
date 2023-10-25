@@ -9,7 +9,7 @@
 from . import *
 
 import json
-import requests
+import httpx
 from datetime import datetime
 import jsonpickle
 
@@ -159,6 +159,12 @@ class NotaFiscalServico(BaseClass):
         json_str = jsonpickle.encode(self.as_filtered_dict(), unpicklable=False)
         return json_str
     
+    def __str__(self):
+        return f'NFSe {self.uuid}'
+    
+    def __repr__(self):
+        return f'NFSe {self.uuid}'
+
 @dataclass
 class PaginaNotasServico:
     total           : Optional[str]                       = None
@@ -202,15 +208,15 @@ async def emitir(token_emissor: str,
            token_empresa: str, 
            token_secret_empresa: str, 
            objetoNfse: ObjetoEmissaoNFSe, 
-           *args, **kwargs):
+           *args, **kwargs) -> (bool, dict):
     '''Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
     
     Args:
         obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe "ObjetoEmissaoNFSe" que contém todos os dados necessários
 
     Returns:
-        dict: Dicionário com os dados da requisição
-        str: Com o response.text em caso de falha da requisição
+        bool: Informando se teve sucesso ou não na emissão da Nota Fiscal
+        dict: Dados do JSON do response
     '''
 
     headers = HEADERS.copy()
@@ -228,13 +234,11 @@ async def emitir(token_emissor: str,
     json_str = jsonpickle.encode(objetoNfse.as_filtered_dict(), unpicklable=False)
     
     url     = f'{BASE_URL}/nfse'
-    response = await requests.post(url, headers=headers, json=json.loads(json_str))
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=json.loads(json_str))
     
-    match (response.status_code):
-        case 200:
-            return response.json()
-        case _:
-            return response.text
+    # Resultado:
+    return (response.status_code == 200, response.json())
 
 async def buscar_notas(token_emissor: str, 
                  token_secret_emissor: str,
@@ -248,7 +252,7 @@ async def buscar_notas(token_emissor: str,
                  qtd_por_pagina:int=None, 
                  ordencao:str=None, 
                  tipo_ordenacao:str=None,
-                 *args, **kwargs) -> List[NotaFiscalServico]:
+                 *args, **kwargs) -> (dict, List[NotaFiscalServico]):
     '''Recupera as notas fiscais de serviço.
 
     Args:
@@ -332,7 +336,8 @@ async def buscar_notas(token_emissor: str,
 
     url = f'{BASE_URL}/nfse'
     
-    response  = await requests.get(url, headers=headers, params=params)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers, params=params)
 
     match (response.status_code):
         case 200:
@@ -372,7 +377,8 @@ async def recuperar_dados(token_emissor: str,
     headers['token-secret-empresa'] = token_secret_empresa
     
     url      = f'{BASE_URL}/nfse/{id_nfse}'
-    response = await requests.get(url, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
 
     match (response.status_code):
         case 200:

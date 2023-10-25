@@ -8,7 +8,7 @@
 # =====================================================================
 from . import *
 
-import requests
+import httpx
 import json
 import jsonpickle
 
@@ -609,7 +609,8 @@ async def emitir(token_emissor: str,
     json_str = jsonpickle.encode(objetoNfe.as_filtered_dict(), unpicklable=False)
     
     url = f'{BASE_URL}/nfe'
-    response = await requests.post(url, headers=headers, json=json.loads(json_str))
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=json.loads(json_str))
         
     match response.status_code:
         case 200:
@@ -670,7 +671,8 @@ async def validar(token_emissor: str,
     json_str = jsonpickle.encode(objetoNfe.as_filtered_dict(), unpicklable=False)
     
     url = f'{BASE_URL}/nfe/validacao-nota'
-    response = await requests.post(url, headers=headers, json=json.loads(json_str))
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=json.loads(json_str))
     
     match response.status_code:
         case 200:
@@ -708,7 +710,8 @@ async def listar(token_emissor: str,
         params['pagina'] = pagina
     
     url = f'{BASE_URL}/nfe/lista-notas'
-    response = await requests.get(url, params, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, params=params, headers=headers)
     
     match (response.status_code):
         case 200:
