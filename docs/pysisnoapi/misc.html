@@ -44,11 +44,11 @@ Este módulo faz parte de um pacote e depende completamente de outros módulos.<
 # ======================================================================================================================
 from . import *
 
-import requests
+import httpx
 from typing import List
 
 # ======================================================================================================================
-def get_municipios(token_emissor: str, 
+async def get_municipios(token_emissor: str, 
                    token_secret_emissor: str, 
                    uf: str, 
                    *args, **kwargs) -&gt; List[Municipio]:
@@ -71,7 +71,8 @@ def get_municipios(token_emissor: str,
     headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
     
     url      = f&#39;{BASE_URL}/unidades-federativas/{uf}/municipios&#39;
-    response = requests.get(url, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
 
     match (response.status_code):
         case 200:
@@ -83,7 +84,7 @@ def get_municipios(token_emissor: str,
         case _:
             return
 
-def get_cfops(token_emissor: str, 
+async def get_cfops(token_emissor: str, 
               token_secret_emissor: str, 
               *args, **kwargs) -&gt; List[Cfop]:
     &#39;&#39;&#39;Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
@@ -101,7 +102,8 @@ def get_cfops(token_emissor: str,
     headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
     
     url      = f&#39;{BASE_URL}/cfops&#39;
-    response = requests.get(url, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
 
     match (response.status_code):
         case 200:
@@ -113,7 +115,7 @@ def get_cfops(token_emissor: str,
         case _:
             return
 
-def get_ibpts(token_emissor: str, 
+async def get_ibpts(token_emissor: str, 
               token_secret_emissor: str, 
               cod_desc: str, 
               uf: str, 
@@ -147,7 +149,8 @@ def get_ibpts(token_emissor: str,
     headers[&#39;uf&#39;] = uf
 
     url      = f&#39;{BASE_URL}/ibpts&#39;
-    response = requests.get(url, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
 
     match (response.status_code):
         case 200:
@@ -170,7 +173,7 @@ def get_ibpts(token_emissor: str,
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="pysisnoapi.misc.get_cfops"><code class="name flex">
-<span>def <span class="ident">get_cfops</span></span>(<span>token_emissor: str, token_secret_emissor: str, *args, **kwargs) ‑> List[<a title="pysisnoapi.Cfop" href="index.html#pysisnoapi.Cfop">Cfop</a>]</span>
+<span>async def <span class="ident">get_cfops</span></span>(<span>token_emissor: str, token_secret_emissor: str, *args, **kwargs) ‑> List[<a title="pysisnoapi.Cfop" href="index.html#pysisnoapi.Cfop">Cfop</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.</p>
@@ -184,7 +187,7 @@ def get_ibpts(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_cfops(token_emissor: str, 
+<pre><code class="python">async def get_cfops(token_emissor: str, 
               token_secret_emissor: str, 
               *args, **kwargs) -&gt; List[Cfop]:
     &#39;&#39;&#39;Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
@@ -202,7 +205,8 @@ def get_ibpts(token_emissor: str,
     headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
     
     url      = f&#39;{BASE_URL}/cfops&#39;
-    response = requests.get(url, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
 
     match (response.status_code):
         case 200:
@@ -216,7 +220,7 @@ def get_ibpts(token_emissor: str,
 </details>
 </dd>
 <dt id="pysisnoapi.misc.get_ibpts"><code class="name flex">
-<span>def <span class="ident">get_ibpts</span></span>(<span>token_emissor: str, token_secret_emissor: str, cod_desc: str, uf: str, *args, **kwargs) ‑> List[<a title="pysisnoapi.Ibpt" href="index.html#pysisnoapi.Ibpt">Ibpt</a>]</span>
+<span>async def <span class="ident">get_ibpts</span></span>(<span>token_emissor: str, token_secret_emissor: str, cod_desc: str, uf: str, *args, **kwargs) ‑> List[<a title="pysisnoapi.Ibpt" href="index.html#pysisnoapi.Ibpt">Ibpt</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Obtém os IBPTs através de uma requisição à API.</p>
@@ -242,7 +246,7 @@ def get_ibpts(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_ibpts(token_emissor: str, 
+<pre><code class="python">async def get_ibpts(token_emissor: str, 
               token_secret_emissor: str, 
               cod_desc: str, 
               uf: str, 
@@ -276,7 +280,8 @@ def get_ibpts(token_emissor: str,
     headers[&#39;uf&#39;] = uf
 
     url      = f&#39;{BASE_URL}/ibpts&#39;
-    response = requests.get(url, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
 
     match (response.status_code):
         case 200:
@@ -290,7 +295,7 @@ def get_ibpts(token_emissor: str,
 </details>
 </dd>
 <dt id="pysisnoapi.misc.get_municipios"><code class="name flex">
-<span>def <span class="ident">get_municipios</span></span>(<span>token_emissor: str, token_secret_emissor: str, uf: str, *args, **kwargs) ‑> List[<a title="pysisnoapi.Municipio" href="index.html#pysisnoapi.Municipio">Municipio</a>]</span>
+<span>async def <span class="ident">get_municipios</span></span>(<span>token_emissor: str, token_secret_emissor: str, uf: str, *args, **kwargs) ‑> List[<a title="pysisnoapi.Municipio" href="index.html#pysisnoapi.Municipio">Municipio</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Consulta os municípios de um determinado estado através de uma requisição à API.</p>
@@ -310,7 +315,7 @@ Ela retorna uma lista de objetos Municipio contendo informações sobre cada mun
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_municipios(token_emissor: str, 
+<pre><code class="python">async def get_municipios(token_emissor: str, 
                    token_secret_emissor: str, 
                    uf: str, 
                    *args, **kwargs) -&gt; List[Municipio]:
@@ -333,7 +338,8 @@ Ela retorna uma lista de objetos Municipio contendo informações sobre cada mun
     headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
     
     url      = f&#39;{BASE_URL}/unidades-federativas/{uf}/municipios&#39;
-    response = requests.get(url, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
 
     match (response.status_code):
         case 200:

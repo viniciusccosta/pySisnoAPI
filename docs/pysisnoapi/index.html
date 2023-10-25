@@ -619,6 +619,12 @@ class NotaFiscal:
             data_autorizacao=data_autorizacao, 
             **kwargs
         )
+        
+    def __str__(self):
+        return f&#39;NFe {self.id}&#39;
+    
+    def __repr__(self):
+        return f&#39;NFe {self.id}&#39;
 
 @dataclass
 class Observacao:
@@ -754,7 +760,7 @@ def validate_tokens(token:str, token_secret:str):
     
     return True
 
-def _dict_factory(x: List[Tuple]) -&gt; Optional[Dict]:
+def _dict_factory(x: List[Tuple]) -&gt; Dict | None:
     &#39;&#39;&#39;Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.
 
     Essa função é chamada automaticamente durante a conversão de uma classe para um dicionário usando `dataclasses.asdict`, 
@@ -2043,7 +2049,13 @@ class NotaFiscal:
             data_emissao=data_emissao, 
             data_autorizacao=data_autorizacao, 
             **kwargs
-        )</code></pre>
+        )
+        
+    def __str__(self):
+        return f&#39;NFe {self.id}&#39;
+    
+    def __repr__(self):
+        return f&#39;NFe {self.id}&#39;</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>

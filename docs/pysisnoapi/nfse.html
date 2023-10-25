@@ -40,7 +40,7 @@
 from . import *
 
 import json
-import requests
+import httpx
 from datetime import datetime
 import jsonpickle
 
@@ -190,6 +190,12 @@ class NotaFiscalServico(BaseClass):
         json_str = jsonpickle.encode(self.as_filtered_dict(), unpicklable=False)
         return json_str
     
+    def __str__(self):
+        return f&#39;NFSe {self.uuid}&#39;
+    
+    def __repr__(self):
+        return f&#39;NFSe {self.uuid}&#39;
+
 @dataclass
 class PaginaNotasServico:
     total           : Optional[str]                       = None
@@ -228,20 +234,20 @@ class Issqn:
             raise ValueError(f&#39;Indicador de Incentivo Fiscal {self.indicador_incentivo_fiscal} inválido.&#39;)
     
 # =====================================================================
-def emitir(token_emissor: str, 
+async def emitir(token_emissor: str, 
            token_secret_emissor: str,
            token_empresa: str, 
            token_secret_empresa: str, 
            objetoNfse: ObjetoEmissaoNFSe, 
-           *args, **kwargs):
+           *args, **kwargs) -&gt; (bool, dict):
     &#39;&#39;&#39;Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
     
     Args:
         obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe &#34;ObjetoEmissaoNFSe&#34; que contém todos os dados necessários
 
     Returns:
-        dict: Dicionário com os dados da requisição
-        str: Com o response.text em caso de falha da requisição
+        bool: Informando se teve sucesso ou não na emissão da Nota Fiscal
+        dict: Dados do JSON do response
     &#39;&#39;&#39;
 
     headers = HEADERS.copy()
@@ -259,17 +265,15 @@ def emitir(token_emissor: str,
     json_str = jsonpickle.encode(objetoNfse.as_filtered_dict(), unpicklable=False)
     
     url     = f&#39;{BASE_URL}/nfse&#39;
-    response = requests.post(url, headers=headers, json=json.loads(json_str))
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=json.loads(json_str))
     
-    match (response.status_code):
-        case 200:
-            return response.json()
-        case _:
-            return response.text
+    # Resultado:
+    return (response.status_code == 200, response.json())
 
-def buscar_notas(token_emissor: str, 
+async def buscar_notas(token_emissor: str, 
                  token_secret_emissor: str,
-                 cnpjEmpresa:str=None, 
+                 cnpjEmpresa:list=None, 
                  data_inicio:datetime=None, 
                  data_fim:datetime=None, 
                  ambiente:str=None, 
@@ -279,7 +283,7 @@ def buscar_notas(token_emissor: str,
                  qtd_por_pagina:int=None, 
                  ordencao:str=None, 
                  tipo_ordenacao:str=None,
-                 *args, **kwargs) -&gt; List[NotaFiscalServico]:
+                 *args, **kwargs) -&gt; (dict, List[NotaFiscalServico]):
     &#39;&#39;&#39;Recupera as notas fiscais de serviço.
 
     Args:
@@ -363,7 +367,8 @@ def buscar_notas(token_emissor: str,
 
     url = f&#39;{BASE_URL}/nfse&#39;
     
-    response  = requests.get(url, headers=headers, params=params)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers, params=params)
 
     match (response.status_code):
         case 200:
@@ -373,14 +378,14 @@ def buscar_notas(token_emissor: str,
     
     return (response, None)
 
-def retransmitir(token_emissor: str, 
+async def retransmitir(token_emissor: str, 
                  token_secret_emissor: str,
                  token_empresa:str, 
                  token_secret_empresa:str, 
                  *args, **kwargs):
     raise NotImplementedError
 
-def recuperar_dados(token_emissor: str, 
+async def recuperar_dados(token_emissor: str, 
                     token_secret_emissor: str,
                     token_empresa:str, 
                     token_secret_empresa:str, 
@@ -403,7 +408,8 @@ def recuperar_dados(token_emissor: str,
     headers[&#39;token-secret-empresa&#39;] = token_secret_empresa
     
     url      = f&#39;{BASE_URL}/nfse/{id_nfse}&#39;
-    response = requests.get(url, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
 
     match (response.status_code):
         case 200:
@@ -413,7 +419,7 @@ def recuperar_dados(token_emissor: str,
         case _:
             return
 
-def cancelar(token_emissor: str, 
+async def cancelar(token_emissor: str, 
              token_secret_emissor: str, 
              token_empresa:str,
              token_secret_empresa:str, 
@@ -431,7 +437,7 @@ def cancelar(token_emissor: str,
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="pysisnoapi.nfse.buscar_notas"><code class="name flex">
-<span>def <span class="ident">buscar_notas</span></span>(<span>token_emissor: str, token_secret_emissor: str, cnpjEmpresa: str = None, data_inicio: datetime.datetime = None, data_fim: datetime.datetime = None, ambiente: str = None, status: str = None, texto: str = None, pagina: int = None, qtd_por_pagina: int = None, ordencao: str = None, tipo_ordenacao: str = None, *args, **kwargs) ‑> List[<a title="pysisnoapi.nfse.NotaFiscalServico" href="#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a>]</span>
+<span>async def <span class="ident">buscar_notas</span></span>(<span>token_emissor: str, token_secret_emissor: str, cnpjEmpresa: list = None, data_inicio: datetime.datetime = None, data_fim: datetime.datetime = None, ambiente: str = None, status: str = None, texto: str = None, pagina: int = None, qtd_por_pagina: int = None, ordencao: str = None, tipo_ordenacao: str = None, *args, **kwargs) ‑> (<class 'dict'>, typing.List[<a title="pysisnoapi.nfse.NotaFiscalServico" href="#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a>])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Recupera as notas fiscais de serviço.</p>
@@ -485,9 +491,9 @@ def cancelar(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def buscar_notas(token_emissor: str, 
+<pre><code class="python">async def buscar_notas(token_emissor: str, 
                  token_secret_emissor: str,
-                 cnpjEmpresa:str=None, 
+                 cnpjEmpresa:list=None, 
                  data_inicio:datetime=None, 
                  data_fim:datetime=None, 
                  ambiente:str=None, 
@@ -497,7 +503,7 @@ def cancelar(token_emissor: str,
                  qtd_por_pagina:int=None, 
                  ordencao:str=None, 
                  tipo_ordenacao:str=None,
-                 *args, **kwargs) -&gt; List[NotaFiscalServico]:
+                 *args, **kwargs) -&gt; (dict, List[NotaFiscalServico]):
     &#39;&#39;&#39;Recupera as notas fiscais de serviço.
 
     Args:
@@ -581,7 +587,8 @@ def cancelar(token_emissor: str,
 
     url = f&#39;{BASE_URL}/nfse&#39;
     
-    response  = requests.get(url, headers=headers, params=params)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers, params=params)
 
     match (response.status_code):
         case 200:
@@ -593,7 +600,7 @@ def cancelar(token_emissor: str,
 </details>
 </dd>
 <dt id="pysisnoapi.nfse.cancelar"><code class="name flex">
-<span>def <span class="ident">cancelar</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
+<span>async def <span class="ident">cancelar</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -601,7 +608,7 @@ def cancelar(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def cancelar(token_emissor: str, 
+<pre><code class="python">async def cancelar(token_emissor: str, 
              token_secret_emissor: str, 
              token_empresa:str,
              token_secret_empresa:str, 
@@ -610,7 +617,7 @@ def cancelar(token_emissor: str,
 </details>
 </dd>
 <dt id="pysisnoapi.nfse.emitir"><code class="name flex">
-<span>def <span class="ident">emitir</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, objetoNfse: <a title="pysisnoapi.nfse.ObjetoEmissaoNFSe" href="#pysisnoapi.nfse.ObjetoEmissaoNFSe">ObjetoEmissaoNFSe</a>, *args, **kwargs)</span>
+<span>async def <span class="ident">emitir</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, objetoNfse: <a title="pysisnoapi.nfse.ObjetoEmissaoNFSe" href="#pysisnoapi.nfse.ObjetoEmissaoNFSe">ObjetoEmissaoNFSe</a>, *args, **kwargs) ‑> (<class 'bool'>, <class 'dict'>)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.</p>
@@ -621,29 +628,29 @@ def cancelar(token_emissor: str,
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
+<dt><code>bool</code></dt>
+<dd>Informando se teve sucesso ou não na emissão da Nota Fiscal</dd>
 <dt><code>dict</code></dt>
-<dd>Dicionário com os dados da requisição</dd>
-<dt><code>str</code></dt>
-<dd>Com o response.text em caso de falha da requisição</dd>
+<dd>Dados do JSON do response</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def emitir(token_emissor: str, 
+<pre><code class="python">async def emitir(token_emissor: str, 
            token_secret_emissor: str,
            token_empresa: str, 
            token_secret_empresa: str, 
            objetoNfse: ObjetoEmissaoNFSe, 
-           *args, **kwargs):
+           *args, **kwargs) -&gt; (bool, dict):
     &#39;&#39;&#39;Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
     
     Args:
         obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe &#34;ObjetoEmissaoNFSe&#34; que contém todos os dados necessários
 
     Returns:
-        dict: Dicionário com os dados da requisição
-        str: Com o response.text em caso de falha da requisição
+        bool: Informando se teve sucesso ou não na emissão da Nota Fiscal
+        dict: Dados do JSON do response
     &#39;&#39;&#39;
 
     headers = HEADERS.copy()
@@ -661,17 +668,15 @@ def cancelar(token_emissor: str,
     json_str = jsonpickle.encode(objetoNfse.as_filtered_dict(), unpicklable=False)
     
     url     = f&#39;{BASE_URL}/nfse&#39;
-    response = requests.post(url, headers=headers, json=json.loads(json_str))
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=json.loads(json_str))
     
-    match (response.status_code):
-        case 200:
-            return response.json()
-        case _:
-            return response.text</code></pre>
+    # Resultado:
+    return (response.status_code == 200, response.json())</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfse.recuperar_dados"><code class="name flex">
-<span>def <span class="ident">recuperar_dados</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, id_nfse: int, *args, **kwargs)</span>
+<span>async def <span class="ident">recuperar_dados</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, id_nfse: int, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -679,7 +684,7 @@ def cancelar(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def recuperar_dados(token_emissor: str, 
+<pre><code class="python">async def recuperar_dados(token_emissor: str, 
                     token_secret_emissor: str,
                     token_empresa:str, 
                     token_secret_empresa:str, 
@@ -702,7 +707,8 @@ def cancelar(token_emissor: str,
     headers[&#39;token-secret-empresa&#39;] = token_secret_empresa
     
     url      = f&#39;{BASE_URL}/nfse/{id_nfse}&#39;
-    response = requests.get(url, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
 
     match (response.status_code):
         case 200:
@@ -714,7 +720,7 @@ def cancelar(token_emissor: str,
 </details>
 </dd>
 <dt id="pysisnoapi.nfse.retransmitir"><code class="name flex">
-<span>def <span class="ident">retransmitir</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
+<span>async def <span class="ident">retransmitir</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -722,7 +728,7 @@ def cancelar(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def retransmitir(token_emissor: str, 
+<pre><code class="python">async def retransmitir(token_emissor: str, 
                  token_secret_emissor: str,
                  token_empresa:str, 
                  token_secret_empresa:str, 
@@ -951,7 +957,13 @@ class NotaFiscalServico(BaseClass):
 
     def to_json(self, *args, **kwargs):
         json_str = jsonpickle.encode(self.as_filtered_dict(), unpicklable=False)
-        return json_str</code></pre>
+        return json_str
+    
+    def __str__(self):
+        return f&#39;NFSe {self.uuid}&#39;
+    
+    def __repr__(self):
+        return f&#39;NFSe {self.uuid}&#39;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">

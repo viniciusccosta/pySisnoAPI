@@ -39,7 +39,7 @@
 # =====================================================================
 from . import *
 
-import requests
+import httpx
 import json
 import jsonpickle
 
@@ -601,7 +601,7 @@ class PaginaNotas:
     itens           : Optional[List[&#39;NotaFiscal&#39;]] = None
 
 # =====================================================================
-def emitir(token_emissor: str, 
+async def emitir(token_emissor: str, 
            token_secret_emissor: str,
            token_empresa: str, 
            token_secret_empresa: str,
@@ -640,7 +640,8 @@ def emitir(token_emissor: str,
     json_str = jsonpickle.encode(objetoNfe.as_filtered_dict(), unpicklable=False)
     
     url = f&#39;{BASE_URL}/nfe&#39;
-    response = requests.post(url, headers=headers, json=json.loads(json_str))
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=json.loads(json_str))
         
     match response.status_code:
         case 200:
@@ -650,21 +651,21 @@ def emitir(token_emissor: str,
         case _:
             return response.text
     
-def corrigir(token_emissor: str, 
+async def corrigir(token_emissor: str, 
              token_secret_emissor: str, 
              token_empresa:str, 
              token_secret_empresa:str, 
              *args, **kwargs):
     raise NotImplementedError
 
-def cancelar(token_emissor: str, 
+async def cancelar(token_emissor: str, 
              token_secret_emissor: str,
              token_empresa:str, 
              token_secret_empresa:str, 
              *args, **kwargs):
     raise NotImplementedError
 
-def validar(token_emissor: str, 
+async def validar(token_emissor: str, 
             token_secret_emissor: str,
             token_empresa:str, 
             token_secret_empresa:str, 
@@ -701,7 +702,8 @@ def validar(token_emissor: str,
     json_str = jsonpickle.encode(objetoNfe.as_filtered_dict(), unpicklable=False)
     
     url = f&#39;{BASE_URL}/nfe/validacao-nota&#39;
-    response = requests.post(url, headers=headers, json=json.loads(json_str))
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=json.loads(json_str))
     
     match response.status_code:
         case 200:
@@ -709,7 +711,7 @@ def validar(token_emissor: str,
         case _:
             return response.text
 
-def listar(token_emissor: str, 
+async def listar(token_emissor: str, 
            token_secret_emissor: str,
            qtd:str = None, 
            pagina:str = None, 
@@ -739,7 +741,8 @@ def listar(token_emissor: str,
         params[&#39;pagina&#39;] = pagina
     
     url = f&#39;{BASE_URL}/nfe/lista-notas&#39;
-    response = requests.get(url, params, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, params=params, headers=headers)
     
     match (response.status_code):
         case 200:
@@ -749,31 +752,31 @@ def listar(token_emissor: str,
         case _:
             return response.text
 
-def buscar(token_emissor: str, 
+async def buscar(token_emissor: str, 
            token_secret_emissor: str, 
            *args, **kwargs):
     raise NotImplementedError
 
-def get_nota(token_emissor: str, 
+async def get_nota(token_emissor: str, 
              token_secret_emissor: str, 
              *args, **kwargs):
     raise NotImplementedError
 
-def inutilizar_numeracao(token_emissor: str, 
+async def inutilizar_numeracao(token_emissor: str, 
                          token_secret_emissor: str, 
                          token_empresa:str, 
                          token_secret_empresa:str, 
                          *args, **kwargs):
     raise NotImplementedError
 
-def get_pre_visualizacao(token_emissor: str, 
+async def get_pre_visualizacao(token_emissor: str, 
                          token_secret_emissor: str,
                          token_empresa:str, 
                          token_secret_empresa:str, 
                          *args, **kwargs):
     raise NotImplementedError
 
-def get_danfe(token_emissor: str, 
+async def get_danfe(token_emissor: str, 
               token_secret_emissor: str, 
               token_empresa:str, 
               token_secret_empresa:str, 
@@ -791,7 +794,7 @@ def get_danfe(token_emissor: str,
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="pysisnoapi.nfe.buscar"><code class="name flex">
-<span>def <span class="ident">buscar</span></span>(<span>token_emissor: str, token_secret_emissor: str, *args, **kwargs)</span>
+<span>async def <span class="ident">buscar</span></span>(<span>token_emissor: str, token_secret_emissor: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -799,14 +802,14 @@ def get_danfe(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def buscar(token_emissor: str, 
+<pre><code class="python">async def buscar(token_emissor: str, 
            token_secret_emissor: str, 
            *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.cancelar"><code class="name flex">
-<span>def <span class="ident">cancelar</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
+<span>async def <span class="ident">cancelar</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -814,7 +817,7 @@ def get_danfe(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def cancelar(token_emissor: str, 
+<pre><code class="python">async def cancelar(token_emissor: str, 
              token_secret_emissor: str,
              token_empresa:str, 
              token_secret_empresa:str, 
@@ -823,7 +826,7 @@ def get_danfe(token_emissor: str,
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.corrigir"><code class="name flex">
-<span>def <span class="ident">corrigir</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
+<span>async def <span class="ident">corrigir</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -831,7 +834,7 @@ def get_danfe(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def corrigir(token_emissor: str, 
+<pre><code class="python">async def corrigir(token_emissor: str, 
              token_secret_emissor: str, 
              token_empresa:str, 
              token_secret_empresa:str, 
@@ -840,7 +843,7 @@ def get_danfe(token_emissor: str,
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.emitir"><code class="name flex">
-<span>def <span class="ident">emitir</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, objetoNfe: <a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a>, tipo_emissao: str, *args, **kwargs)</span>
+<span>async def <span class="ident">emitir</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, objetoNfe: <a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a>, tipo_emissao: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Endpoint utilizado para efetivamente emitir uma nota fiscal eletrônica.</p>
@@ -858,7 +861,7 @@ def get_danfe(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def emitir(token_emissor: str, 
+<pre><code class="python">async def emitir(token_emissor: str, 
            token_secret_emissor: str,
            token_empresa: str, 
            token_secret_empresa: str,
@@ -897,7 +900,8 @@ def get_danfe(token_emissor: str,
     json_str = jsonpickle.encode(objetoNfe.as_filtered_dict(), unpicklable=False)
     
     url = f&#39;{BASE_URL}/nfe&#39;
-    response = requests.post(url, headers=headers, json=json.loads(json_str))
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=json.loads(json_str))
         
     match response.status_code:
         case 200:
@@ -909,7 +913,7 @@ def get_danfe(token_emissor: str,
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.get_danfe"><code class="name flex">
-<span>def <span class="ident">get_danfe</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
+<span>async def <span class="ident">get_danfe</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -917,7 +921,7 @@ def get_danfe(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_danfe(token_emissor: str, 
+<pre><code class="python">async def get_danfe(token_emissor: str, 
               token_secret_emissor: str, 
               token_empresa:str, 
               token_secret_empresa:str, 
@@ -926,7 +930,7 @@ def get_danfe(token_emissor: str,
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.get_nota"><code class="name flex">
-<span>def <span class="ident">get_nota</span></span>(<span>token_emissor: str, token_secret_emissor: str, *args, **kwargs)</span>
+<span>async def <span class="ident">get_nota</span></span>(<span>token_emissor: str, token_secret_emissor: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -934,14 +938,14 @@ def get_danfe(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_nota(token_emissor: str, 
+<pre><code class="python">async def get_nota(token_emissor: str, 
              token_secret_emissor: str, 
              *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.get_pre_visualizacao"><code class="name flex">
-<span>def <span class="ident">get_pre_visualizacao</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
+<span>async def <span class="ident">get_pre_visualizacao</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -949,7 +953,7 @@ def get_danfe(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_pre_visualizacao(token_emissor: str, 
+<pre><code class="python">async def get_pre_visualizacao(token_emissor: str, 
                          token_secret_emissor: str,
                          token_empresa:str, 
                          token_secret_empresa:str, 
@@ -958,7 +962,7 @@ def get_danfe(token_emissor: str,
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.inutilizar_numeracao"><code class="name flex">
-<span>def <span class="ident">inutilizar_numeracao</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
+<span>async def <span class="ident">inutilizar_numeracao</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -966,7 +970,7 @@ def get_danfe(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def inutilizar_numeracao(token_emissor: str, 
+<pre><code class="python">async def inutilizar_numeracao(token_emissor: str, 
                          token_secret_emissor: str, 
                          token_empresa:str, 
                          token_secret_empresa:str, 
@@ -975,7 +979,7 @@ def get_danfe(token_emissor: str,
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.listar"><code class="name flex">
-<span>def <span class="ident">listar</span></span>(<span>token_emissor: str, token_secret_emissor: str, qtd: str = None, pagina: str = None, *args, **kwargs) ‑> List[<a title="pysisnoapi.NotaFiscal" href="index.html#pysisnoapi.NotaFiscal">NotaFiscal</a>]</span>
+<span>async def <span class="ident">listar</span></span>(<span>token_emissor: str, token_secret_emissor: str, qtd: str = None, pagina: str = None, *args, **kwargs) ‑> List[<a title="pysisnoapi.NotaFiscal" href="index.html#pysisnoapi.NotaFiscal">NotaFiscal</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Recupera as notas fiscais.</p>
@@ -996,7 +1000,7 @@ def get_danfe(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def listar(token_emissor: str, 
+<pre><code class="python">async def listar(token_emissor: str, 
            token_secret_emissor: str,
            qtd:str = None, 
            pagina:str = None, 
@@ -1026,7 +1030,8 @@ def get_danfe(token_emissor: str,
         params[&#39;pagina&#39;] = pagina
     
     url = f&#39;{BASE_URL}/nfe/lista-notas&#39;
-    response = requests.get(url, params, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, params=params, headers=headers)
     
     match (response.status_code):
         case 200:
@@ -1038,7 +1043,7 @@ def get_danfe(token_emissor: str,
 </details>
 </dd>
 <dt id="pysisnoapi.nfe.validar"><code class="name flex">
-<span>def <span class="ident">validar</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, objetoNfe: <a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a>, tipo_emissao: str, *args, **kwargs) ‑> str</span>
+<span>async def <span class="ident">validar</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, objetoNfe: <a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a>, tipo_emissao: str, *args, **kwargs) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Endpoint utilizado para validar a nota fiscal eletrônica antes de emitir.</p>
@@ -1056,7 +1061,7 @@ def get_danfe(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validar(token_emissor: str, 
+<pre><code class="python">async def validar(token_emissor: str, 
             token_secret_emissor: str,
             token_empresa:str, 
             token_secret_empresa:str, 
@@ -1093,7 +1098,8 @@ def get_danfe(token_emissor: str,
     json_str = jsonpickle.encode(objetoNfe.as_filtered_dict(), unpicklable=False)
     
     url = f&#39;{BASE_URL}/nfe/validacao-nota&#39;
-    response = requests.post(url, headers=headers, json=json.loads(json_str))
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=json.loads(json_str))
     
     match response.status_code:
         case 200:
