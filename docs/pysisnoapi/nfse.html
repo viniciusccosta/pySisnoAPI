@@ -109,8 +109,8 @@ class Servico:
     discriminacao             : str
     impostos                  : &#39;ImpostosServico&#39;
     
-    iss_retido                : Optional[str]         = &#39;2&#39;
-    responsavel_retencao_iss  : Optional[str]         = &#39;1&#39;
+    iss_retido                : Optional[str]         = None
+    responsavel_retencao_iss  : Optional[str]         = None
     
     intermediario             : Optional[&#39;Cliente&#39;]   = None
     deducoes                  : Optional[str]         = None
@@ -127,11 +127,11 @@ class Servico:
         self.validate_responsavel_retencao_iss()
     
     def validate_iss_retido(self, *args, **kwargs):
-        if self.iss_retido not in INDICADORES_ISS_RETIDO:
+        if self.iss_retido and self.iss_retido not in INDICADORES_ISS_RETIDO:
             raise ValueError(f&#39;Indicador de ISS retido {self.iss_retido} inválido.&#39;)
     
     def validate_responsavel_retencao_iss(self, *args, **kwargs):
-        if self.responsavel_retencao_iss not in RESPONSAVEIS_RETENCAO_ISS:
+        if self.responsavel_retencao_iss and self.responsavel_retencao_iss not in RESPONSAVEIS_RETENCAO_ISS:
             raise ValueError(f&#39;Responsável pela retenção do ISS {self.responsavel_retencao_iss} inválido.&#39;)
 
 @dataclass
@@ -239,15 +239,14 @@ async def emitir(token_emissor: str,
            token_empresa: str, 
            token_secret_empresa: str, 
            objetoNfse: ObjetoEmissaoNFSe, 
-           *args, **kwargs) -&gt; (bool, dict):
+           *args, **kwargs) -&gt; httpx.Response:
     &#39;&#39;&#39;Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
     
     Args:
         obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe &#34;ObjetoEmissaoNFSe&#34; que contém todos os dados necessários
 
     Returns:
-        bool: Informando se teve sucesso ou não na emissão da Nota Fiscal
-        dict: Dados do JSON do response
+        httpx.Response: Resposta do servidor
     &#39;&#39;&#39;
 
     headers = HEADERS.copy()
@@ -269,7 +268,8 @@ async def emitir(token_emissor: str,
         response = await client.post(url, headers=headers, json=json.loads(json_str))
     
     # Resultado:
-    return (response.status_code == 200, response.json())
+    # TODO: Retornar algo mais útil do que simplesmente o response...
+    return response
 
 async def buscar_notas(token_emissor: str, 
                  token_secret_emissor: str,
@@ -283,7 +283,7 @@ async def buscar_notas(token_emissor: str,
                  qtd_por_pagina:int=None, 
                  ordencao:str=None, 
                  tipo_ordenacao:str=None,
-                 *args, **kwargs) -&gt; (dict, List[NotaFiscalServico]):
+                 *args, **kwargs) -&gt; (httpx.Response, List[NotaFiscalServico]):
     &#39;&#39;&#39;Recupera as notas fiscais de serviço.
 
     Args:
@@ -325,6 +325,7 @@ async def buscar_notas(token_emissor: str,
             - asc  
     
     Returns:
+        httpx.Reponse: Resposta do servidor
         List[NotaFiscalServico]: Lista com todas as NFSe
     &#39;&#39;&#39;
     
@@ -390,7 +391,7 @@ async def recuperar_dados(token_emissor: str,
                     token_empresa:str, 
                     token_secret_empresa:str, 
                     id_nfse:int,
-                    *args, **kwargs):
+                    *args, **kwargs) -&gt; httpx.Response:
     # TODO: Cada NFSe possui um ID mesmo que de empresas diferentes ?
     # TODO: Essa função deveria estar atrelada as chaves de API, uma vez que será através delas que emitiremos as notas por uma empresa ou por outra ?
 
@@ -410,14 +411,9 @@ async def recuperar_dados(token_emissor: str,
     url      = f&#39;{BASE_URL}/nfse/{id_nfse}&#39;
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
-
-    match (response.status_code):
-        case 200:
-            return response.json().get(&#39;dados&#39;)
-        case 412:
-            return []
-        case _:
-            return
+    
+    # TODO: Retornar algo mais útil como uma instância de NotaFiscal por exemplo ?!
+    return response
 
 async def cancelar(token_emissor: str, 
              token_secret_emissor: str, 
@@ -437,7 +433,7 @@ async def cancelar(token_emissor: str,
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="pysisnoapi.nfse.buscar_notas"><code class="name flex">
-<span>async def <span class="ident">buscar_notas</span></span>(<span>token_emissor: str, token_secret_emissor: str, cnpjEmpresa: list = None, data_inicio: datetime.datetime = None, data_fim: datetime.datetime = None, ambiente: str = None, status: str = None, texto: str = None, pagina: int = None, qtd_por_pagina: int = None, ordencao: str = None, tipo_ordenacao: str = None, *args, **kwargs) ‑> (<class 'dict'>, typing.List[<a title="pysisnoapi.nfse.NotaFiscalServico" href="#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a>])</span>
+<span>async def <span class="ident">buscar_notas</span></span>(<span>token_emissor: str, token_secret_emissor: str, cnpjEmpresa: list = None, data_inicio: datetime.datetime = None, data_fim: datetime.datetime = None, ambiente: str = None, status: str = None, texto: str = None, pagina: int = None, qtd_por_pagina: int = None, ordencao: str = None, tipo_ordenacao: str = None, *args, **kwargs) ‑> (<class 'httpx.Response'>, typing.List[<a title="pysisnoapi.nfse.NotaFiscalServico" href="#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a>])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Recupera as notas fiscais de serviço.</p>
@@ -484,6 +480,8 @@ async def cancelar(token_emissor: str,
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
+<dt><code>httpx.Reponse</code></dt>
+<dd>Resposta do servidor</dd>
 <dt><code>List[<a title="pysisnoapi.nfse.NotaFiscalServico" href="#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a>]</code></dt>
 <dd>Lista com todas as NFSe</dd>
 </dl></div>
@@ -503,7 +501,7 @@ async def cancelar(token_emissor: str,
                  qtd_por_pagina:int=None, 
                  ordencao:str=None, 
                  tipo_ordenacao:str=None,
-                 *args, **kwargs) -&gt; (dict, List[NotaFiscalServico]):
+                 *args, **kwargs) -&gt; (httpx.Response, List[NotaFiscalServico]):
     &#39;&#39;&#39;Recupera as notas fiscais de serviço.
 
     Args:
@@ -545,6 +543,7 @@ async def cancelar(token_emissor: str,
             - asc  
     
     Returns:
+        httpx.Reponse: Resposta do servidor
         List[NotaFiscalServico]: Lista com todas as NFSe
     &#39;&#39;&#39;
     
@@ -617,7 +616,7 @@ async def cancelar(token_emissor: str,
 </details>
 </dd>
 <dt id="pysisnoapi.nfse.emitir"><code class="name flex">
-<span>async def <span class="ident">emitir</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, objetoNfse: <a title="pysisnoapi.nfse.ObjetoEmissaoNFSe" href="#pysisnoapi.nfse.ObjetoEmissaoNFSe">ObjetoEmissaoNFSe</a>, *args, **kwargs) ‑> (<class 'bool'>, <class 'dict'>)</span>
+<span>async def <span class="ident">emitir</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, objetoNfse: <a title="pysisnoapi.nfse.ObjetoEmissaoNFSe" href="#pysisnoapi.nfse.ObjetoEmissaoNFSe">ObjetoEmissaoNFSe</a>, *args, **kwargs) ‑> httpx.Response</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.</p>
@@ -628,10 +627,8 @@ async def cancelar(token_emissor: str,
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code>bool</code></dt>
-<dd>Informando se teve sucesso ou não na emissão da Nota Fiscal</dd>
-<dt><code>dict</code></dt>
-<dd>Dados do JSON do response</dd>
+<dt><code>httpx.Response</code></dt>
+<dd>Resposta do servidor</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -642,15 +639,14 @@ async def cancelar(token_emissor: str,
            token_empresa: str, 
            token_secret_empresa: str, 
            objetoNfse: ObjetoEmissaoNFSe, 
-           *args, **kwargs) -&gt; (bool, dict):
+           *args, **kwargs) -&gt; httpx.Response:
     &#39;&#39;&#39;Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
     
     Args:
         obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe &#34;ObjetoEmissaoNFSe&#34; que contém todos os dados necessários
 
     Returns:
-        bool: Informando se teve sucesso ou não na emissão da Nota Fiscal
-        dict: Dados do JSON do response
+        httpx.Response: Resposta do servidor
     &#39;&#39;&#39;
 
     headers = HEADERS.copy()
@@ -672,11 +668,12 @@ async def cancelar(token_emissor: str,
         response = await client.post(url, headers=headers, json=json.loads(json_str))
     
     # Resultado:
-    return (response.status_code == 200, response.json())</code></pre>
+    # TODO: Retornar algo mais útil do que simplesmente o response...
+    return response</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfse.recuperar_dados"><code class="name flex">
-<span>async def <span class="ident">recuperar_dados</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, id_nfse: int, *args, **kwargs)</span>
+<span>async def <span class="ident">recuperar_dados</span></span>(<span>token_emissor: str, token_secret_emissor: str, token_empresa: str, token_secret_empresa: str, id_nfse: int, *args, **kwargs) ‑> httpx.Response</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -689,7 +686,7 @@ async def cancelar(token_emissor: str,
                     token_empresa:str, 
                     token_secret_empresa:str, 
                     id_nfse:int,
-                    *args, **kwargs):
+                    *args, **kwargs) -&gt; httpx.Response:
     # TODO: Cada NFSe possui um ID mesmo que de empresas diferentes ?
     # TODO: Essa função deveria estar atrelada as chaves de API, uma vez que será através delas que emitiremos as notas por uma empresa ou por outra ?
 
@@ -709,14 +706,9 @@ async def cancelar(token_emissor: str,
     url      = f&#39;{BASE_URL}/nfse/{id_nfse}&#39;
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
-
-    match (response.status_code):
-        case 200:
-            return response.json().get(&#39;dados&#39;)
-        case 412:
-            return []
-        case _:
-            return</code></pre>
+    
+    # TODO: Retornar algo mais útil como uma instância de NotaFiscal por exemplo ?!
+    return response</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfse.retransmitir"><code class="name flex">
@@ -1192,7 +1184,7 @@ class PaginaNotasServico:
 </dd>
 <dt id="pysisnoapi.nfse.Servico"><code class="flex name class">
 <span>class <span class="ident">Servico</span></span>
-<span>(</span><span>valor_servicos: str, discriminacao: str, impostos: <a title="pysisnoapi.nfse.ImpostosServico" href="#pysisnoapi.nfse.ImpostosServico">ImpostosServico</a>, iss_retido: Optional[str] = '2', responsavel_retencao_iss: Optional[str] = '1', intermediario: Optional[ForwardRef('Cliente')] = None, deducoes: Optional[str] = None, desconto_incondicionado: Optional[str] = None, desconto_condicionado: Optional[str] = None, outras_retencoes: Optional[str] = None, informacoes_complementares: Optional[str] = None, data_competencia: Optional[str] = None, uf_local_prestacao: Optional[ForwardRef('Uf')] = None, municipio_local_prestacao: Optional[ForwardRef('Municipio')] = None)</span>
+<span>(</span><span>valor_servicos: str, discriminacao: str, impostos: <a title="pysisnoapi.nfse.ImpostosServico" href="#pysisnoapi.nfse.ImpostosServico">ImpostosServico</a>, iss_retido: Optional[str] = None, responsavel_retencao_iss: Optional[str] = None, intermediario: Optional[ForwardRef('Cliente')] = None, deducoes: Optional[str] = None, desconto_incondicionado: Optional[str] = None, desconto_condicionado: Optional[str] = None, outras_retencoes: Optional[str] = None, informacoes_complementares: Optional[str] = None, data_competencia: Optional[str] = None, uf_local_prestacao: Optional[ForwardRef('Uf')] = None, municipio_local_prestacao: Optional[ForwardRef('Municipio')] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p><em>summary</em></p>
@@ -1216,8 +1208,8 @@ class Servico:
     discriminacao             : str
     impostos                  : &#39;ImpostosServico&#39;
     
-    iss_retido                : Optional[str]         = &#39;2&#39;
-    responsavel_retencao_iss  : Optional[str]         = &#39;1&#39;
+    iss_retido                : Optional[str]         = None
+    responsavel_retencao_iss  : Optional[str]         = None
     
     intermediario             : Optional[&#39;Cliente&#39;]   = None
     deducoes                  : Optional[str]         = None
@@ -1234,11 +1226,11 @@ class Servico:
         self.validate_responsavel_retencao_iss()
     
     def validate_iss_retido(self, *args, **kwargs):
-        if self.iss_retido not in INDICADORES_ISS_RETIDO:
+        if self.iss_retido and self.iss_retido not in INDICADORES_ISS_RETIDO:
             raise ValueError(f&#39;Indicador de ISS retido {self.iss_retido} inválido.&#39;)
     
     def validate_responsavel_retencao_iss(self, *args, **kwargs):
-        if self.responsavel_retencao_iss not in RESPONSAVEIS_RETENCAO_ISS:
+        if self.responsavel_retencao_iss and self.responsavel_retencao_iss not in RESPONSAVEIS_RETENCAO_ISS:
             raise ValueError(f&#39;Responsável pela retenção do ISS {self.responsavel_retencao_iss} inválido.&#39;)</code></pre>
 </details>
 <h3>Class variables</h3>
@@ -1312,7 +1304,7 @@ class Servico:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def validate_iss_retido(self, *args, **kwargs):
-    if self.iss_retido not in INDICADORES_ISS_RETIDO:
+    if self.iss_retido and self.iss_retido not in INDICADORES_ISS_RETIDO:
         raise ValueError(f&#39;Indicador de ISS retido {self.iss_retido} inválido.&#39;)</code></pre>
 </details>
 </dd>
@@ -1326,7 +1318,7 @@ class Servico:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def validate_responsavel_retencao_iss(self, *args, **kwargs):
-    if self.responsavel_retencao_iss not in RESPONSAVEIS_RETENCAO_ISS:
+    if self.responsavel_retencao_iss and self.responsavel_retencao_iss not in RESPONSAVEIS_RETENCAO_ISS:
         raise ValueError(f&#39;Responsável pela retenção do ISS {self.responsavel_retencao_iss} inválido.&#39;)</code></pre>
 </details>
 </dd>
