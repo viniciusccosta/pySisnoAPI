@@ -78,8 +78,8 @@ class Servico:
     discriminacao             : str
     impostos                  : 'ImpostosServico'
     
-    iss_retido                : Optional[str]         = '2'
-    responsavel_retencao_iss  : Optional[str]         = '1'
+    iss_retido                : Optional[str]         = None
+    responsavel_retencao_iss  : Optional[str]         = None
     
     intermediario             : Optional['Cliente']   = None
     deducoes                  : Optional[str]         = None
@@ -96,11 +96,11 @@ class Servico:
         self.validate_responsavel_retencao_iss()
     
     def validate_iss_retido(self, *args, **kwargs):
-        if self.iss_retido not in INDICADORES_ISS_RETIDO:
+        if self.iss_retido and self.iss_retido not in INDICADORES_ISS_RETIDO:
             raise ValueError(f'Indicador de ISS retido {self.iss_retido} inválido.')
     
     def validate_responsavel_retencao_iss(self, *args, **kwargs):
-        if self.responsavel_retencao_iss not in RESPONSAVEIS_RETENCAO_ISS:
+        if self.responsavel_retencao_iss and self.responsavel_retencao_iss not in RESPONSAVEIS_RETENCAO_ISS:
             raise ValueError(f'Responsável pela retenção do ISS {self.responsavel_retencao_iss} inválido.')
 
 @dataclass
@@ -208,15 +208,14 @@ async def emitir(token_emissor: str,
            token_empresa: str, 
            token_secret_empresa: str, 
            objetoNfse: ObjetoEmissaoNFSe, 
-           *args, **kwargs) -> (bool, dict):
+           *args, **kwargs) -> httpx.Response:
     '''Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
     
     Args:
         obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe "ObjetoEmissaoNFSe" que contém todos os dados necessários
 
     Returns:
-        bool: Informando se teve sucesso ou não na emissão da Nota Fiscal
-        dict: Dados do JSON do response
+        httpx.Response: Resposta do servidor
     '''
 
     headers = HEADERS.copy()
@@ -238,7 +237,8 @@ async def emitir(token_emissor: str,
         response = await client.post(url, headers=headers, json=json.loads(json_str))
     
     # Resultado:
-    return (response.status_code == 200, response.json())
+    # TODO: Retornar algo mais útil do que simplesmente o response...
+    return response
 
 async def buscar_notas(token_emissor: str, 
                  token_secret_emissor: str,
@@ -252,7 +252,7 @@ async def buscar_notas(token_emissor: str,
                  qtd_por_pagina:int=None, 
                  ordencao:str=None, 
                  tipo_ordenacao:str=None,
-                 *args, **kwargs) -> (dict, List[NotaFiscalServico]):
+                 *args, **kwargs) -> (httpx.Response, List[NotaFiscalServico]):
     '''Recupera as notas fiscais de serviço.
 
     Args:
@@ -294,6 +294,7 @@ async def buscar_notas(token_emissor: str,
             - asc  
     
     Returns:
+        httpx.Reponse: Resposta do servidor
         List[NotaFiscalServico]: Lista com todas as NFSe
     '''
     
@@ -359,7 +360,7 @@ async def recuperar_dados(token_emissor: str,
                     token_empresa:str, 
                     token_secret_empresa:str, 
                     id_nfse:int,
-                    *args, **kwargs):
+                    *args, **kwargs) -> httpx.Response:
     # TODO: Cada NFSe possui um ID mesmo que de empresas diferentes ?
     # TODO: Essa função deveria estar atrelada as chaves de API, uma vez que será através delas que emitiremos as notas por uma empresa ou por outra ?
 
@@ -379,14 +380,9 @@ async def recuperar_dados(token_emissor: str,
     url      = f'{BASE_URL}/nfse/{id_nfse}'
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
-
-    match (response.status_code):
-        case 200:
-            return response.json().get('dados')
-        case 412:
-            return []
-        case _:
-            return
+    
+    # TODO: Retornar algo mais útil como uma instância de NotaFiscal por exemplo ?!
+    return response
 
 async def cancelar(token_emissor: str, 
              token_secret_emissor: str, 
