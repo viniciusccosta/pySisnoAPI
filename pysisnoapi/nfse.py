@@ -79,7 +79,7 @@ class Servico(BaseModel):
     discriminacao             : str               = Field()
     impostos                  : 'ImpostosServico' = Field()
 
-    id                        : Optional[Annotated[str, Field()]]         = None    # TODO: Obrigatório ?
+    id                        : Optional[Annotated[int, Field()]]         = None    # TODO: Obrigatório ?   # TODO: int ?
     iss_retido                : Optional[Annotated[str, Field()]]         = None    # TODO: int ?
     responsavel_retencao_iss  : Optional[Annotated[str, Field()]]         = None
 
@@ -216,11 +216,11 @@ async def emitir(token_emissor: str,
 
     url = f'{BASE_URL}/nfse'
     async with httpx.AsyncClient() as client:
-        response_dict = await client.post(url, headers=headers, json=obj_dict)
+        response = await client.post(url, headers=headers, json=obj_dict)
 
     # Resultado:
     # TODO: Retornar algo mais útil do que simplesmente o response...
-    return response_dict
+    return response
 
 async def buscar_notas(token_emissor: str,
                  token_secret_emissor: str,
