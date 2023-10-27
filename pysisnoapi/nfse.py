@@ -1,17 +1,19 @@
-''' 
+'''
     Módulo específico para geração de Notas Fiscais de Serviço.
-    
-    Para utilizar esse módulo basta importá-lo da seguinte forma:  
+
+    Para utilizar esse módulo basta importá-lo da seguinte forma:
     `from pysisnoapi import nfse`
 '''
 
 # =====================================================================
-from . import *
-
 import json
 import httpx
+
 from datetime import datetime
-import jsonpickle
+from pydantic import BaseModel
+from typing   import List
+
+from . import *
 
 # =====================================================================
 CSV_HEADERS = [
@@ -67,151 +69,126 @@ STATUS = [
 ]
 
 # =====================================================================
-@dataclass
-class Servico:
+class Servico(BaseModel):
     '''_summary_
 
     Returns:
         _type_: _description_
     '''
-    valor_servicos            : str
-    discriminacao             : str
-    impostos                  : 'ImpostosServico'
-    
-    iss_retido                : Optional[str]         = None
-    responsavel_retencao_iss  : Optional[str]         = None
-    
-    intermediario             : Optional['Cliente']   = None
-    deducoes                  : Optional[str]         = None
-    desconto_incondicionado   : Optional[str]         = None
-    desconto_condicionado     : Optional[str]         = None
-    outras_retencoes          : Optional[str]         = None
-    informacoes_complementares: Optional[str]         = None
-    data_competencia          : Optional[str]         = None
-    uf_local_prestacao        : Optional['Uf']        = None
-    municipio_local_prestacao : Optional['Municipio'] = None
-    
-    def __post_init__(self, *args, **kwargs):
-        self.validate_iss_retido()
-        self.validate_responsavel_retencao_iss()
-    
+    valor_servicos            : str               = Field()
+    discriminacao             : str               = Field()
+    impostos                  : 'ImpostosServico' = Field()
+
+    iss_retido                : Optional[Annotated[str, Field()]]         = None
+    responsavel_retencao_iss  : Optional[Annotated[str, Field()]]         = None
+
+    intermediario             : Optional[Annotated['Cliente', Field()]]   = None
+    deducoes                  : Optional[Annotated[str, Field()]]         = None
+    desconto_incondicionado   : Optional[Annotated[str, Field()]]         = None
+    desconto_condicionado     : Optional[Annotated[str, Field()]]         = None
+    outras_retencoes          : Optional[Annotated[str, Field()]]         = None
+    informacoes_complementares: Optional[Annotated[str, Field()]]         = None
+    data_competencia          : Optional[Annotated[str, Field()]]         = None
+    uf_local_prestacao        : Optional[Annotated['Uf', Field()]]        = None
+    municipio_local_prestacao : Optional[Annotated['Municipio', Field()]] = None
+
+    @model_validator(mode='after')
     def validate_iss_retido(self, *args, **kwargs):
         if self.iss_retido and self.iss_retido not in INDICADORES_ISS_RETIDO:
             raise ValueError(f'Indicador de ISS retido {self.iss_retido} inválido.')
-    
+        return self
+
+    @model_validator(mode='after')
     def validate_responsavel_retencao_iss(self, *args, **kwargs):
         if self.responsavel_retencao_iss and self.responsavel_retencao_iss not in RESPONSAVEIS_RETENCAO_ISS:
             raise ValueError(f'Responsável pela retenção do ISS {self.responsavel_retencao_iss} inválido.')
+        return self
 
-@dataclass
-class ConstrucaoCivil:
-    codigo_obra: Optional[str] = None
-    art        : Optional[str] = None
-    
-@dataclass
-class ObjetoEmissaoNFSe(BaseClass):
-    cliente: 'Cliente'
-    servico: 'Servico'
-    
-    construcao_civil: Optional['ConstrucaoCivil'] = None
+class ConstrucaoCivil(BaseModel):
+    codigo_obra: Optional[Annotated[str, Field()]] = None
+    art        : Optional[Annotated[str, Field()]] = None
 
-@dataclass
-class NotaFiscalServico(BaseClass):
+class ObjetoEmissaoNFSe(BaseModel):
+    cliente: 'Cliente' = Field()
+    servico: 'Servico' = Field()
+
+    construcao_civil: Optional[Annotated['ConstrucaoCivil', Field()]] = None
+
+class NotaFiscalServico(BaseModel):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
-    
-    id                   : Optional[int]        = None
-    empresa              : Optional[Empresa]    = None
-    uuid                 : Optional[str]        = None
-    modelo               : Optional[str]        = None
-    status               : Optional[str]        = None
-    motivo               : Optional[str]        = None
-    numero_nota          : Optional[str]        = None
-    codigo_verificacao   : Optional[str]        = None
-    protocolo            : Optional[str]        = None
-    nome_destinatario    : Optional[str]        = None
-    uf_destinatario      : Optional[str]        = None
-    cpf_cnpj_destinatario: Optional[str]        = None
-    valor_total          : Optional[str]        = None
-    data_emissao         : Optional[str]        = None
-    data_competencia     : Optional[str]        = None
-    uf_prestacao         : Optional[Uf]         = None
-    municipio_prestacao  : Optional[Municipio]  = None
-    ambiente             : Optional[str]        = None
-    json_objeto_nfse     : Optional[str]        = None  # TODO: Não consta na documentação da API
-    xml                  : Optional[str]        = None  # TODO: Não consta na documentação da API
-    
-    numer_nota           : Optional[str]        = None  # TODO: EXCLUIR! É um typo de "numero_nota", adicionei hoje (03/07/2023) apenas para o package não parar de funcionar.
-    
-    @classmethod
-    def from_json(cls, **kwargs):
-        empresa_dict = kwargs.pop('empresa', {})
-        empresa = Empresa.from_json(**empresa_dict)
-        
-        uf_dict = kwargs.pop('uf_prestacao', {})
-        uf      = Uf.from_json(**uf_dict)
-        
-        municipio_dict = kwargs.pop('municipio_prestacao', {})
-        municipio = Municipio.from_json(**municipio_dict)
-        
-        return cls(empresa=empresa, uf_prestacao=uf, municipio_prestacao=municipio, **kwargs)
 
-    def to_json(self, *args, **kwargs):
-        json_str = jsonpickle.encode(self.as_filtered_dict(), unpicklable=False)
-        return json_str
-    
+    id                   : Optional[Annotated[int, Field()]]         = None
+    empresa              : Optional[Annotated['Empresa', Field()]]   = None
+    uuid                 : Optional[Annotated[str, Field()]]         = None
+    modelo               : Optional[Annotated[str, Field()]]         = None
+    status               : Optional[Annotated[str, Field()]]         = None
+    motivo               : Optional[Annotated[str, Field()]]         = None
+    numero_nota          : Optional[Annotated[str, Field()]]         = None
+    codigo_verificacao   : Optional[Annotated[str, Field()]]         = None
+    protocolo            : Optional[Annotated[str, Field()]]         = None
+    nome_destinatario    : Optional[Annotated[str, Field()]]         = None
+    uf_destinatario      : Optional[Annotated[str, Field()]]         = None
+    cpf_cnpj_destinatario: Optional[Annotated[str, Field()]]         = None
+    valor_total          : Optional[Annotated[str, Field()]]         = None
+    data_emissao         : Optional[Annotated[str, Field()]]         = None
+    data_competencia     : Optional[Annotated[str, Field()]]         = None
+    uf_prestacao         : Optional[Annotated['Uf', Field()]]        = None
+    municipio_prestacao  : Optional[Annotated['Municipio', Field()]] = None
+    ambiente             : Optional[Annotated[str, Field()]]         = None
+    json_objeto_nfse     : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API
+    xml                  : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API
+    numer_nota           : Optional[Annotated[str, Field()]]         = None  # TODO: EXCLUIR! É um typo de "numero_nota", adicionei hoje (03/07/2023) apenas para o package não parar de funcionar.
+
     def __str__(self):
         return f'NFSe {self.uuid}'
-    
+
     def __repr__(self):
         return f'NFSe {self.uuid}'
 
-@dataclass
-class PaginaNotasServico:
-    total           : Optional[str]                       = None
-    itens_por_pagina: Optional[str]                       = None
-    pagina_atual    : Optional[str]                       = None
-    itens           : Optional[List['NotaFiscalServico']] = None
-    
-@dataclass
-class ImpostosServico(Impostos):
-    issqn: 'Issqn'
+class PaginaNotasServico(BaseModel):
+    total           : Optional[Annotated[str, Field()]]                       = None
+    itens_por_pagina: Optional[Annotated[str, Field()]]                       = None
+    pagina_atual    : Optional[Annotated[str, Field()]]                       = None
+    itens           : Optional[Annotated[List['NotaFiscalServico'], Field()]] = None
 
-@dataclass
-class Issqn:
-    indicador_exigibilidade_iss: str
-    indicador_incentivo_fiscal : str
-    item_lista_servicos        : str
-    aliquota                   : str
-    codigo_servico             : str
-    codigo_nbs                 : str
-    
-    numero_processo            : Optional[str] = None
-    aliquota_retencao          : Optional[str] = None
-    aliquota_irrf              : Optional[str] = None
-    aliquota_csll              : Optional[str] = None
-    aliquota_previdencia_social: Optional[str] = None
-    
-    def __post_init__(self, *args, **kwargs):
-        self.validate_indicador_exigibilidade_iss()
-        self.validate_indicador_incentivo_fiscal()
-    
+class ImpostosServico(Impostos):
+    issqn: 'Issqn' = Field()
+
+class Issqn(BaseModel):
+    indicador_exigibilidade_iss: str = Field()
+    indicador_incentivo_fiscal : str = Field()
+    item_lista_servicos        : str = Field()
+    aliquota                   : str = Field()
+    codigo_servico             : str = Field()
+    codigo_nbs                 : str = Field()
+
+    numero_processo            : Optional[Annotated[str, Field()]] = None
+    aliquota_retencao          : Optional[Annotated[str, Field()]] = None
+    aliquota_irrf              : Optional[Annotated[str, Field()]] = None
+    aliquota_csll              : Optional[Annotated[str, Field()]] = None
+    aliquota_previdencia_social: Optional[Annotated[str, Field()]] = None
+
+    @model_validator(mode='after')
     def validate_indicador_exigibilidade_iss(self, *args, **kwargs):
         if self.indicador_exigibilidade_iss not in INDICADORES_EXIGIBILIDADE_ISS:
             raise ValueError(f'Indicador de Exigibilidade Fiscal {self.indicador_exigibilidade_iss} inválido.')
-    
+        return self
+
+    @model_validator(mode='after')
     def validate_indicador_incentivo_fiscal(self, *args, **kwargs):
         if self.indicador_incentivo_fiscal not in INDICADORES_INCENTIVO_FISCAL:
             raise ValueError(f'Indicador de Incentivo Fiscal {self.indicador_incentivo_fiscal} inválido.')
-    
+        return self
+
 # =====================================================================
-async def emitir(token_emissor: str, 
+async def emitir(token_emissor: str,
            token_secret_emissor: str,
-           token_empresa: str, 
-           token_secret_empresa: str, 
-           objetoNfse: ObjetoEmissaoNFSe, 
+           token_empresa: str,
+           token_secret_empresa: str,
+           objetoNfse: ObjetoEmissaoNFSe,
            *args, **kwargs) -> httpx.Response:
     '''Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
-    
+
     Args:
         obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe "ObjetoEmissaoNFSe" que contém todos os dados necessários
 
@@ -220,96 +197,96 @@ async def emitir(token_emissor: str,
     '''
 
     headers = HEADERS.copy()
-    
+
     # -----------------------------------------
     validate_tokens(token_emissor, token_secret_emissor)
     headers['token-emissor']        = token_emissor
     headers['token-secret-emissor'] = token_secret_emissor
-    
+
     validate_tokens(token_empresa, token_secret_empresa)
     headers['token-empresa']        = token_empresa
     headers['token-secret-empresa'] = token_secret_empresa
-    
+
     # -----------------------------------------
-    json_str = jsonpickle.encode(objetoNfse.as_filtered_dict(), unpicklable=False)
-    
-    url     = f'{BASE_URL}/nfse'
+    json_str = objetoNfse.json()
+
+    url = f'{BASE_URL}/nfse'
     async with httpx.AsyncClient() as client:
         response = await client.post(url, headers=headers, json=json.loads(json_str))
-    
+
     # Resultado:
     # TODO: Retornar algo mais útil do que simplesmente o response...
     return response
 
-async def buscar_notas(token_emissor: str, 
+async def buscar_notas(token_emissor: str,
                  token_secret_emissor: str,
-                 cnpjEmpresa:list=None, 
-                 data_inicio:datetime=None, 
-                 data_fim:datetime=None, 
-                 ambiente:str=None, 
-                 status:str=None, 
-                 texto:str=None, 
-                 pagina:int=None, 
-                 qtd_por_pagina:int=None, 
-                 ordencao:str=None, 
+                 cnpjEmpresa:list=None,
+                 data_inicio:datetime=None,
+                 data_fim:datetime=None,
+                 ambiente:str=None,
+                 status:str=None,
+                 texto:str=None,
+                 pagina:int=None,
+                 qtd_por_pagina:int=None,
+                 ordencao:str=None,
                  tipo_ordenacao:str=None,
                  *args, **kwargs) -> (httpx.Response, List[NotaFiscalServico]):
     '''Recupera as notas fiscais de serviço.
 
     Args:
         cnpj (str): CNPJ Empresa (apenas números).
-        
+
         data_inicio (datetime): Início intervalo de datas (dd/MM/yyyy HH:mm:ss).
-        
+
         data_fim (datetime): Fim intervalo de datas (dd/MM/yyyy HH:mm:ss).
-        
-        ambiente (str):  
-            1: Produção  
+
+        ambiente (str):
+            1: Produção
             2: Homologação
-            
+
         status (str): Status da NFSe.
-            - aprovado  
-            - reprovado  
-            - contingencia    
-            - cancelado  
+            - aprovado
+            - reprovado
+            - contingencia
+            - cancelado
             - Em digitação
-            
+
         texto (str): Texto de busca livre.
-        
+
         pagina (int): Número da página.
-        
+
         qtd_por_pagina (int): Quantidade de notas por página.
-        
-        ordencao (str): Campo para ordenação das notas.  
-            - empresa  
-            - ambiente  
-            - numero_nota  
-            - status  
-            - data_emissao  
-            - nome_destinatario  
-            - uf_destinatario  
+
+        ordencao (str): Campo para ordenação das notas.
+            - empresa
+            - ambiente
+            - numero_nota
+            - status
+            - data_emissao
+            - nome_destinatario
+            - uf_destinatario
             - valor_total
-            
+
         tipo_ordenacao (str): Tipo de Ordenação.
-            - desc  
-            - asc  
-    
+            - desc
+            - asc
+
     Returns:
         httpx.Reponse: Resposta do servidor
         List[NotaFiscalServico]: Lista com todas as NFSe
     '''
-    
+
     # TODO: o parâmetro cnpjEmpresa está errado na documentação ('CNPJ Empresa')
     # TODO: o endpoint ignora o parâmetro cnpjEmpresa em alguns casos, descrir quais os casos.
     # TODO: textoBusca é case sensitive e leva em consideração acentos.
     # TODO: dataFim não precisa de dataInicio
-    
+
     headers = HEADERS.copy()
-    
+
     validate_tokens(token_emissor, token_secret_emissor)
     headers['token-emissor']        = token_emissor
     headers['token-secret-emissor'] = token_secret_emissor
-    
+
     params = {}
     if cnpjEmpresa:
         params['cnpjEmpresa'] = cnpjEmpresa
@@ -320,7 +297,7 @@ async def buscar_notas(token_emissor: str,
     if ambiente:
         if ambiente not in AMBIENTES:
             raise ValueError(f'Ambiente {ambiente} inválido.')
-        params['ambiente'] = ambiente      
+        params['ambiente'] = ambiente
     if status:
         if status not in STATUS:
             raise ValueError(f'Status {status} inválido.')
@@ -337,29 +314,28 @@ async def buscar_notas(token_emissor: str,
         params['tipoOrdenacao'] = tipo_ordenacao
 
     url = f'{BASE_URL}/nfse'
-    
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers, params=params)
 
     match (response.status_code):
         case 200:
             json_dados = response.json().get('dados')
-            nfses      = [NotaFiscalServico.from_json(**d) for d in json_dados['itens']]
+            nfses      = [NotaFiscalServico(d) for d in json_dados['itens']]
             return (response, nfses)
-    
+
     return (response, None)
 
-async def retransmitir(token_emissor: str, 
+async def retransmitir(token_emissor: str,
                  token_secret_emissor: str,
-                 token_empresa:str, 
-                 token_secret_empresa:str, 
+                 token_empresa:str,
+                 token_secret_empresa:str,
                  *args, **kwargs):
     raise NotImplementedError
 
-async def recuperar_dados(token_emissor: str, 
+async def recuperar_dados(token_emissor: str,
                     token_secret_emissor: str,
-                    token_empresa:str, 
-                    token_secret_empresa:str, 
+                    token_empresa:str,
+                    token_secret_empresa:str,
                     id_nfse:int,
                     *args, **kwargs) -> httpx.Response:
     # TODO: Cada NFSe possui um ID mesmo que de empresas diferentes ?
@@ -367,28 +343,28 @@ async def recuperar_dados(token_emissor: str,
 
     if not isinstance(id_nfse, int):
         raise ValueError('Necessário informar um ID de NFSe válido.')
-    
+
     headers  = HEADERS.copy()
-    
+
     validate_tokens(token_emissor, token_secret_emissor)
     headers['token-emissor']        = token_emissor
     headers['token-secret-emissor'] = token_secret_emissor
-    
+
     validate_tokens(token_empresa, token_secret_empresa)
     headers['token-empresa']        = token_empresa
     headers['token-secret-empresa'] = token_secret_empresa
-    
-    url      = f'{BASE_URL}/nfse/{id_nfse}'
+
+    url = f'{BASE_URL}/nfse/{id_nfse}'
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
-    
+
     # TODO: Retornar algo mais útil como uma instância de NotaFiscal por exemplo ?!
     return response
 
-async def cancelar(token_emissor: str, 
-             token_secret_emissor: str, 
+async def cancelar(token_emissor: str,
+             token_secret_emissor: str,
              token_empresa:str,
-             token_secret_empresa:str, 
+             token_secret_empresa:str,
              *args, **kwargs):
     raise NotImplementedError
 

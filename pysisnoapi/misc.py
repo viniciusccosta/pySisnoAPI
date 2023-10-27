@@ -1,23 +1,24 @@
-''' 
+'''
     O módulo misc.py contém funções genéricas que não se enquadram em outros módulos.
-    
-    Um exemplo é a função para realizar uma requisição à API a fim de consultar informações sobre municípios. 
+
+    Um exemplo é a função para realizar uma requisição à API a fim de consultar informações sobre municípios.
     Este módulo faz parte de um pacote e depende completamente de outros módulos.
 
-    Para utilizar as funções deste módulo, basta importá-lo da seguinte forma:  
+    Para utilizar as funções deste módulo, basta importá-lo da seguinte forma:
     `from pysisnoapi import misc`
 '''
 
 # ======================================================================================================================
-from . import *
-
 import httpx
+
 from typing import List
 
+from . import *
+
 # ======================================================================================================================
-async def get_municipios(token_emissor: str, 
-                   token_secret_emissor: str, 
-                   uf: str, 
+async def get_municipios(token_emissor: str,
+                   token_secret_emissor: str,
+                   uf: str,
                    *args, **kwargs) -> List[Municipio]:
     '''Consulta os municípios de um determinado estado através de uma requisição à API.
 
@@ -32,12 +33,12 @@ async def get_municipios(token_emissor: str,
     '''
 
     headers  = HEADERS.copy()
-    
+
     validate_tokens(token_emissor, token_secret_emissor)
     headers['token-emissor']        = token_emissor
     headers['token-secret-emissor'] = token_secret_emissor
-    
-    url      = f'{BASE_URL}/unidades-federativas/{uf}/municipios'
+
+    url = f'{BASE_URL}/unidades-federativas/{uf}/municipios'
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
 
@@ -51,8 +52,10 @@ async def get_municipios(token_emissor: str,
         case _:
             return
 
-async def get_cfops(token_emissor: str, 
-              token_secret_emissor: str, 
+    # TODO: return response ?
+
+async def get_cfops(token_emissor: str,
+              token_secret_emissor: str,
               *args, **kwargs) -> List[Cfop]:
     '''Obtém a lista de todos os CFOPs disponíveis através de uma requisição à API.
 
@@ -63,11 +66,11 @@ async def get_cfops(token_emissor: str,
     '''
 
     headers  = HEADERS.copy()
-    
+
     validate_tokens(token_emissor, token_secret_emissor)
     headers['token-emissor']        = token_emissor
     headers['token-secret-emissor'] = token_secret_emissor
-    
+
     url      = f'{BASE_URL}/cfops'
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
@@ -82,16 +85,18 @@ async def get_cfops(token_emissor: str,
         case _:
             return
 
-async def get_ibpts(token_emissor: str, 
-              token_secret_emissor: str, 
-              cod_desc: str, 
-              uf: str, 
+    # TODO: return response ?
+
+async def get_ibpts(token_emissor: str,
+              token_secret_emissor: str,
+              cod_desc: str,
+              uf: str,
               *args, **kwargs) -> List[Ibpt]:
     '''
     Obtém os IBPTs através de uma requisição à API.
 
     Essa função permite obter os dados de IBPTs (Impostos sobre Produtos e Serviços) para um determinado item ou código, em uma determinada UF (Unidade Federativa)
-    
+
     Args:
         cod_desc (str): Breve descrição do item ou código. Deve ter no mínimo 4 caracteres.
         uf (str): UF do estado para o qual deseja-se consultar os IBPTs.
@@ -105,13 +110,13 @@ async def get_ibpts(token_emissor: str,
 
     if len(cod_desc) < 4:
         raise Exception('Código ou Descrição precisa ter no mínimo 4 caracteres')
-    
+
     headers  = HEADERS.copy()
-    
+
     validate_tokens(token_emissor, token_secret_emissor)
     headers['token-emissor']        = token_emissor
     headers['token-secret-emissor'] = token_secret_emissor
-    
+
     headers['codigo-ou-descricao'] = cod_desc
     headers['uf'] = uf
 
@@ -129,4 +134,4 @@ async def get_ibpts(token_emissor: str,
         case _:
             return
 
-# ======================================================================================================================
+    # TODO: return response ?
