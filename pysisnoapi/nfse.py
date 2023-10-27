@@ -319,8 +319,8 @@ async def buscar_notas(token_emissor: str,
 
     match (response.status_code):
         case 200:
-            json_dados = response.json().get('dados')
-            nfses      = [NotaFiscalServico(**d) for d in json_dados['itens']]
+            itens = response.json()['dados']['itens']
+            nfses = [NotaFiscalServico(**d) for d in itens]
             return (response, nfses)
 
     return (response, None)

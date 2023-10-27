@@ -712,8 +712,8 @@ async def listar(token_emissor: str,
 
     match (response.status_code):
         case 200:
-            json_data = response.json().get('dados')
-            nfes = [NotaFiscal(d) for d in json_data['itens']]
+            itens = response.json()['dados']['itens']
+            nfes  = [NotaFiscal(**d) for d in itens]
             return response, nfes
 
     return response, None
