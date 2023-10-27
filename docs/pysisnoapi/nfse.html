@@ -213,9 +213,10 @@ class Issqn:
     indicador_incentivo_fiscal : str
     item_lista_servicos        : str
     aliquota                   : str
+    codigo_servico             : str
+    codigo_nbs                 : str
     
     numero_processo            : Optional[str] = None
-    codigo_servico             : Optional[str] = None
     aliquota_retencao          : Optional[str] = None
     aliquota_irrf              : Optional[str] = None
     aliquota_csll              : Optional[str] = None
@@ -788,10 +789,10 @@ class ImpostosServico(Impostos):
 </dd>
 <dt id="pysisnoapi.nfse.Issqn"><code class="flex name class">
 <span>class <span class="ident">Issqn</span></span>
-<span>(</span><span>indicador_exigibilidade_iss: str, indicador_incentivo_fiscal: str, item_lista_servicos: str, aliquota: str, numero_processo: Optional[str] = None, codigo_servico: Optional[str] = None, aliquota_retencao: Optional[str] = None, aliquota_irrf: Optional[str] = None, aliquota_csll: Optional[str] = None, aliquota_previdencia_social: Optional[str] = None)</span>
+<span>(</span><span>indicador_exigibilidade_iss: str, indicador_incentivo_fiscal: str, item_lista_servicos: str, aliquota: str, codigo_servico: str, codigo_nbs: str, numero_processo: Optional[str] = None, aliquota_retencao: Optional[str] = None, aliquota_irrf: Optional[str] = None, aliquota_csll: Optional[str] = None, aliquota_previdencia_social: Optional[str] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Issqn(indicador_exigibilidade_iss: str, indicador_incentivo_fiscal: str, item_lista_servicos: str, aliquota: str, numero_processo: Optional[str] = None, codigo_servico: Optional[str] = None, aliquota_retencao: Optional[str] = None, aliquota_irrf: Optional[str] = None, aliquota_csll: Optional[str] = None, aliquota_previdencia_social: Optional[str] = None)</p></div>
+<div class="desc"><p>Issqn(indicador_exigibilidade_iss: str, indicador_incentivo_fiscal: str, item_lista_servicos: str, aliquota: str, codigo_servico: str, codigo_nbs: str, numero_processo: Optional[str] = None, aliquota_retencao: Optional[str] = None, aliquota_irrf: Optional[str] = None, aliquota_csll: Optional[str] = None, aliquota_previdencia_social: Optional[str] = None)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -802,9 +803,10 @@ class Issqn:
     indicador_incentivo_fiscal : str
     item_lista_servicos        : str
     aliquota                   : str
+    codigo_servico             : str
+    codigo_nbs                 : str
     
     numero_processo            : Optional[str] = None
-    codigo_servico             : Optional[str] = None
     aliquota_retencao          : Optional[str] = None
     aliquota_irrf              : Optional[str] = None
     aliquota_csll              : Optional[str] = None
@@ -844,7 +846,11 @@ class Issqn:
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="pysisnoapi.nfse.Issqn.codigo_servico"><code class="name">var <span class="ident">codigo_servico</span> : Optional[str]</code></dt>
+<dt id="pysisnoapi.nfse.Issqn.codigo_nbs"><code class="name">var <span class="ident">codigo_nbs</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.Issqn.codigo_servico"><code class="name">var <span class="ident">codigo_servico</span> : str</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1370,6 +1376,7 @@ class Servico:
 <li><code><a title="pysisnoapi.nfse.Issqn.aliquota_irrf" href="#pysisnoapi.nfse.Issqn.aliquota_irrf">aliquota_irrf</a></code></li>
 <li><code><a title="pysisnoapi.nfse.Issqn.aliquota_previdencia_social" href="#pysisnoapi.nfse.Issqn.aliquota_previdencia_social">aliquota_previdencia_social</a></code></li>
 <li><code><a title="pysisnoapi.nfse.Issqn.aliquota_retencao" href="#pysisnoapi.nfse.Issqn.aliquota_retencao">aliquota_retencao</a></code></li>
+<li><code><a title="pysisnoapi.nfse.Issqn.codigo_nbs" href="#pysisnoapi.nfse.Issqn.codigo_nbs">codigo_nbs</a></code></li>
 <li><code><a title="pysisnoapi.nfse.Issqn.codigo_servico" href="#pysisnoapi.nfse.Issqn.codigo_servico">codigo_servico</a></code></li>
 <li><code><a title="pysisnoapi.nfse.Issqn.indicador_exigibilidade_iss" href="#pysisnoapi.nfse.Issqn.indicador_exigibilidade_iss">indicador_exigibilidade_iss</a></code></li>
 <li><code><a title="pysisnoapi.nfse.Issqn.indicador_incentivo_fiscal" href="#pysisnoapi.nfse.Issqn.indicador_incentivo_fiscal">indicador_incentivo_fiscal</a></code></li>
