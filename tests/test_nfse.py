@@ -44,6 +44,8 @@ class NfseTestCase(unittest.TestCase):
                 item_lista_servicos         = "08.02",
                 indicador_incentivo_fiscal  = "1",
                 indicador_exigibilidade_iss = "1",
+                codigo_servico              = '802',
+                codigo_nbs                  = '1.2606.00.00',
             ),
         )
         
