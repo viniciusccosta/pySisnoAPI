@@ -1,12 +1,6 @@
 import unittest
 from pysisnoapi import *
 
-# TODO: Teste para verificar se as chaves da API estão configuradas
-# TODO: Teste para verificar se as chaves são válidas
-# TODO: Teste para verificar se a plataforma reconhece as chaves
-# TODO: Teste para verificar se existe .env
-# TODO: Teste para verificar se a função de alterar as chaves da API está funcionando
-
 class CfopTestCase(unittest.TestCase):
     def test_criar_cfop_com_dados_obrigatorios(self):
         cfop = Cfop(codigo='5102', descricao='Venda de produção do estabelecimento para entrega futura')
