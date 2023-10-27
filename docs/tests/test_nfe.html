@@ -32,6 +32,7 @@ import unittest
 
 from unittest.mock  import MagicMock
 from datetime       import datetime
+from pydantic       import ValidationError
 
 from pysisnoapi import *
 from pysisnoapi import nfe
@@ -51,14 +52,14 @@ class NfeTestCase(unittest.TestCase):
             numero              = &#39;484&#39;,
             complemento         = &#39;Gerado por 4devs&#39;,
         )
-        
+
         cliente  = Cliente(
             consumidor_final = &#39;1&#39;,
             contribuinte     = &#39;9&#39;,
             pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
             endereco         = endereco,
         )
-        
+
         impostos = nfe.ImpostosProduto(
             pis = Pis (
                 situacao_tributaria=&#39;99&#39;,
@@ -78,7 +79,7 @@ class NfeTestCase(unittest.TestCase):
                 aliquota=&#39;0.0000&#39;,
             ),
         )
-        
+
         produtos = [
             nfe.Produto(
                 cfop                   = &#39;5102&#39;,
@@ -94,7 +95,7 @@ class NfeTestCase(unittest.TestCase):
                 informacoes_adicionais = &#34;Emitido pelo pySisnoAPI&#34;,
             ),
         ]
-        
+
         pagamento = nfe.Pagamento(
             formas_pagamento = [
                 nfe.FormaPagamento(
@@ -104,15 +105,15 @@ class NfeTestCase(unittest.TestCase):
                 )
             ]
         )
-        
+
         pedido   = nfe.Pedido(
             presenca=&#39;0&#39;,
             pagamento=pagamento,
             # informacoes_complementares=&#39;Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200nEMPRESA ENQUADRADA NO SIMPLES NACIONAL LC 123/2006n&#39;,
         )
-        
-        data = datetime.now().strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
-        
+
+        data = datetime.now()
+
         self.objeto = nfe.ObjetoEmissaoNFe(
             numero_nota_sequencial= &#39;123456&#39;,
             serie                 = &#39;1&#39;,
@@ -127,23 +128,23 @@ class NfeTestCase(unittest.TestCase):
             data_entrada_saida    = data,
             data_emissao          = data,
         )
-    
+
     async def test_listar(self):
-        &#34;&#34;&#34;Função responsável por testar a função nfe.listar() utilizando dados falsos. 
+        &#34;&#34;&#34;Função responsável por testar a função nfe.listar() utilizando dados falsos.
         Essa função realiza uma solicitação ao endpoint correspondente e retorna uma lista de objetos NotaFiscal.
         &#34;&#34;&#34;
-        
+
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
-        
+
         mock_response.json.return_value = {
-            &#39;status&#39;: &#39;Sucesso&#39;, 
+            &#39;status&#39;: &#39;Sucesso&#39;,
             &#39;descricao&#39;: &#39;Página de notas de serviço do emissor&#39;,
             &#34;dados&#34;: {
-                &#39;total&#39;: 1, 
+                &#39;total&#39;: 1,
                 &#39;itens_por_pagina&#39;: 10,
-                &#39;pagina_atual&#39;: 0, 
+                &#39;pagina_atual&#39;: 0,
                 &#39;itens&#39;: [
                     {
                         &#34;id&#34;: 31833,
@@ -196,49 +197,49 @@ class NfeTestCase(unittest.TestCase):
                         &#34;json_objeto_nfe&#34;: &#34;OBJETO JSON&#34;,
                         &#34;tipo_emissao&#34;: &#34;1&#34;
                     }
-                ], 
+                ],
                 # &#39;informacoesAdicionais&#39;: {
-                #     &#39;totalAutorizadas&#39;: 0.0, 
+                #     &#39;totalAutorizadas&#39;: 0.0,
                 #     &#39;totalCanceladas&#39;: 0.0
                 # },
             }
         }
 
         requests.get = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         nfes = await nfe.listar(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
-        
+
         # Checando resultado:
         self.assertGreaterEqual(len(nfes), 1)
-        
+
     async def test_validar(self):
-        &#34;&#34;&#34;Função responsável por testar a função nfe.validar() utilizando dados falsos. 
+        &#34;&#34;&#34;Função responsável por testar a função nfe.validar() utilizando dados falsos.
         Essa função realiza uma solicitação ao endpoint correspondente para validar uma nota fiscal antes de emiti-la.
         &#34;&#34;&#34;
-        
+
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
-            &#39;status&#39;: &#39;Sucesso&#39;, 
+            &#39;status&#39;: &#39;Sucesso&#39;,
             &#39;message&#39;: &#39;Nota validada pela API&#39;,
         }
-        
+
         requests.post = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         result = await nfe.validar(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
-        
+
         # Checando resultado:
         self.assertEqual(&#39;Sucesso&#39;, result[&#39;status&#39;])
         self.assertEqual(&#39;Nota validada pela API&#39;, result[&#39;message&#39;])
 
     async def test_emitir(self):
-        &#34;&#34;&#34;Função responsável por testar a função nfe.emitir() utilizando dados falsos. 
+        &#34;&#34;&#34;Função responsável por testar a função nfe.emitir() utilizando dados falsos.
         Essa função realiza uma solicitação ao endpoint correspondente para emitir uma nota fiscal.
         &#34;&#34;&#34;
-        
+
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -351,7 +352,7 @@ class NfeTestCase(unittest.TestCase):
                                     &#34;programaEmissor&#34;: &#34;CONTRIBUINTE&#34;,
                                     &#34;versaoEmissor&#34;: &#34;1.0&#34;
                                 },
-                                &#34;emitente&#34;: {                   # Alterado manualmente  
+                                &#34;emitente&#34;: {                   # Alterado manualmente
                                     &#34;cnpj&#34;: &#34;27578708000180&#34;,   # https://www.4devs.com.br/gerador_de_empresas
                                     &#34;razaoSocial&#34;: &#34;Oliver e Ana Pizzaria ME&#34;,
                                     &#34;nomeFantasia&#34;: &#34;Oliver e Ana Pizzaria ME&#34;,
@@ -534,32 +535,32 @@ class NfeTestCase(unittest.TestCase):
             },
             &#34;dados&#34;: &#34;53230500665143000112550017777740441235246385&#34; # Alterado manualmente
         }
-                
+
         requests.post = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         result = await nfe.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
-        
+
         # Checando resultado:
         self.assertIn(&#39;status&#39;, result)
         self.assertIn(&#39;descricao&#39;, result)
         self.assertIn(&#39;retorno_sefaz&#39;, result)
         self.assertIn(&#39;dados&#39;, result)
-        
+
         self.assertEqual(result[&#39;status&#39;], &#39;Sucesso&#39;, )
         self.assertEqual(result[&#39;descricao&#39;], &#39;Lote enviado com sucesso.&#39;)
-        
+
     async def test_emitir_nota_ja_autorizada(self):
         &#34;&#34;&#34;Função que simula a tentativa de emissão de uma nota fiscal já autorizada, utilizando dados falsos.
 
             O endpoint requer o número da nota fiscal como um dos parâmetro e
-            se um número correspondente a uma nota fiscal autorizada for fornecido, a API retornará um erro. 
-            
+            se um número correspondente a uma nota fiscal autorizada for fornecido, a API retornará um erro.
+
             É importante observar que se trata de uma nota fiscal já **autorizada**,
-            pois, é possível reenviar a mesma nota fiscal após ser rejeitada pela SEFAZ, 
+            pois, é possível reenviar a mesma nota fiscal após ser rejeitada pela SEFAZ,
             permitindo ao usuário realizar alterações nos campos pertinentes e tentar emiti-la novamente.
         &#34;&#34;&#34;
-        
+
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 412
@@ -567,19 +568,19 @@ class NfeTestCase(unittest.TestCase):
             &#34;status&#34;: &#34;Erro&#34;,
             &#34;descricao&#34;: &#34;Tentativa de retransmitir uma nota que não foi rejeitada.&#34;,
         }
-        
+
         requests.post = MagicMock(return_value=mock_response)
-        
+
          # Chamando a Função:
         result = await nfe.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
-        
+
         # Checando resultado:
         self.assertIn(&#39;status&#39;, result)
         self.assertIn(&#39;descricao&#39;, result)
-        
+
         self.assertEqual(result[&#39;status&#39;], &#39;Erro&#39;)
         self.assertEqual(result[&#39;descricao&#39;], &#39;Tentativa de retransmitir uma nota que não foi rejeitada.&#39;)
-    
+
 # =================================================================
 # Models:
 class ObjetoEmissaoNFeTestCase(unittest.TestCase):
@@ -596,34 +597,34 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
             numero              = &#39;484&#39;,
             complemento         = &#39;Gerado por 4devs&#39;,
         )
-        
+
         self.cliente  = Cliente(
             consumidor_final = &#39;1&#39;,
             contribuinte     = &#39;9&#39;,
             pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
             endereco         = self.endereco,
         )
-        
+
         self.impostos = nfe.ImpostosProduto(
-            Pis (
+            pis    = Pis (
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
-            Cofins(
+            cofins = Cofins(
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
-            Icms (
+            icms   = Icms (
                 situacao_tributaria=&#39;102&#39;,
                 aliquota_icms=&#39;0.0000&#39;,
                 aliquota_icms_st=&#39;0.0000&#39;,
             ),
-            Ipi(
+            ipi    = Ipi(
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
         )
-        
+
         self.produtos = [
             nfe.Produto(
                 cfop                   = &#39;5102&#39;,
@@ -639,7 +640,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 informacoes_adicionais = &#34;Emitido pelo pySisnoAPI&#34;,
             ),
         ]
-        
+
         self.pagamento = nfe.Pagamento(
             formas_pagamento = [
                 nfe.FormaPagamento(
@@ -649,15 +650,15 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 )
             ]
         )
-        
+
         self.pedido   = nfe.Pedido(
             presenca=&#39;0&#39;,
             pagamento=self.pagamento,
             informacoes_complementares=&#39;Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200nEMPRESA ENQUADRADA NO SIMPLES NACIONAL LC 123/2006n&#39;,
         )
-        
+
         self.data = datetime(2023, 5, 19, 17, 25, 57)
-    
+
     def test_todos_campos_obrigatorios(self):
         objeto = nfe.ObjetoEmissaoNFe (
             numero_nota_sequencial = &#39;123456&#39;,
@@ -673,7 +674,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
             data_entrada_saida     = self.data,
             data_emissao           = self.data,
         )
-        
+
         assert objeto.numero_nota_sequencial == &#34;123456&#34;
         assert objeto.serie                  == &#34;1&#34;
         assert objeto.operacao               == &#34;1&#34;
@@ -686,7 +687,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
         assert objeto.pedido                 == self.pedido
         assert objeto.data_entrada_saida     == self.data
         assert objeto.data_emissao           == self.data
-        
+
         assert objeto.numero_pedido            is None
         assert objeto.transporte               is None
         assert objeto.fatura                   is None
@@ -700,7 +701,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
         assert objeto.informacao_intermediador is None
 
     def test_campo_obrigatorio_numero_sequencial(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 serie                  = &#39;1&#39;,
                 operacao               = &#39;1&#39;,
@@ -714,9 +715,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-    
+
     def test_campo_obrigatorio_serie(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 operacao               = &#39;1&#39;,
@@ -730,9 +731,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-    
+
     def test_campo_obrigatorio_operacao(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -746,9 +747,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_natureza_operacao(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -762,9 +763,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_modelo(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -778,9 +779,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_finalidade(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -794,9 +795,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_ambiente(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -810,9 +811,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_cliente(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -826,9 +827,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_produtos(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -842,9 +843,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_pedido(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -858,9 +859,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_data_entrada_saida(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -874,9 +875,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 pedido                 = self.pedido,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_emissao(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -907,7 +908,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida    = self.data,
                 data_emissao          = self.data,
             )
-    
+
     def test_numero_nota_sequencial_maior_que_9_caracteres(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (
@@ -924,7 +925,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida    = self.data,
                 data_emissao          = self.data,
             )
-    
+
     def test_operacao_invalida(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (
@@ -941,7 +942,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida    = self.data,
                 data_emissao          = self.data,
             )
-    
+
     def test_modelo_invalido(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (
@@ -958,7 +959,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida    = self.data,
                 data_emissao          = self.data,
             )
-    
+
     def test_finalidade_invalida(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (
@@ -975,7 +976,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida    = self.data,
                 data_emissao          = self.data,
             )
-    
+
     def test_ambiente_invalido(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (
@@ -1000,7 +1001,7 @@ class PagamentoUnitTest(unittest.TestCase):
             meio_pagamento  = &#39;01&#39;,
             valor_pagamento = &#39;1.00&#39;,
         )
-        
+
     def test_todos_campos_obrigatorios(self):
         pagamento = nfe.Pagamento (
             formas_pagamento = [
@@ -1008,7 +1009,7 @@ class PagamentoUnitTest(unittest.TestCase):
                 self.forma_pgto,
             ]
         )
-        
+
         self.assertEqual(len(pagamento.formas_pagamento), 2)
 
 class FormaPagamentoUnitTest(unittest.TestCase):
@@ -1018,32 +1019,32 @@ class FormaPagamentoUnitTest(unittest.TestCase):
             meio_pagamento  = &#39;01&#39;,
             valor_pagamento = &#39;1.00&#39;,
         )
-        
+
         self.assertEqual(forma_pgto.forma_pagamento, &#39;0&#39;)
         self.assertEqual(forma_pgto.meio_pagamento , &#39;01&#39;)
         self.assertEqual(forma_pgto.valor_pagamento, &#39;1.00&#39;)
-    
+
     def test_campo_obrigatorio_forma_pagamento(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.FormaPagamento(
                 meio_pagamento  = &#39;01&#39;,
                 valor_pagamento = &#39;1.00&#39;,
             )
-        
+
     def test_campo_obrigatorio_meio_pagamento(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.FormaPagamento(
                 forma_pagamento = &#39;0&#39;,
                 valor_pagamento = &#39;1.00&#39;,
             )
-    
+
     def test_campo_obrigatorio_valor_pagamento(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.FormaPagamento(
                 forma_pagamento = &#39;0&#39;,
                 meio_pagamento  = &#39;01&#39;,
             )
-    
+
     def test_forma_pagamento_invalido(self):
         with self.assertRaises(ValueError):
             nfe.FormaPagamento (
@@ -1051,7 +1052,7 @@ class FormaPagamentoUnitTest(unittest.TestCase):
                 meio_pagamento  = &#39;01&#39;,
                 valor_pagamento = &#39;1.00&#39;,
             )
-            
+
     def test_meio_pagamento_invalido(self):
         with self.assertRaises(ValueError):
             nfe.FormaPagamento (
@@ -1059,7 +1060,7 @@ class FormaPagamentoUnitTest(unittest.TestCase):
                 meio_pagamento  = &#39;&#39;,
                 valor_pagamento = &#39;1.00&#39;,
             )
-            
+
     def test_descricao_obrigatorio(self):
         with self.assertRaises(ValueError):
             nfe.FormaPagamento (
@@ -1067,7 +1068,7 @@ class FormaPagamentoUnitTest(unittest.TestCase):
                 meio_pagamento  = &#39;99&#39;,
                 valor_pagamento = &#39;1.00&#39;
             )
-            
+
     def test_tamanho_descricao_menor_que_dois(self):
         with self.assertRaises(ValueError):
             nfe.FormaPagamento (
@@ -1076,7 +1077,7 @@ class FormaPagamentoUnitTest(unittest.TestCase):
                 valor_pagamento          = &#39;1.00&#39;,
                 descricao_meio_pagamento = &#39;a&#39;,
             )
-    
+
     def test_tamanho_descricao_maior_que_sessenta(self):
         with self.assertRaises(ValueError):
             nfe.FormaPagamento (
@@ -1088,28 +1089,28 @@ class FormaPagamentoUnitTest(unittest.TestCase):
 
 class ProdutoUnitTest(unittest.TestCase):
     &#34;&#34;&#34;Testes da classe produtos&#34;&#34;&#34;
-    
+
     def setUp(self) -&gt; None:
         self.impostos = nfe.ImpostosProduto(
-            Pis (
+            pis    = Pis (
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
-            Cofins(
+            cofins = Cofins(
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
-            Icms (
+            icms   = Icms (
                 situacao_tributaria=&#39;102&#39;,
                 aliquota_icms=&#39;0.0000&#39;,
                 aliquota_icms_st=&#39;0.0000&#39;,
             ),
-            Ipi(
+            ipi    = Ipi(
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
         )
-    
+
     def test_todos_campos_obrigatorios(self):
         produto = nfe.Produto(
             item       = &#34;1&#34;,
@@ -1123,7 +1124,7 @@ class ProdutoUnitTest(unittest.TestCase):
             total      = &#34;10.0&#34;,
             impostos   = self.impostos,
         )
-    
+
         self.assertEqual(produto.cfop      , &#39;5102&#39;)
         self.assertEqual(produto.item      , &#39;1&#39;)
         self.assertEqual(produto.nome      , &#39;UNIFORMES&#39;)
@@ -1134,11 +1135,11 @@ class ProdutoUnitTest(unittest.TestCase):
         self.assertEqual(produto.subtotal  , &#39;5.0&#39;)
         self.assertEqual(produto.total     , &#39;10.0&#39;)
         self.assertEqual(produto.impostos  , self.impostos)
-        
+
     def test_campo_obrigatorio_item(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
-                
+
                 cfop       = &#39;5102&#39;,
                 nome       = &#34;UNIFORMES&#34;,
                 codigo     = &#34;123456&#34;,
@@ -1149,12 +1150,12 @@ class ProdutoUnitTest(unittest.TestCase):
                 total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
-        
+
     def test_campo_obrigatorio_cfop(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
-                
+
                 nome       = &#34;UNIFORMES&#34;,
                 codigo     = &#34;123456&#34;,
                 ncm        = &#34;62069000&#34;,
@@ -1164,13 +1165,13 @@ class ProdutoUnitTest(unittest.TestCase):
                 total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_nome(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
                 cfop       = &#39;5102&#39;,
-                
+
                 codigo     = &#34;123456&#34;,
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
@@ -1179,14 +1180,14 @@ class ProdutoUnitTest(unittest.TestCase):
                 total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_codigo(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
                 cfop       = &#39;5102&#39;,
                 nome       = &#34;UNIFORMES&#34;,
-                
+
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
@@ -1194,39 +1195,39 @@ class ProdutoUnitTest(unittest.TestCase):
                 total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_ncm(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
                 cfop       = &#39;5102&#39;,
                 nome       = &#34;UNIFORMES&#34;,
                 codigo     = &#34;123456&#34;,
-                
+
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
                 subtotal   = &#34;5.0&#34;,
                 total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_quantidade(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
                 cfop       = &#39;5102&#39;,
                 nome       = &#34;UNIFORMES&#34;,
                 codigo     = &#34;123456&#34;,
                 ncm        = &#34;62069000&#34;,
-                
+
                 unidade    = &#34;UNID&#34;,
                 subtotal   = &#34;5.0&#34;,
                 total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_unidade(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
                 cfop       = &#39;5102&#39;,
@@ -1234,14 +1235,14 @@ class ProdutoUnitTest(unittest.TestCase):
                 codigo     = &#34;123456&#34;,
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
-                
+
                 subtotal   = &#34;5.0&#34;,
                 total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_subtotal(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
                 cfop       = &#39;5102&#39;,
@@ -1250,13 +1251,13 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
-                
+
                 total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
 
     def test_campo_obrigatorio_total(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
                 cfop       = &#39;5102&#39;,
@@ -1266,12 +1267,12 @@ class ProdutoUnitTest(unittest.TestCase):
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
                 subtotal   = &#34;5.0&#34;,
-                
+
                 impostos   = self.impostos,
             )
-    
+
     def test_campo_obrigatorio_impostos(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
                 cfop       = &#39;5102&#39;,
@@ -1282,7 +1283,7 @@ class ProdutoUnitTest(unittest.TestCase):
                 unidade    = &#34;UNID&#34;,
                 subtotal   = &#34;5.0&#34;,
                 total      = &#34;10.0&#34;,
-                
+
             )
 
 # =================================================================
@@ -1345,32 +1346,32 @@ not have a method with the specified name.</p></div>
             meio_pagamento  = &#39;01&#39;,
             valor_pagamento = &#39;1.00&#39;,
         )
-        
+
         self.assertEqual(forma_pgto.forma_pagamento, &#39;0&#39;)
         self.assertEqual(forma_pgto.meio_pagamento , &#39;01&#39;)
         self.assertEqual(forma_pgto.valor_pagamento, &#39;1.00&#39;)
-    
+
     def test_campo_obrigatorio_forma_pagamento(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.FormaPagamento(
                 meio_pagamento  = &#39;01&#39;,
                 valor_pagamento = &#39;1.00&#39;,
             )
-        
+
     def test_campo_obrigatorio_meio_pagamento(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.FormaPagamento(
                 forma_pagamento = &#39;0&#39;,
                 valor_pagamento = &#39;1.00&#39;,
             )
-    
+
     def test_campo_obrigatorio_valor_pagamento(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.FormaPagamento(
                 forma_pagamento = &#39;0&#39;,
                 meio_pagamento  = &#39;01&#39;,
             )
-    
+
     def test_forma_pagamento_invalido(self):
         with self.assertRaises(ValueError):
             nfe.FormaPagamento (
@@ -1378,7 +1379,7 @@ not have a method with the specified name.</p></div>
                 meio_pagamento  = &#39;01&#39;,
                 valor_pagamento = &#39;1.00&#39;,
             )
-            
+
     def test_meio_pagamento_invalido(self):
         with self.assertRaises(ValueError):
             nfe.FormaPagamento (
@@ -1386,7 +1387,7 @@ not have a method with the specified name.</p></div>
                 meio_pagamento  = &#39;&#39;,
                 valor_pagamento = &#39;1.00&#39;,
             )
-            
+
     def test_descricao_obrigatorio(self):
         with self.assertRaises(ValueError):
             nfe.FormaPagamento (
@@ -1394,7 +1395,7 @@ not have a method with the specified name.</p></div>
                 meio_pagamento  = &#39;99&#39;,
                 valor_pagamento = &#39;1.00&#39;
             )
-            
+
     def test_tamanho_descricao_menor_que_dois(self):
         with self.assertRaises(ValueError):
             nfe.FormaPagamento (
@@ -1403,7 +1404,7 @@ not have a method with the specified name.</p></div>
                 valor_pagamento          = &#39;1.00&#39;,
                 descricao_meio_pagamento = &#39;a&#39;,
             )
-    
+
     def test_tamanho_descricao_maior_que_sessenta(self):
         with self.assertRaises(ValueError):
             nfe.FormaPagamento (
@@ -1429,7 +1430,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_forma_pagamento(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.FormaPagamento(
             meio_pagamento  = &#39;01&#39;,
             valor_pagamento = &#39;1.00&#39;,
@@ -1446,7 +1447,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_meio_pagamento(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.FormaPagamento(
             forma_pagamento = &#39;0&#39;,
             valor_pagamento = &#39;1.00&#39;,
@@ -1463,7 +1464,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_valor_pagamento(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.FormaPagamento(
             forma_pagamento = &#39;0&#39;,
             meio_pagamento  = &#39;01&#39;,
@@ -1577,7 +1578,7 @@ not have a method with the specified name.</p></div>
         meio_pagamento  = &#39;01&#39;,
         valor_pagamento = &#39;1.00&#39;,
     )
-    
+
     self.assertEqual(forma_pgto.forma_pagamento, &#39;0&#39;)
     self.assertEqual(forma_pgto.meio_pagamento , &#39;01&#39;)
     self.assertEqual(forma_pgto.valor_pagamento, &#39;1.00&#39;)</code></pre>
@@ -1636,14 +1637,14 @@ not have a method with the specified name.</p></div>
             numero              = &#39;484&#39;,
             complemento         = &#39;Gerado por 4devs&#39;,
         )
-        
+
         cliente  = Cliente(
             consumidor_final = &#39;1&#39;,
             contribuinte     = &#39;9&#39;,
             pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
             endereco         = endereco,
         )
-        
+
         impostos = nfe.ImpostosProduto(
             pis = Pis (
                 situacao_tributaria=&#39;99&#39;,
@@ -1663,7 +1664,7 @@ not have a method with the specified name.</p></div>
                 aliquota=&#39;0.0000&#39;,
             ),
         )
-        
+
         produtos = [
             nfe.Produto(
                 cfop                   = &#39;5102&#39;,
@@ -1679,7 +1680,7 @@ not have a method with the specified name.</p></div>
                 informacoes_adicionais = &#34;Emitido pelo pySisnoAPI&#34;,
             ),
         ]
-        
+
         pagamento = nfe.Pagamento(
             formas_pagamento = [
                 nfe.FormaPagamento(
@@ -1689,15 +1690,15 @@ not have a method with the specified name.</p></div>
                 )
             ]
         )
-        
+
         pedido   = nfe.Pedido(
             presenca=&#39;0&#39;,
             pagamento=pagamento,
             # informacoes_complementares=&#39;Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200nEMPRESA ENQUADRADA NO SIMPLES NACIONAL LC 123/2006n&#39;,
         )
-        
-        data = datetime.now().strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
-        
+
+        data = datetime.now()
+
         self.objeto = nfe.ObjetoEmissaoNFe(
             numero_nota_sequencial= &#39;123456&#39;,
             serie                 = &#39;1&#39;,
@@ -1712,23 +1713,23 @@ not have a method with the specified name.</p></div>
             data_entrada_saida    = data,
             data_emissao          = data,
         )
-    
+
     async def test_listar(self):
-        &#34;&#34;&#34;Função responsável por testar a função nfe.listar() utilizando dados falsos. 
+        &#34;&#34;&#34;Função responsável por testar a função nfe.listar() utilizando dados falsos.
         Essa função realiza uma solicitação ao endpoint correspondente e retorna uma lista de objetos NotaFiscal.
         &#34;&#34;&#34;
-        
+
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
-        
+
         mock_response.json.return_value = {
-            &#39;status&#39;: &#39;Sucesso&#39;, 
+            &#39;status&#39;: &#39;Sucesso&#39;,
             &#39;descricao&#39;: &#39;Página de notas de serviço do emissor&#39;,
             &#34;dados&#34;: {
-                &#39;total&#39;: 1, 
+                &#39;total&#39;: 1,
                 &#39;itens_por_pagina&#39;: 10,
-                &#39;pagina_atual&#39;: 0, 
+                &#39;pagina_atual&#39;: 0,
                 &#39;itens&#39;: [
                     {
                         &#34;id&#34;: 31833,
@@ -1781,49 +1782,49 @@ not have a method with the specified name.</p></div>
                         &#34;json_objeto_nfe&#34;: &#34;OBJETO JSON&#34;,
                         &#34;tipo_emissao&#34;: &#34;1&#34;
                     }
-                ], 
+                ],
                 # &#39;informacoesAdicionais&#39;: {
-                #     &#39;totalAutorizadas&#39;: 0.0, 
+                #     &#39;totalAutorizadas&#39;: 0.0,
                 #     &#39;totalCanceladas&#39;: 0.0
                 # },
             }
         }
 
         requests.get = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         nfes = await nfe.listar(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
-        
+
         # Checando resultado:
         self.assertGreaterEqual(len(nfes), 1)
-        
+
     async def test_validar(self):
-        &#34;&#34;&#34;Função responsável por testar a função nfe.validar() utilizando dados falsos. 
+        &#34;&#34;&#34;Função responsável por testar a função nfe.validar() utilizando dados falsos.
         Essa função realiza uma solicitação ao endpoint correspondente para validar uma nota fiscal antes de emiti-la.
         &#34;&#34;&#34;
-        
+
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
-            &#39;status&#39;: &#39;Sucesso&#39;, 
+            &#39;status&#39;: &#39;Sucesso&#39;,
             &#39;message&#39;: &#39;Nota validada pela API&#39;,
         }
-        
+
         requests.post = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         result = await nfe.validar(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
-        
+
         # Checando resultado:
         self.assertEqual(&#39;Sucesso&#39;, result[&#39;status&#39;])
         self.assertEqual(&#39;Nota validada pela API&#39;, result[&#39;message&#39;])
 
     async def test_emitir(self):
-        &#34;&#34;&#34;Função responsável por testar a função nfe.emitir() utilizando dados falsos. 
+        &#34;&#34;&#34;Função responsável por testar a função nfe.emitir() utilizando dados falsos.
         Essa função realiza uma solicitação ao endpoint correspondente para emitir uma nota fiscal.
         &#34;&#34;&#34;
-        
+
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -1936,7 +1937,7 @@ not have a method with the specified name.</p></div>
                                     &#34;programaEmissor&#34;: &#34;CONTRIBUINTE&#34;,
                                     &#34;versaoEmissor&#34;: &#34;1.0&#34;
                                 },
-                                &#34;emitente&#34;: {                   # Alterado manualmente  
+                                &#34;emitente&#34;: {                   # Alterado manualmente
                                     &#34;cnpj&#34;: &#34;27578708000180&#34;,   # https://www.4devs.com.br/gerador_de_empresas
                                     &#34;razaoSocial&#34;: &#34;Oliver e Ana Pizzaria ME&#34;,
                                     &#34;nomeFantasia&#34;: &#34;Oliver e Ana Pizzaria ME&#34;,
@@ -2119,32 +2120,32 @@ not have a method with the specified name.</p></div>
             },
             &#34;dados&#34;: &#34;53230500665143000112550017777740441235246385&#34; # Alterado manualmente
         }
-                
+
         requests.post = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         result = await nfe.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
-        
+
         # Checando resultado:
         self.assertIn(&#39;status&#39;, result)
         self.assertIn(&#39;descricao&#39;, result)
         self.assertIn(&#39;retorno_sefaz&#39;, result)
         self.assertIn(&#39;dados&#39;, result)
-        
+
         self.assertEqual(result[&#39;status&#39;], &#39;Sucesso&#39;, )
         self.assertEqual(result[&#39;descricao&#39;], &#39;Lote enviado com sucesso.&#39;)
-        
+
     async def test_emitir_nota_ja_autorizada(self):
         &#34;&#34;&#34;Função que simula a tentativa de emissão de uma nota fiscal já autorizada, utilizando dados falsos.
 
             O endpoint requer o número da nota fiscal como um dos parâmetro e
-            se um número correspondente a uma nota fiscal autorizada for fornecido, a API retornará um erro. 
-            
+            se um número correspondente a uma nota fiscal autorizada for fornecido, a API retornará um erro.
+
             É importante observar que se trata de uma nota fiscal já **autorizada**,
-            pois, é possível reenviar a mesma nota fiscal após ser rejeitada pela SEFAZ, 
+            pois, é possível reenviar a mesma nota fiscal após ser rejeitada pela SEFAZ,
             permitindo ao usuário realizar alterações nos campos pertinentes e tentar emiti-la novamente.
         &#34;&#34;&#34;
-        
+
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 412
@@ -2152,16 +2153,16 @@ not have a method with the specified name.</p></div>
             &#34;status&#34;: &#34;Erro&#34;,
             &#34;descricao&#34;: &#34;Tentativa de retransmitir uma nota que não foi rejeitada.&#34;,
         }
-        
+
         requests.post = MagicMock(return_value=mock_response)
-        
+
          # Chamando a Função:
         result = await nfe.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
-        
+
         # Checando resultado:
         self.assertIn(&#39;status&#39;, result)
         self.assertIn(&#39;descricao&#39;, result)
-        
+
         self.assertEqual(result[&#39;status&#39;], &#39;Erro&#39;)
         self.assertEqual(result[&#39;descricao&#39;], &#39;Tentativa de retransmitir uma nota que não foi rejeitada.&#39;)</code></pre>
 </details>
@@ -2193,14 +2194,14 @@ not have a method with the specified name.</p></div>
         numero              = &#39;484&#39;,
         complemento         = &#39;Gerado por 4devs&#39;,
     )
-    
+
     cliente  = Cliente(
         consumidor_final = &#39;1&#39;,
         contribuinte     = &#39;9&#39;,
         pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
         endereco         = endereco,
     )
-    
+
     impostos = nfe.ImpostosProduto(
         pis = Pis (
             situacao_tributaria=&#39;99&#39;,
@@ -2220,7 +2221,7 @@ not have a method with the specified name.</p></div>
             aliquota=&#39;0.0000&#39;,
         ),
     )
-    
+
     produtos = [
         nfe.Produto(
             cfop                   = &#39;5102&#39;,
@@ -2236,7 +2237,7 @@ not have a method with the specified name.</p></div>
             informacoes_adicionais = &#34;Emitido pelo pySisnoAPI&#34;,
         ),
     ]
-    
+
     pagamento = nfe.Pagamento(
         formas_pagamento = [
             nfe.FormaPagamento(
@@ -2246,15 +2247,15 @@ not have a method with the specified name.</p></div>
             )
         ]
     )
-    
+
     pedido   = nfe.Pedido(
         presenca=&#39;0&#39;,
         pagamento=pagamento,
         # informacoes_complementares=&#39;Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200nEMPRESA ENQUADRADA NO SIMPLES NACIONAL LC 123/2006n&#39;,
     )
-    
-    data = datetime.now().strftime(&#34;%d/%m/%Y %H:%M:%S&#34;)
-    
+
+    data = datetime.now()
+
     self.objeto = nfe.ObjetoEmissaoNFe(
         numero_nota_sequencial= &#39;123456&#39;,
         serie                 = &#39;1&#39;,
@@ -2282,10 +2283,10 @@ Essa função realiza uma solicitação ao endpoint correspondente para emitir u
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def test_emitir(self):
-    &#34;&#34;&#34;Função responsável por testar a função nfe.emitir() utilizando dados falsos. 
+    &#34;&#34;&#34;Função responsável por testar a função nfe.emitir() utilizando dados falsos.
     Essa função realiza uma solicitação ao endpoint correspondente para emitir uma nota fiscal.
     &#34;&#34;&#34;
-    
+
     # Mocking:
     mock_response = MagicMock()
     mock_response.status_code = 200
@@ -2398,7 +2399,7 @@ Essa função realiza uma solicitação ao endpoint correspondente para emitir u
                                 &#34;programaEmissor&#34;: &#34;CONTRIBUINTE&#34;,
                                 &#34;versaoEmissor&#34;: &#34;1.0&#34;
                             },
-                            &#34;emitente&#34;: {                   # Alterado manualmente  
+                            &#34;emitente&#34;: {                   # Alterado manualmente
                                 &#34;cnpj&#34;: &#34;27578708000180&#34;,   # https://www.4devs.com.br/gerador_de_empresas
                                 &#34;razaoSocial&#34;: &#34;Oliver e Ana Pizzaria ME&#34;,
                                 &#34;nomeFantasia&#34;: &#34;Oliver e Ana Pizzaria ME&#34;,
@@ -2581,18 +2582,18 @@ Essa função realiza uma solicitação ao endpoint correspondente para emitir u
         },
         &#34;dados&#34;: &#34;53230500665143000112550017777740441235246385&#34; # Alterado manualmente
     }
-            
+
     requests.post = MagicMock(return_value=mock_response)
-    
+
     # Chamando a Função:
     result = await nfe.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
-    
+
     # Checando resultado:
     self.assertIn(&#39;status&#39;, result)
     self.assertIn(&#39;descricao&#39;, result)
     self.assertIn(&#39;retorno_sefaz&#39;, result)
     self.assertIn(&#39;dados&#39;, result)
-    
+
     self.assertEqual(result[&#39;status&#39;], &#39;Sucesso&#39;, )
     self.assertEqual(result[&#39;descricao&#39;], &#39;Lote enviado com sucesso.&#39;)</code></pre>
 </details>
@@ -2603,7 +2604,7 @@ Essa função realiza uma solicitação ao endpoint correspondente para emitir u
 <dd>
 <div class="desc"><p>Função que simula a tentativa de emissão de uma nota fiscal já autorizada, utilizando dados falsos.</p>
 <p>O endpoint requer o número da nota fiscal como um dos parâmetro e
-se um número correspondente a uma nota fiscal autorizada for fornecido, a API retornará um erro. </p>
+se um número correspondente a uma nota fiscal autorizada for fornecido, a API retornará um erro.</p>
 <p>É importante observar que se trata de uma nota fiscal já <strong>autorizada</strong>,
 pois, é possível reenviar a mesma nota fiscal após ser rejeitada pela SEFAZ,
 permitindo ao usuário realizar alterações nos campos pertinentes e tentar emiti-la novamente.</p></div>
@@ -2615,13 +2616,13 @@ permitindo ao usuário realizar alterações nos campos pertinentes e tentar emi
     &#34;&#34;&#34;Função que simula a tentativa de emissão de uma nota fiscal já autorizada, utilizando dados falsos.
 
         O endpoint requer o número da nota fiscal como um dos parâmetro e
-        se um número correspondente a uma nota fiscal autorizada for fornecido, a API retornará um erro. 
-        
+        se um número correspondente a uma nota fiscal autorizada for fornecido, a API retornará um erro.
+
         É importante observar que se trata de uma nota fiscal já **autorizada**,
-        pois, é possível reenviar a mesma nota fiscal após ser rejeitada pela SEFAZ, 
+        pois, é possível reenviar a mesma nota fiscal após ser rejeitada pela SEFAZ,
         permitindo ao usuário realizar alterações nos campos pertinentes e tentar emiti-la novamente.
     &#34;&#34;&#34;
-    
+
     # Mocking:
     mock_response = MagicMock()
     mock_response.status_code = 412
@@ -2629,16 +2630,16 @@ permitindo ao usuário realizar alterações nos campos pertinentes e tentar emi
         &#34;status&#34;: &#34;Erro&#34;,
         &#34;descricao&#34;: &#34;Tentativa de retransmitir uma nota que não foi rejeitada.&#34;,
     }
-    
+
     requests.post = MagicMock(return_value=mock_response)
-    
+
      # Chamando a Função:
     result = await nfe.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
-    
+
     # Checando resultado:
     self.assertIn(&#39;status&#39;, result)
     self.assertIn(&#39;descricao&#39;, result)
-    
+
     self.assertEqual(result[&#39;status&#39;], &#39;Erro&#39;)
     self.assertEqual(result[&#39;descricao&#39;], &#39;Tentativa de retransmitir uma nota que não foi rejeitada.&#39;)</code></pre>
 </details>
@@ -2654,21 +2655,21 @@ Essa função realiza uma solicitação ao endpoint correspondente e retorna uma
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def test_listar(self):
-    &#34;&#34;&#34;Função responsável por testar a função nfe.listar() utilizando dados falsos. 
+    &#34;&#34;&#34;Função responsável por testar a função nfe.listar() utilizando dados falsos.
     Essa função realiza uma solicitação ao endpoint correspondente e retorna uma lista de objetos NotaFiscal.
     &#34;&#34;&#34;
-    
+
     # Mocking:
     mock_response = MagicMock()
     mock_response.status_code = 200
-    
+
     mock_response.json.return_value = {
-        &#39;status&#39;: &#39;Sucesso&#39;, 
+        &#39;status&#39;: &#39;Sucesso&#39;,
         &#39;descricao&#39;: &#39;Página de notas de serviço do emissor&#39;,
         &#34;dados&#34;: {
-            &#39;total&#39;: 1, 
+            &#39;total&#39;: 1,
             &#39;itens_por_pagina&#39;: 10,
-            &#39;pagina_atual&#39;: 0, 
+            &#39;pagina_atual&#39;: 0,
             &#39;itens&#39;: [
                 {
                     &#34;id&#34;: 31833,
@@ -2721,19 +2722,19 @@ Essa função realiza uma solicitação ao endpoint correspondente e retorna uma
                     &#34;json_objeto_nfe&#34;: &#34;OBJETO JSON&#34;,
                     &#34;tipo_emissao&#34;: &#34;1&#34;
                 }
-            ], 
+            ],
             # &#39;informacoesAdicionais&#39;: {
-            #     &#39;totalAutorizadas&#39;: 0.0, 
+            #     &#39;totalAutorizadas&#39;: 0.0,
             #     &#39;totalCanceladas&#39;: 0.0
             # },
         }
     }
 
     requests.get = MagicMock(return_value=mock_response)
-    
+
     # Chamando a Função:
     nfes = await nfe.listar(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
-    
+
     # Checando resultado:
     self.assertGreaterEqual(len(nfes), 1)</code></pre>
 </details>
@@ -2749,23 +2750,23 @@ Essa função realiza uma solicitação ao endpoint correspondente para validar 
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">async def test_validar(self):
-    &#34;&#34;&#34;Função responsável por testar a função nfe.validar() utilizando dados falsos. 
+    &#34;&#34;&#34;Função responsável por testar a função nfe.validar() utilizando dados falsos.
     Essa função realiza uma solicitação ao endpoint correspondente para validar uma nota fiscal antes de emiti-la.
     &#34;&#34;&#34;
-    
+
     # Mocking:
     mock_response = MagicMock()
     mock_response.status_code = 200
     mock_response.json.return_value = {
-        &#39;status&#39;: &#39;Sucesso&#39;, 
+        &#39;status&#39;: &#39;Sucesso&#39;,
         &#39;message&#39;: &#39;Nota validada pela API&#39;,
     }
-    
+
     requests.post = MagicMock(return_value=mock_response)
-    
+
     # Chamando a Função:
     result = await nfe.validar(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfe=self.objeto, tipo_emissao=&#39;1&#39;, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
-    
+
     # Checando resultado:
     self.assertEqual(&#39;Sucesso&#39;, result[&#39;status&#39;])
     self.assertEqual(&#39;Nota validada pela API&#39;, result[&#39;message&#39;])</code></pre>
@@ -2824,34 +2825,34 @@ not have a method with the specified name.</p></div>
             numero              = &#39;484&#39;,
             complemento         = &#39;Gerado por 4devs&#39;,
         )
-        
+
         self.cliente  = Cliente(
             consumidor_final = &#39;1&#39;,
             contribuinte     = &#39;9&#39;,
             pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
             endereco         = self.endereco,
         )
-        
+
         self.impostos = nfe.ImpostosProduto(
-            Pis (
+            pis    = Pis (
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
-            Cofins(
+            cofins = Cofins(
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
-            Icms (
+            icms   = Icms (
                 situacao_tributaria=&#39;102&#39;,
                 aliquota_icms=&#39;0.0000&#39;,
                 aliquota_icms_st=&#39;0.0000&#39;,
             ),
-            Ipi(
+            ipi    = Ipi(
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
         )
-        
+
         self.produtos = [
             nfe.Produto(
                 cfop                   = &#39;5102&#39;,
@@ -2867,7 +2868,7 @@ not have a method with the specified name.</p></div>
                 informacoes_adicionais = &#34;Emitido pelo pySisnoAPI&#34;,
             ),
         ]
-        
+
         self.pagamento = nfe.Pagamento(
             formas_pagamento = [
                 nfe.FormaPagamento(
@@ -2877,15 +2878,15 @@ not have a method with the specified name.</p></div>
                 )
             ]
         )
-        
+
         self.pedido   = nfe.Pedido(
             presenca=&#39;0&#39;,
             pagamento=self.pagamento,
             informacoes_complementares=&#39;Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200nEMPRESA ENQUADRADA NO SIMPLES NACIONAL LC 123/2006n&#39;,
         )
-        
+
         self.data = datetime(2023, 5, 19, 17, 25, 57)
-    
+
     def test_todos_campos_obrigatorios(self):
         objeto = nfe.ObjetoEmissaoNFe (
             numero_nota_sequencial = &#39;123456&#39;,
@@ -2901,7 +2902,7 @@ not have a method with the specified name.</p></div>
             data_entrada_saida     = self.data,
             data_emissao           = self.data,
         )
-        
+
         assert objeto.numero_nota_sequencial == &#34;123456&#34;
         assert objeto.serie                  == &#34;1&#34;
         assert objeto.operacao               == &#34;1&#34;
@@ -2914,7 +2915,7 @@ not have a method with the specified name.</p></div>
         assert objeto.pedido                 == self.pedido
         assert objeto.data_entrada_saida     == self.data
         assert objeto.data_emissao           == self.data
-        
+
         assert objeto.numero_pedido            is None
         assert objeto.transporte               is None
         assert objeto.fatura                   is None
@@ -2928,7 +2929,7 @@ not have a method with the specified name.</p></div>
         assert objeto.informacao_intermediador is None
 
     def test_campo_obrigatorio_numero_sequencial(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 serie                  = &#39;1&#39;,
                 operacao               = &#39;1&#39;,
@@ -2942,9 +2943,9 @@ not have a method with the specified name.</p></div>
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-    
+
     def test_campo_obrigatorio_serie(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 operacao               = &#39;1&#39;,
@@ -2958,9 +2959,9 @@ not have a method with the specified name.</p></div>
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-    
+
     def test_campo_obrigatorio_operacao(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -2974,9 +2975,9 @@ not have a method with the specified name.</p></div>
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_natureza_operacao(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -2990,9 +2991,9 @@ not have a method with the specified name.</p></div>
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_modelo(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -3006,9 +3007,9 @@ not have a method with the specified name.</p></div>
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_finalidade(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -3022,9 +3023,9 @@ not have a method with the specified name.</p></div>
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_ambiente(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -3038,9 +3039,9 @@ not have a method with the specified name.</p></div>
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_cliente(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -3054,9 +3055,9 @@ not have a method with the specified name.</p></div>
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_produtos(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -3070,9 +3071,9 @@ not have a method with the specified name.</p></div>
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_pedido(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -3086,9 +3087,9 @@ not have a method with the specified name.</p></div>
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_data_entrada_saida(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -3102,9 +3103,9 @@ not have a method with the specified name.</p></div>
                 pedido                 = self.pedido,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_emissao(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = &#39;123456&#39;,
                 serie                  = &#39;1&#39;,
@@ -3135,7 +3136,7 @@ not have a method with the specified name.</p></div>
                 data_entrada_saida    = self.data,
                 data_emissao          = self.data,
             )
-    
+
     def test_numero_nota_sequencial_maior_que_9_caracteres(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (
@@ -3152,7 +3153,7 @@ not have a method with the specified name.</p></div>
                 data_entrada_saida    = self.data,
                 data_emissao          = self.data,
             )
-    
+
     def test_operacao_invalida(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (
@@ -3169,7 +3170,7 @@ not have a method with the specified name.</p></div>
                 data_entrada_saida    = self.data,
                 data_emissao          = self.data,
             )
-    
+
     def test_modelo_invalido(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (
@@ -3186,7 +3187,7 @@ not have a method with the specified name.</p></div>
                 data_entrada_saida    = self.data,
                 data_emissao          = self.data,
             )
-    
+
     def test_finalidade_invalida(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (
@@ -3203,7 +3204,7 @@ not have a method with the specified name.</p></div>
                 data_entrada_saida    = self.data,
                 data_emissao          = self.data,
             )
-    
+
     def test_ambiente_invalido(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (
@@ -3249,34 +3250,34 @@ not have a method with the specified name.</p></div>
         numero              = &#39;484&#39;,
         complemento         = &#39;Gerado por 4devs&#39;,
     )
-    
+
     self.cliente  = Cliente(
         consumidor_final = &#39;1&#39;,
         contribuinte     = &#39;9&#39;,
         pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
         endereco         = self.endereco,
     )
-    
+
     self.impostos = nfe.ImpostosProduto(
-        Pis (
+        pis    = Pis (
             situacao_tributaria=&#39;99&#39;,
             aliquota=&#39;0.0000&#39;,
         ),
-        Cofins(
+        cofins = Cofins(
             situacao_tributaria=&#39;99&#39;,
             aliquota=&#39;0.0000&#39;,
         ),
-        Icms (
+        icms   = Icms (
             situacao_tributaria=&#39;102&#39;,
             aliquota_icms=&#39;0.0000&#39;,
             aliquota_icms_st=&#39;0.0000&#39;,
         ),
-        Ipi(
+        ipi    = Ipi(
             situacao_tributaria=&#39;99&#39;,
             aliquota=&#39;0.0000&#39;,
         ),
     )
-    
+
     self.produtos = [
         nfe.Produto(
             cfop                   = &#39;5102&#39;,
@@ -3292,7 +3293,7 @@ not have a method with the specified name.</p></div>
             informacoes_adicionais = &#34;Emitido pelo pySisnoAPI&#34;,
         ),
     ]
-    
+
     self.pagamento = nfe.Pagamento(
         formas_pagamento = [
             nfe.FormaPagamento(
@@ -3302,13 +3303,13 @@ not have a method with the specified name.</p></div>
             )
         ]
     )
-    
+
     self.pedido   = nfe.Pedido(
         presenca=&#39;0&#39;,
         pagamento=self.pagamento,
         informacoes_complementares=&#39;Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200nEMPRESA ENQUADRADA NO SIMPLES NACIONAL LC 123/2006n&#39;,
     )
-    
+
     self.data = datetime(2023, 5, 19, 17, 25, 57)</code></pre>
 </details>
 </dd>
@@ -3349,7 +3350,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_ambiente(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.ObjetoEmissaoNFe (
             numero_nota_sequencial = &#39;123456&#39;,
             serie                  = &#39;1&#39;,
@@ -3375,7 +3376,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_cliente(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.ObjetoEmissaoNFe (
             numero_nota_sequencial = &#39;123456&#39;,
             serie                  = &#39;1&#39;,
@@ -3401,7 +3402,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_data_entrada_saida(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.ObjetoEmissaoNFe (
             numero_nota_sequencial = &#39;123456&#39;,
             serie                  = &#39;1&#39;,
@@ -3427,7 +3428,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_emissao(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.ObjetoEmissaoNFe (
             numero_nota_sequencial = &#39;123456&#39;,
             serie                  = &#39;1&#39;,
@@ -3453,7 +3454,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_finalidade(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.ObjetoEmissaoNFe (
             numero_nota_sequencial = &#39;123456&#39;,
             serie                  = &#39;1&#39;,
@@ -3479,7 +3480,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_modelo(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.ObjetoEmissaoNFe (
             numero_nota_sequencial = &#39;123456&#39;,
             serie                  = &#39;1&#39;,
@@ -3505,7 +3506,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_natureza_operacao(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.ObjetoEmissaoNFe (
             numero_nota_sequencial = &#39;123456&#39;,
             serie                  = &#39;1&#39;,
@@ -3531,7 +3532,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_numero_sequencial(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.ObjetoEmissaoNFe (
             serie                  = &#39;1&#39;,
             operacao               = &#39;1&#39;,
@@ -3557,7 +3558,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_operacao(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.ObjetoEmissaoNFe (
             numero_nota_sequencial = &#39;123456&#39;,
             serie                  = &#39;1&#39;,
@@ -3583,7 +3584,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_pedido(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.ObjetoEmissaoNFe (
             numero_nota_sequencial = &#39;123456&#39;,
             serie                  = &#39;1&#39;,
@@ -3609,7 +3610,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_produtos(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.ObjetoEmissaoNFe (
             numero_nota_sequencial = &#39;123456&#39;,
             serie                  = &#39;1&#39;,
@@ -3635,7 +3636,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_serie(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.ObjetoEmissaoNFe (
             numero_nota_sequencial = &#39;123456&#39;,
             operacao               = &#39;1&#39;,
@@ -3810,7 +3811,7 @@ not have a method with the specified name.</p></div>
         data_entrada_saida     = self.data,
         data_emissao           = self.data,
     )
-    
+
     assert objeto.numero_nota_sequencial == &#34;123456&#34;
     assert objeto.serie                  == &#34;1&#34;
     assert objeto.operacao               == &#34;1&#34;
@@ -3823,7 +3824,7 @@ not have a method with the specified name.</p></div>
     assert objeto.pedido                 == self.pedido
     assert objeto.data_entrada_saida     == self.data
     assert objeto.data_emissao           == self.data
-    
+
     assert objeto.numero_pedido            is None
     assert objeto.transporte               is None
     assert objeto.fatura                   is None
@@ -3883,7 +3884,7 @@ not have a method with the specified name.</p></div>
             meio_pagamento  = &#39;01&#39;,
             valor_pagamento = &#39;1.00&#39;,
         )
-        
+
     def test_todos_campos_obrigatorios(self):
         pagamento = nfe.Pagamento (
             formas_pagamento = [
@@ -3891,7 +3892,7 @@ not have a method with the specified name.</p></div>
                 self.forma_pgto,
             ]
         )
-        
+
         self.assertEqual(len(pagamento.formas_pagamento), 2)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -3933,7 +3934,7 @@ not have a method with the specified name.</p></div>
             self.forma_pgto,
         ]
     )
-    
+
     self.assertEqual(len(pagamento.formas_pagamento), 2)</code></pre>
 </details>
 </dd>
@@ -3954,28 +3955,28 @@ not have a method with the specified name.</p></div>
 </summary>
 <pre><code class="python">class ProdutoUnitTest(unittest.TestCase):
     &#34;&#34;&#34;Testes da classe produtos&#34;&#34;&#34;
-    
+
     def setUp(self) -&gt; None:
         self.impostos = nfe.ImpostosProduto(
-            Pis (
+            pis    = Pis (
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
-            Cofins(
+            cofins = Cofins(
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
-            Icms (
+            icms   = Icms (
                 situacao_tributaria=&#39;102&#39;,
                 aliquota_icms=&#39;0.0000&#39;,
                 aliquota_icms_st=&#39;0.0000&#39;,
             ),
-            Ipi(
+            ipi    = Ipi(
                 situacao_tributaria=&#39;99&#39;,
                 aliquota=&#39;0.0000&#39;,
             ),
         )
-    
+
     def test_todos_campos_obrigatorios(self):
         produto = nfe.Produto(
             item       = &#34;1&#34;,
@@ -3989,7 +3990,7 @@ not have a method with the specified name.</p></div>
             total      = &#34;10.0&#34;,
             impostos   = self.impostos,
         )
-    
+
         self.assertEqual(produto.cfop      , &#39;5102&#39;)
         self.assertEqual(produto.item      , &#39;1&#39;)
         self.assertEqual(produto.nome      , &#39;UNIFORMES&#39;)
@@ -4000,11 +4001,11 @@ not have a method with the specified name.</p></div>
         self.assertEqual(produto.subtotal  , &#39;5.0&#39;)
         self.assertEqual(produto.total     , &#39;10.0&#39;)
         self.assertEqual(produto.impostos  , self.impostos)
-        
+
     def test_campo_obrigatorio_item(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
-                
+
                 cfop       = &#39;5102&#39;,
                 nome       = &#34;UNIFORMES&#34;,
                 codigo     = &#34;123456&#34;,
@@ -4015,12 +4016,12 @@ not have a method with the specified name.</p></div>
                 total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
-        
+
     def test_campo_obrigatorio_cfop(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
-                
+
                 nome       = &#34;UNIFORMES&#34;,
                 codigo     = &#34;123456&#34;,
                 ncm        = &#34;62069000&#34;,
@@ -4030,13 +4031,13 @@ not have a method with the specified name.</p></div>
                 total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_nome(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
                 cfop       = &#39;5102&#39;,
-                
+
                 codigo     = &#34;123456&#34;,
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
@@ -4045,14 +4046,14 @@ not have a method with the specified name.</p></div>
                 total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_codigo(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
                 cfop       = &#39;5102&#39;,
                 nome       = &#34;UNIFORMES&#34;,
-                
+
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
@@ -4060,39 +4061,39 @@ not have a method with the specified name.</p></div>
                 total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_ncm(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
                 cfop       = &#39;5102&#39;,
                 nome       = &#34;UNIFORMES&#34;,
                 codigo     = &#34;123456&#34;,
-                
+
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
                 subtotal   = &#34;5.0&#34;,
                 total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_quantidade(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
                 cfop       = &#39;5102&#39;,
                 nome       = &#34;UNIFORMES&#34;,
                 codigo     = &#34;123456&#34;,
                 ncm        = &#34;62069000&#34;,
-                
+
                 unidade    = &#34;UNID&#34;,
                 subtotal   = &#34;5.0&#34;,
                 total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_unidade(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
                 cfop       = &#39;5102&#39;,
@@ -4100,14 +4101,14 @@ not have a method with the specified name.</p></div>
                 codigo     = &#34;123456&#34;,
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
-                
+
                 subtotal   = &#34;5.0&#34;,
                 total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_subtotal(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
                 cfop       = &#39;5102&#39;,
@@ -4116,13 +4117,13 @@ not have a method with the specified name.</p></div>
                 ncm        = &#34;62069000&#34;,
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
-                
+
                 total      = &#34;10.0&#34;,
                 impostos   = self.impostos,
             )
 
     def test_campo_obrigatorio_total(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
                 cfop       = &#39;5102&#39;,
@@ -4132,12 +4133,12 @@ not have a method with the specified name.</p></div>
                 quantidade = &#34;2.0&#34;,
                 unidade    = &#34;UNID&#34;,
                 subtotal   = &#34;5.0&#34;,
-                
+
                 impostos   = self.impostos,
             )
-    
+
     def test_campo_obrigatorio_impostos(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = &#34;1&#34;,
                 cfop       = &#39;5102&#39;,
@@ -4148,7 +4149,7 @@ not have a method with the specified name.</p></div>
                 unidade    = &#34;UNID&#34;,
                 subtotal   = &#34;5.0&#34;,
                 total      = &#34;10.0&#34;,
-                
+
             )</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -4168,20 +4169,20 @@ not have a method with the specified name.</p></div>
 </summary>
 <pre><code class="python">def setUp(self) -&gt; None:
     self.impostos = nfe.ImpostosProduto(
-        Pis (
+        pis    = Pis (
             situacao_tributaria=&#39;99&#39;,
             aliquota=&#39;0.0000&#39;,
         ),
-        Cofins(
+        cofins = Cofins(
             situacao_tributaria=&#39;99&#39;,
             aliquota=&#39;0.0000&#39;,
         ),
-        Icms (
+        icms   = Icms (
             situacao_tributaria=&#39;102&#39;,
             aliquota_icms=&#39;0.0000&#39;,
             aliquota_icms_st=&#39;0.0000&#39;,
         ),
-        Ipi(
+        ipi    = Ipi(
             situacao_tributaria=&#39;99&#39;,
             aliquota=&#39;0.0000&#39;,
         ),
@@ -4198,10 +4199,10 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_cfop(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.Produto (
             item       = &#34;1&#34;,
-            
+
             nome       = &#34;UNIFORMES&#34;,
             codigo     = &#34;123456&#34;,
             ncm        = &#34;62069000&#34;,
@@ -4223,12 +4224,12 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_codigo(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.Produto (
             item       = &#34;1&#34;,
             cfop       = &#39;5102&#39;,
             nome       = &#34;UNIFORMES&#34;,
-            
+
             ncm        = &#34;62069000&#34;,
             quantidade = &#34;2.0&#34;,
             unidade    = &#34;UNID&#34;,
@@ -4248,7 +4249,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_impostos(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.Produto (
             item       = &#34;1&#34;,
             cfop       = &#39;5102&#39;,
@@ -4259,7 +4260,7 @@ not have a method with the specified name.</p></div>
             unidade    = &#34;UNID&#34;,
             subtotal   = &#34;5.0&#34;,
             total      = &#34;10.0&#34;,
-            
+
         )</code></pre>
 </details>
 </dd>
@@ -4273,9 +4274,9 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_item(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.Produto (
-            
+
             cfop       = &#39;5102&#39;,
             nome       = &#34;UNIFORMES&#34;,
             codigo     = &#34;123456&#34;,
@@ -4298,13 +4299,13 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_ncm(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.Produto (
             item       = &#34;1&#34;,
             cfop       = &#39;5102&#39;,
             nome       = &#34;UNIFORMES&#34;,
             codigo     = &#34;123456&#34;,
-            
+
             quantidade = &#34;2.0&#34;,
             unidade    = &#34;UNID&#34;,
             subtotal   = &#34;5.0&#34;,
@@ -4323,11 +4324,11 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_nome(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.Produto (
             item       = &#34;1&#34;,
             cfop       = &#39;5102&#39;,
-            
+
             codigo     = &#34;123456&#34;,
             ncm        = &#34;62069000&#34;,
             quantidade = &#34;2.0&#34;,
@@ -4348,14 +4349,14 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_quantidade(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.Produto (
             item       = &#34;1&#34;,
             cfop       = &#39;5102&#39;,
             nome       = &#34;UNIFORMES&#34;,
             codigo     = &#34;123456&#34;,
             ncm        = &#34;62069000&#34;,
-            
+
             unidade    = &#34;UNID&#34;,
             subtotal   = &#34;5.0&#34;,
             total      = &#34;10.0&#34;,
@@ -4373,7 +4374,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_subtotal(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.Produto (
             item       = &#34;1&#34;,
             cfop       = &#39;5102&#39;,
@@ -4382,7 +4383,7 @@ not have a method with the specified name.</p></div>
             ncm        = &#34;62069000&#34;,
             quantidade = &#34;2.0&#34;,
             unidade    = &#34;UNID&#34;,
-            
+
             total      = &#34;10.0&#34;,
             impostos   = self.impostos,
         )</code></pre>
@@ -4398,7 +4399,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_total(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.Produto (
             item       = &#34;1&#34;,
             cfop       = &#39;5102&#39;,
@@ -4408,7 +4409,7 @@ not have a method with the specified name.</p></div>
             quantidade = &#34;2.0&#34;,
             unidade    = &#34;UNID&#34;,
             subtotal   = &#34;5.0&#34;,
-            
+
             impostos   = self.impostos,
         )</code></pre>
 </details>
@@ -4423,7 +4424,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_unidade(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfe.Produto (
             item       = &#34;1&#34;,
             cfop       = &#39;5102&#39;,
@@ -4431,7 +4432,7 @@ not have a method with the specified name.</p></div>
             codigo     = &#34;123456&#34;,
             ncm        = &#34;62069000&#34;,
             quantidade = &#34;2.0&#34;,
-            
+
             subtotal   = &#34;5.0&#34;,
             total      = &#34;10.0&#34;,
             impostos   = self.impostos,

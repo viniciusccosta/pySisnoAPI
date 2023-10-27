@@ -31,6 +31,7 @@ import unittest
 import requests
 
 from unittest.mock import MagicMock
+from pydantic import ValidationError
 
 from pysisnoapi import *
 from pysisnoapi import nfse
@@ -50,14 +51,14 @@ class NfseTestCase(unittest.TestCase):
             numero              = &#39;484&#39;,
             complemento         = &#39;Gerado por 4devs&#39;,
         )
-        
+
         cliente  = Cliente(
             consumidor_final = &#39;1&#39;,
             contribuinte     = &#39;9&#39;,
             pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
             endereco         = endereco,
         )
-        
+
         impostos = nfse.ImpostosServico(
             pis = Pis(
                 situacao_tributaria = &#39;99&#39;,
@@ -76,30 +77,30 @@ class NfseTestCase(unittest.TestCase):
                 codigo_nbs                  = &#39;1.2606.00.00&#39;,
             ),
         )
-        
+
         servico = nfse.Servico(
             valor_servicos  = &#39;1.0&#39;,
             discriminacao   = &#39;TESTE&#39;,
             impostos        = impostos,
         )
-        
+
         self.objeto = nfse.ObjetoEmissaoNFSe(
             cliente = cliente,
             servico = servico,
         )
-    
+
     async def test_buscar_notas(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
-        
+
         mock_response.json.return_value = {
-            &#39;status&#39;: &#39;Sucesso&#39;, 
+            &#39;status&#39;: &#39;Sucesso&#39;,
             &#39;descricao&#39;: &#39;Página de notas de serviço do emissor&#39;,
             &#34;dados&#34;: {
-                &#39;total&#39;: 1, 
-                &#39;itens_por_pagina&#39;: 10, 
-                &#39;pagina_atual&#39;: 0, 
+                &#39;total&#39;: 1,
+                &#39;itens_por_pagina&#39;: 10,
+                &#39;pagina_atual&#39;: 0,
                 &#39;itens&#39;: [
                     {
                         &#34;id&#34;: 5,
@@ -145,23 +146,23 @@ class NfseTestCase(unittest.TestCase):
                         &#34;ambiente&#34;: &#34;2&#34;,
                         &#34;json_objeto_nfse&#34;: &#34;&#34;,
                     }
-                ], 
+                ],
                 &#39;informacoesAdicionais&#39;: {
-                    &#39;totalAutorizadas&#39;: 0.0, 
+                    &#39;totalAutorizadas&#39;: 0.0,
                     &#39;totalCanceladas&#39;: 0.0
                 },
             }
         }
-        
+
         requests.get = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         response, nfses = await nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
-        
+
         # Checando resultado:
         self.assertEquals(response.status_code, 200)
         self.assertGreaterEqual(len(nfses), 1)
-        
+
     async def test_buscar_notas_servidor_fora_dor_ar(self):
         # Mocking:
         mock_response = MagicMock()
@@ -179,12 +180,12 @@ class NfseTestCase(unittest.TestCase):
         mock_response.encoding          = &#39;ISO-8859-1&#39;
         mock_response.history           = []
         mock_response.reason            = &#39;Bad Gateway&#39;
-        
+
         requests.get = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         response, nfses = await nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
-        
+
         # Checando resultado:
         self.assertEquals(response.status_code, 502)
         self.assertEquals(response._content, b&#39;&lt;html&gt;\r\n&lt;head&gt;&lt;title&gt;502 Bad Gateway&lt;/title&gt;&lt;/head&gt;\r\n&lt;body bgcolor=&#34;white&#34;&gt;\r\n&lt;center&gt;&lt;h1&gt;502 Bad Gateway&lt;/h1&gt;&lt;/center&gt;\r\n&lt;hr&gt;&lt;center&gt;nginx/1.10.3 (Ubuntu)&lt;/center&gt;\r\n&lt;/body&gt;\r\n&lt;/html&gt;\r\n&#39;)
@@ -194,12 +195,12 @@ class NfseTestCase(unittest.TestCase):
         self.assertEquals(len(response.history), 0)
         self.assertEquals(response.reason, &#39;Bad Gateway&#39;)
         self.assertEquals(nfses, None)
-        
+
     async def test_emitir_status_processando(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
-        
+
         mock_response.json.return_value = {
             &#34;id&#34;: 22,
             &#34;empresa&#34;: {    # https://www.4devs.com.br/gerador_de_empresas
@@ -244,12 +245,12 @@ class NfseTestCase(unittest.TestCase):
             &#34;ambiente&#34;: &#34;2&#34;,
             &#34;json_objeto_nfse&#34;: &#34;&#34;
         }
-        
+
         requests.post = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         resultado = await nfse.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfse=self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
-        
+
         self.assertIn(&#39;id&#39;, resultado)
         self.assertIn(&#39;empresa&#39;, resultado)
         self.assertIn(&#39;uuid&#39;, resultado)
@@ -263,14 +264,14 @@ class NfseTestCase(unittest.TestCase):
         self.assertIn(&#39;data_emissao&#39;, resultado)
         self.assertIn(&#39;ambiente&#39;, resultado)
         self.assertIn(&#39;json_objeto_nfse&#39;, resultado)
-        
+
         self.assertEqual(resultado[&#39;status&#39;], &#39;processando&#39;)
 
 # =================================================================
 class ServicoTestCase(unittest.TestCase):
-    def setUp(self) -&gt; None:       
+    def setUp(self) -&gt; None:
         self.impostos = nfse.ImpostosServico(
-            pis = Pis(
+            pis    = Pis(
                 situacao_tributaria = &#39;99&#39;,
                 aliquota            = &#39;3.5&#39;,
             ),
@@ -278,43 +279,44 @@ class ServicoTestCase(unittest.TestCase):
                 situacao_tributaria = &#39;99&#39;,
                 aliquota            = &#39;3.5&#39;,
             ),
-            issqn = nfse.Issqn(
+            issqn  = nfse.Issqn(
                 aliquota                    = &#34;3.5&#34;,
                 item_lista_servicos         = &#34;08.02&#34;,
                 indicador_incentivo_fiscal  = &#34;1&#34;,
                 indicador_exigibilidade_iss = &#34;1&#34;,
+                codigo_servico              = &#39;802&#39;,
+                codigo_nbs                  = &#39;1.2606.00.00&#39;,
             ),
         )
-    
+
     def test_todos_campos_obrigatorios(self):
         servico = nfse.Servico(
             valor_servicos = &#34;1.00&#34;,
             discriminacao  = &#34;TESTE&#34;,
             impostos       = self.impostos
         )
-        
+
         self.assertEqual(servico.valor_servicos, &#34;1.00&#34;)
         self.assertEqual(servico.discriminacao, &#34;TESTE&#34;)
         self.assertEqual(servico.impostos, self.impostos)
-        
+
     def test_campo_obrigatorio_valor_servicos(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfse.Servico(
-                
                 discriminacao  = &#34;TESTE&#34;,
                 impostos       = self.impostos
             )
-            
+
     def test_campo_obrigatorio_discriminacao(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfse.Servico(
                 valor_servicos = &#34;1.00&#34;,
-                
+
                 impostos       = self.impostos
             )
-            
+
     def test_campo_obrigatorio_impostos(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfse.Servico(
                 valor_servicos = &#34;1.00&#34;,
                 discriminacao  = &#34;TESTE&#34;,
@@ -323,7 +325,7 @@ class ServicoTestCase(unittest.TestCase):
 
 class ImpostosServicoTestCase(unittest.TestCase):
     ...
-    
+
 class ObjetoEmissaoNFSeTestCase(unittest.TestCase):
     ...
 
@@ -439,14 +441,14 @@ not have a method with the specified name.</p></div>
             numero              = &#39;484&#39;,
             complemento         = &#39;Gerado por 4devs&#39;,
         )
-        
+
         cliente  = Cliente(
             consumidor_final = &#39;1&#39;,
             contribuinte     = &#39;9&#39;,
             pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
             endereco         = endereco,
         )
-        
+
         impostos = nfse.ImpostosServico(
             pis = Pis(
                 situacao_tributaria = &#39;99&#39;,
@@ -465,30 +467,30 @@ not have a method with the specified name.</p></div>
                 codigo_nbs                  = &#39;1.2606.00.00&#39;,
             ),
         )
-        
+
         servico = nfse.Servico(
             valor_servicos  = &#39;1.0&#39;,
             discriminacao   = &#39;TESTE&#39;,
             impostos        = impostos,
         )
-        
+
         self.objeto = nfse.ObjetoEmissaoNFSe(
             cliente = cliente,
             servico = servico,
         )
-    
+
     async def test_buscar_notas(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
-        
+
         mock_response.json.return_value = {
-            &#39;status&#39;: &#39;Sucesso&#39;, 
+            &#39;status&#39;: &#39;Sucesso&#39;,
             &#39;descricao&#39;: &#39;Página de notas de serviço do emissor&#39;,
             &#34;dados&#34;: {
-                &#39;total&#39;: 1, 
-                &#39;itens_por_pagina&#39;: 10, 
-                &#39;pagina_atual&#39;: 0, 
+                &#39;total&#39;: 1,
+                &#39;itens_por_pagina&#39;: 10,
+                &#39;pagina_atual&#39;: 0,
                 &#39;itens&#39;: [
                     {
                         &#34;id&#34;: 5,
@@ -534,23 +536,23 @@ not have a method with the specified name.</p></div>
                         &#34;ambiente&#34;: &#34;2&#34;,
                         &#34;json_objeto_nfse&#34;: &#34;&#34;,
                     }
-                ], 
+                ],
                 &#39;informacoesAdicionais&#39;: {
-                    &#39;totalAutorizadas&#39;: 0.0, 
+                    &#39;totalAutorizadas&#39;: 0.0,
                     &#39;totalCanceladas&#39;: 0.0
                 },
             }
         }
-        
+
         requests.get = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         response, nfses = await nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
-        
+
         # Checando resultado:
         self.assertEquals(response.status_code, 200)
         self.assertGreaterEqual(len(nfses), 1)
-        
+
     async def test_buscar_notas_servidor_fora_dor_ar(self):
         # Mocking:
         mock_response = MagicMock()
@@ -568,12 +570,12 @@ not have a method with the specified name.</p></div>
         mock_response.encoding          = &#39;ISO-8859-1&#39;
         mock_response.history           = []
         mock_response.reason            = &#39;Bad Gateway&#39;
-        
+
         requests.get = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         response, nfses = await nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
-        
+
         # Checando resultado:
         self.assertEquals(response.status_code, 502)
         self.assertEquals(response._content, b&#39;&lt;html&gt;\r\n&lt;head&gt;&lt;title&gt;502 Bad Gateway&lt;/title&gt;&lt;/head&gt;\r\n&lt;body bgcolor=&#34;white&#34;&gt;\r\n&lt;center&gt;&lt;h1&gt;502 Bad Gateway&lt;/h1&gt;&lt;/center&gt;\r\n&lt;hr&gt;&lt;center&gt;nginx/1.10.3 (Ubuntu)&lt;/center&gt;\r\n&lt;/body&gt;\r\n&lt;/html&gt;\r\n&#39;)
@@ -583,12 +585,12 @@ not have a method with the specified name.</p></div>
         self.assertEquals(len(response.history), 0)
         self.assertEquals(response.reason, &#39;Bad Gateway&#39;)
         self.assertEquals(nfses, None)
-        
+
     async def test_emitir_status_processando(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
-        
+
         mock_response.json.return_value = {
             &#34;id&#34;: 22,
             &#34;empresa&#34;: {    # https://www.4devs.com.br/gerador_de_empresas
@@ -633,12 +635,12 @@ not have a method with the specified name.</p></div>
             &#34;ambiente&#34;: &#34;2&#34;,
             &#34;json_objeto_nfse&#34;: &#34;&#34;
         }
-        
+
         requests.post = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         resultado = await nfse.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfse=self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
-        
+
         self.assertIn(&#39;id&#39;, resultado)
         self.assertIn(&#39;empresa&#39;, resultado)
         self.assertIn(&#39;uuid&#39;, resultado)
@@ -652,7 +654,7 @@ not have a method with the specified name.</p></div>
         self.assertIn(&#39;data_emissao&#39;, resultado)
         self.assertIn(&#39;ambiente&#39;, resultado)
         self.assertIn(&#39;json_objeto_nfse&#39;, resultado)
-        
+
         self.assertEqual(resultado[&#39;status&#39;], &#39;processando&#39;)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -683,14 +685,14 @@ not have a method with the specified name.</p></div>
         numero              = &#39;484&#39;,
         complemento         = &#39;Gerado por 4devs&#39;,
     )
-    
+
     cliente  = Cliente(
         consumidor_final = &#39;1&#39;,
         contribuinte     = &#39;9&#39;,
         pessoa_fisica    = PessoaFisica(nome_completo=&#34;Vicente Marcos Samuel Nunes&#34;, cpf=&#39;44301337199&#39;),
         endereco         = endereco,
     )
-    
+
     impostos = nfse.ImpostosServico(
         pis = Pis(
             situacao_tributaria = &#39;99&#39;,
@@ -709,13 +711,13 @@ not have a method with the specified name.</p></div>
             codigo_nbs                  = &#39;1.2606.00.00&#39;,
         ),
     )
-    
+
     servico = nfse.Servico(
         valor_servicos  = &#39;1.0&#39;,
         discriminacao   = &#39;TESTE&#39;,
         impostos        = impostos,
     )
-    
+
     self.objeto = nfse.ObjetoEmissaoNFSe(
         cliente = cliente,
         servico = servico,
@@ -735,14 +737,14 @@ not have a method with the specified name.</p></div>
     # Mocking:
     mock_response = MagicMock()
     mock_response.status_code = 200
-    
+
     mock_response.json.return_value = {
-        &#39;status&#39;: &#39;Sucesso&#39;, 
+        &#39;status&#39;: &#39;Sucesso&#39;,
         &#39;descricao&#39;: &#39;Página de notas de serviço do emissor&#39;,
         &#34;dados&#34;: {
-            &#39;total&#39;: 1, 
-            &#39;itens_por_pagina&#39;: 10, 
-            &#39;pagina_atual&#39;: 0, 
+            &#39;total&#39;: 1,
+            &#39;itens_por_pagina&#39;: 10,
+            &#39;pagina_atual&#39;: 0,
             &#39;itens&#39;: [
                 {
                     &#34;id&#34;: 5,
@@ -788,19 +790,19 @@ not have a method with the specified name.</p></div>
                     &#34;ambiente&#34;: &#34;2&#34;,
                     &#34;json_objeto_nfse&#34;: &#34;&#34;,
                 }
-            ], 
+            ],
             &#39;informacoesAdicionais&#39;: {
-                &#39;totalAutorizadas&#39;: 0.0, 
+                &#39;totalAutorizadas&#39;: 0.0,
                 &#39;totalCanceladas&#39;: 0.0
             },
         }
     }
-    
+
     requests.get = MagicMock(return_value=mock_response)
-    
+
     # Chamando a Função:
     response, nfses = await nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
-    
+
     # Checando resultado:
     self.assertEquals(response.status_code, 200)
     self.assertGreaterEqual(len(nfses), 1)</code></pre>
@@ -832,12 +834,12 @@ not have a method with the specified name.</p></div>
     mock_response.encoding          = &#39;ISO-8859-1&#39;
     mock_response.history           = []
     mock_response.reason            = &#39;Bad Gateway&#39;
-    
+
     requests.get = MagicMock(return_value=mock_response)
-    
+
     # Chamando a Função:
     response, nfses = await nfse.buscar_notas(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;,)
-    
+
     # Checando resultado:
     self.assertEquals(response.status_code, 502)
     self.assertEquals(response._content, b&#39;&lt;html&gt;\r\n&lt;head&gt;&lt;title&gt;502 Bad Gateway&lt;/title&gt;&lt;/head&gt;\r\n&lt;body bgcolor=&#34;white&#34;&gt;\r\n&lt;center&gt;&lt;h1&gt;502 Bad Gateway&lt;/h1&gt;&lt;/center&gt;\r\n&lt;hr&gt;&lt;center&gt;nginx/1.10.3 (Ubuntu)&lt;/center&gt;\r\n&lt;/body&gt;\r\n&lt;/html&gt;\r\n&#39;)
@@ -862,7 +864,7 @@ not have a method with the specified name.</p></div>
     # Mocking:
     mock_response = MagicMock()
     mock_response.status_code = 200
-    
+
     mock_response.json.return_value = {
         &#34;id&#34;: 22,
         &#34;empresa&#34;: {    # https://www.4devs.com.br/gerador_de_empresas
@@ -907,12 +909,12 @@ not have a method with the specified name.</p></div>
         &#34;ambiente&#34;: &#34;2&#34;,
         &#34;json_objeto_nfse&#34;: &#34;&#34;
     }
-    
+
     requests.post = MagicMock(return_value=mock_response)
-    
+
     # Chamando a Função:
     resultado = await nfse.emitir(token_emissor=&#39;token&#39;, token_secret_emissor=&#39;token-secret&#39;, objetoNfse=self.objeto, token_empresa=&#34;token_empresa&#34;, token_secret_empresa=&#34;token_secret_empresa&#34;)
-    
+
     self.assertIn(&#39;id&#39;, resultado)
     self.assertIn(&#39;empresa&#39;, resultado)
     self.assertIn(&#39;uuid&#39;, resultado)
@@ -926,7 +928,7 @@ not have a method with the specified name.</p></div>
     self.assertIn(&#39;data_emissao&#39;, resultado)
     self.assertIn(&#39;ambiente&#39;, resultado)
     self.assertIn(&#39;json_objeto_nfse&#39;, resultado)
-    
+
     self.assertEqual(resultado[&#39;status&#39;], &#39;processando&#39;)</code></pre>
 </details>
 </dd>
@@ -1015,9 +1017,9 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ServicoTestCase(unittest.TestCase):
-    def setUp(self) -&gt; None:       
+    def setUp(self) -&gt; None:
         self.impostos = nfse.ImpostosServico(
-            pis = Pis(
+            pis    = Pis(
                 situacao_tributaria = &#39;99&#39;,
                 aliquota            = &#39;3.5&#39;,
             ),
@@ -1025,43 +1027,44 @@ not have a method with the specified name.</p></div>
                 situacao_tributaria = &#39;99&#39;,
                 aliquota            = &#39;3.5&#39;,
             ),
-            issqn = nfse.Issqn(
+            issqn  = nfse.Issqn(
                 aliquota                    = &#34;3.5&#34;,
                 item_lista_servicos         = &#34;08.02&#34;,
                 indicador_incentivo_fiscal  = &#34;1&#34;,
                 indicador_exigibilidade_iss = &#34;1&#34;,
+                codigo_servico              = &#39;802&#39;,
+                codigo_nbs                  = &#39;1.2606.00.00&#39;,
             ),
         )
-    
+
     def test_todos_campos_obrigatorios(self):
         servico = nfse.Servico(
             valor_servicos = &#34;1.00&#34;,
             discriminacao  = &#34;TESTE&#34;,
             impostos       = self.impostos
         )
-        
+
         self.assertEqual(servico.valor_servicos, &#34;1.00&#34;)
         self.assertEqual(servico.discriminacao, &#34;TESTE&#34;)
         self.assertEqual(servico.impostos, self.impostos)
-        
+
     def test_campo_obrigatorio_valor_servicos(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfse.Servico(
-                
                 discriminacao  = &#34;TESTE&#34;,
                 impostos       = self.impostos
             )
-            
+
     def test_campo_obrigatorio_discriminacao(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfse.Servico(
                 valor_servicos = &#34;1.00&#34;,
-                
+
                 impostos       = self.impostos
             )
-            
+
     def test_campo_obrigatorio_impostos(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfse.Servico(
                 valor_servicos = &#34;1.00&#34;,
                 discriminacao  = &#34;TESTE&#34;,
@@ -1083,9 +1086,9 @@ not have a method with the specified name.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def setUp(self) -&gt; None:       
+<pre><code class="python">def setUp(self) -&gt; None:
     self.impostos = nfse.ImpostosServico(
-        pis = Pis(
+        pis    = Pis(
             situacao_tributaria = &#39;99&#39;,
             aliquota            = &#39;3.5&#39;,
         ),
@@ -1093,11 +1096,13 @@ not have a method with the specified name.</p></div>
             situacao_tributaria = &#39;99&#39;,
             aliquota            = &#39;3.5&#39;,
         ),
-        issqn = nfse.Issqn(
+        issqn  = nfse.Issqn(
             aliquota                    = &#34;3.5&#34;,
             item_lista_servicos         = &#34;08.02&#34;,
             indicador_incentivo_fiscal  = &#34;1&#34;,
             indicador_exigibilidade_iss = &#34;1&#34;,
+            codigo_servico              = &#39;802&#39;,
+            codigo_nbs                  = &#39;1.2606.00.00&#39;,
         ),
     )</code></pre>
 </details>
@@ -1112,10 +1117,10 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_discriminacao(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfse.Servico(
             valor_servicos = &#34;1.00&#34;,
-            
+
             impostos       = self.impostos
         )</code></pre>
 </details>
@@ -1130,7 +1135,7 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_impostos(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfse.Servico(
             valor_servicos = &#34;1.00&#34;,
             discriminacao  = &#34;TESTE&#34;,
@@ -1148,9 +1153,8 @@ not have a method with the specified name.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def test_campo_obrigatorio_valor_servicos(self):
-    with self.assertRaises(TypeError):
+    with self.assertRaises(ValidationError):
         nfse.Servico(
-            
             discriminacao  = &#34;TESTE&#34;,
             impostos       = self.impostos
         )</code></pre>
@@ -1171,7 +1175,7 @@ not have a method with the specified name.</p></div>
         discriminacao  = &#34;TESTE&#34;,
         impostos       = self.impostos
     )
-    
+
     self.assertEqual(servico.valor_servicos, &#34;1.00&#34;)
     self.assertEqual(servico.discriminacao, &#34;TESTE&#34;)
     self.assertEqual(servico.impostos, self.impostos)</code></pre>

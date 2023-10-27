@@ -23,26 +23,28 @@
 </header>
 <section id="section-intro">
 <p>Módulo específico para geração de Notas Fiscais de Serviço.</p>
-<p>Para utilizar esse módulo basta importá-lo da seguinte forma:<br>
+<p>Para utilizar esse módulo basta importá-lo da seguinte forma:
 <code>from <a title="pysisnoapi" href="index.html">pysisnoapi</a> import nfse</code></p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#39;&#39;&#39; 
+<pre><code class="python">&#39;&#39;&#39;
     Módulo específico para geração de Notas Fiscais de Serviço.
-    
-    Para utilizar esse módulo basta importá-lo da seguinte forma:  
+
+    Para utilizar esse módulo basta importá-lo da seguinte forma:
     `from pysisnoapi import nfse`
 &#39;&#39;&#39;
 
 # =====================================================================
-from . import *
-
 import json
 import httpx
+
 from datetime import datetime
-import jsonpickle
+from pydantic import BaseModel
+from typing   import List
+
+from . import *
 
 # =====================================================================
 CSV_HEADERS = [
@@ -98,151 +100,126 @@ STATUS = [
 ]
 
 # =====================================================================
-@dataclass
-class Servico:
+class Servico(BaseModel):
     &#39;&#39;&#39;_summary_
 
     Returns:
         _type_: _description_
     &#39;&#39;&#39;
-    valor_servicos            : str
-    discriminacao             : str
-    impostos                  : &#39;ImpostosServico&#39;
-    
-    iss_retido                : Optional[str]         = None
-    responsavel_retencao_iss  : Optional[str]         = None
-    
-    intermediario             : Optional[&#39;Cliente&#39;]   = None
-    deducoes                  : Optional[str]         = None
-    desconto_incondicionado   : Optional[str]         = None
-    desconto_condicionado     : Optional[str]         = None
-    outras_retencoes          : Optional[str]         = None
-    informacoes_complementares: Optional[str]         = None
-    data_competencia          : Optional[str]         = None
-    uf_local_prestacao        : Optional[&#39;Uf&#39;]        = None
-    municipio_local_prestacao : Optional[&#39;Municipio&#39;] = None
-    
-    def __post_init__(self, *args, **kwargs):
-        self.validate_iss_retido()
-        self.validate_responsavel_retencao_iss()
-    
+    valor_servicos            : str               = Field()
+    discriminacao             : str               = Field()
+    impostos                  : &#39;ImpostosServico&#39; = Field()
+
+    iss_retido                : Optional[Annotated[str, Field()]]         = None
+    responsavel_retencao_iss  : Optional[Annotated[str, Field()]]         = None
+
+    intermediario             : Optional[Annotated[&#39;Cliente&#39;, Field()]]   = None
+    deducoes                  : Optional[Annotated[str, Field()]]         = None
+    desconto_incondicionado   : Optional[Annotated[str, Field()]]         = None
+    desconto_condicionado     : Optional[Annotated[str, Field()]]         = None
+    outras_retencoes          : Optional[Annotated[str, Field()]]         = None
+    informacoes_complementares: Optional[Annotated[str, Field()]]         = None
+    data_competencia          : Optional[Annotated[str, Field()]]         = None
+    uf_local_prestacao        : Optional[Annotated[&#39;Uf&#39;, Field()]]        = None
+    municipio_local_prestacao : Optional[Annotated[&#39;Municipio&#39;, Field()]] = None
+
+    @model_validator(mode=&#39;after&#39;)
     def validate_iss_retido(self, *args, **kwargs):
         if self.iss_retido and self.iss_retido not in INDICADORES_ISS_RETIDO:
             raise ValueError(f&#39;Indicador de ISS retido {self.iss_retido} inválido.&#39;)
-    
+        return self
+
+    @model_validator(mode=&#39;after&#39;)
     def validate_responsavel_retencao_iss(self, *args, **kwargs):
         if self.responsavel_retencao_iss and self.responsavel_retencao_iss not in RESPONSAVEIS_RETENCAO_ISS:
             raise ValueError(f&#39;Responsável pela retenção do ISS {self.responsavel_retencao_iss} inválido.&#39;)
+        return self
 
-@dataclass
-class ConstrucaoCivil:
-    codigo_obra: Optional[str] = None
-    art        : Optional[str] = None
-    
-@dataclass
-class ObjetoEmissaoNFSe(BaseClass):
-    cliente: &#39;Cliente&#39;
-    servico: &#39;Servico&#39;
-    
-    construcao_civil: Optional[&#39;ConstrucaoCivil&#39;] = None
+class ConstrucaoCivil(BaseModel):
+    codigo_obra: Optional[Annotated[str, Field()]] = None
+    art        : Optional[Annotated[str, Field()]] = None
 
-@dataclass
-class NotaFiscalServico(BaseClass):
+class ObjetoEmissaoNFSe(BaseModel):
+    cliente: &#39;Cliente&#39; = Field()
+    servico: &#39;Servico&#39; = Field()
+
+    construcao_civil: Optional[Annotated[&#39;ConstrucaoCivil&#39;, Field()]] = None
+
+class NotaFiscalServico(BaseModel):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
-    
-    id                   : Optional[int]        = None
-    empresa              : Optional[Empresa]    = None
-    uuid                 : Optional[str]        = None
-    modelo               : Optional[str]        = None
-    status               : Optional[str]        = None
-    motivo               : Optional[str]        = None
-    numero_nota          : Optional[str]        = None
-    codigo_verificacao   : Optional[str]        = None
-    protocolo            : Optional[str]        = None
-    nome_destinatario    : Optional[str]        = None
-    uf_destinatario      : Optional[str]        = None
-    cpf_cnpj_destinatario: Optional[str]        = None
-    valor_total          : Optional[str]        = None
-    data_emissao         : Optional[str]        = None
-    data_competencia     : Optional[str]        = None
-    uf_prestacao         : Optional[Uf]         = None
-    municipio_prestacao  : Optional[Municipio]  = None
-    ambiente             : Optional[str]        = None
-    json_objeto_nfse     : Optional[str]        = None  # TODO: Não consta na documentação da API
-    xml                  : Optional[str]        = None  # TODO: Não consta na documentação da API
-    
-    numer_nota           : Optional[str]        = None  # TODO: EXCLUIR! É um typo de &#34;numero_nota&#34;, adicionei hoje (03/07/2023) apenas para o package não parar de funcionar.
-    
-    @classmethod
-    def from_json(cls, **kwargs):
-        empresa_dict = kwargs.pop(&#39;empresa&#39;, {})
-        empresa = Empresa.from_json(**empresa_dict)
-        
-        uf_dict = kwargs.pop(&#39;uf_prestacao&#39;, {})
-        uf      = Uf.from_json(**uf_dict)
-        
-        municipio_dict = kwargs.pop(&#39;municipio_prestacao&#39;, {})
-        municipio = Municipio.from_json(**municipio_dict)
-        
-        return cls(empresa=empresa, uf_prestacao=uf, municipio_prestacao=municipio, **kwargs)
 
-    def to_json(self, *args, **kwargs):
-        json_str = jsonpickle.encode(self.as_filtered_dict(), unpicklable=False)
-        return json_str
-    
+    id                   : Optional[Annotated[int, Field()]]         = None
+    empresa              : Optional[Annotated[&#39;Empresa&#39;, Field()]]   = None
+    uuid                 : Optional[Annotated[str, Field()]]         = None
+    modelo               : Optional[Annotated[str, Field()]]         = None
+    status               : Optional[Annotated[str, Field()]]         = None
+    motivo               : Optional[Annotated[str, Field()]]         = None
+    numero_nota          : Optional[Annotated[str, Field()]]         = None
+    codigo_verificacao   : Optional[Annotated[str, Field()]]         = None
+    protocolo            : Optional[Annotated[str, Field()]]         = None
+    nome_destinatario    : Optional[Annotated[str, Field()]]         = None
+    uf_destinatario      : Optional[Annotated[str, Field()]]         = None
+    cpf_cnpj_destinatario: Optional[Annotated[str, Field()]]         = None
+    valor_total          : Optional[Annotated[str, Field()]]         = None
+    data_emissao         : Optional[Annotated[str, Field()]]         = None
+    data_competencia     : Optional[Annotated[str, Field()]]         = None
+    uf_prestacao         : Optional[Annotated[&#39;Uf&#39;, Field()]]        = None
+    municipio_prestacao  : Optional[Annotated[&#39;Municipio&#39;, Field()]] = None
+    ambiente             : Optional[Annotated[str, Field()]]         = None
+    json_objeto_nfse     : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API
+    xml                  : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API
+    numer_nota           : Optional[Annotated[str, Field()]]         = None  # TODO: EXCLUIR! É um typo de &#34;numero_nota&#34;, adicionei hoje (03/07/2023) apenas para o package não parar de funcionar.
+
     def __str__(self):
         return f&#39;NFSe {self.uuid}&#39;
-    
+
     def __repr__(self):
         return f&#39;NFSe {self.uuid}&#39;
 
-@dataclass
-class PaginaNotasServico:
-    total           : Optional[str]                       = None
-    itens_por_pagina: Optional[str]                       = None
-    pagina_atual    : Optional[str]                       = None
-    itens           : Optional[List[&#39;NotaFiscalServico&#39;]] = None
-    
-@dataclass
-class ImpostosServico(Impostos):
-    issqn: &#39;Issqn&#39;
+class PaginaNotasServico(BaseModel):
+    total           : Optional[Annotated[str, Field()]]                       = None
+    itens_por_pagina: Optional[Annotated[str, Field()]]                       = None
+    pagina_atual    : Optional[Annotated[str, Field()]]                       = None
+    itens           : Optional[Annotated[List[&#39;NotaFiscalServico&#39;], Field()]] = None
 
-@dataclass
-class Issqn:
-    indicador_exigibilidade_iss: str
-    indicador_incentivo_fiscal : str
-    item_lista_servicos        : str
-    aliquota                   : str
-    codigo_servico             : str
-    codigo_nbs                 : str
-    
-    numero_processo            : Optional[str] = None
-    aliquota_retencao          : Optional[str] = None
-    aliquota_irrf              : Optional[str] = None
-    aliquota_csll              : Optional[str] = None
-    aliquota_previdencia_social: Optional[str] = None
-    
-    def __post_init__(self, *args, **kwargs):
-        self.validate_indicador_exigibilidade_iss()
-        self.validate_indicador_incentivo_fiscal()
-    
+class ImpostosServico(Impostos):
+    issqn: &#39;Issqn&#39; = Field()
+
+class Issqn(BaseModel):
+    indicador_exigibilidade_iss: str = Field()
+    indicador_incentivo_fiscal : str = Field()
+    item_lista_servicos        : str = Field()
+    aliquota                   : str = Field()
+    codigo_servico             : str = Field()
+    codigo_nbs                 : str = Field()
+
+    numero_processo            : Optional[Annotated[str, Field()]] = None
+    aliquota_retencao          : Optional[Annotated[str, Field()]] = None
+    aliquota_irrf              : Optional[Annotated[str, Field()]] = None
+    aliquota_csll              : Optional[Annotated[str, Field()]] = None
+    aliquota_previdencia_social: Optional[Annotated[str, Field()]] = None
+
+    @model_validator(mode=&#39;after&#39;)
     def validate_indicador_exigibilidade_iss(self, *args, **kwargs):
         if self.indicador_exigibilidade_iss not in INDICADORES_EXIGIBILIDADE_ISS:
             raise ValueError(f&#39;Indicador de Exigibilidade Fiscal {self.indicador_exigibilidade_iss} inválido.&#39;)
-    
+        return self
+
+    @model_validator(mode=&#39;after&#39;)
     def validate_indicador_incentivo_fiscal(self, *args, **kwargs):
         if self.indicador_incentivo_fiscal not in INDICADORES_INCENTIVO_FISCAL:
             raise ValueError(f&#39;Indicador de Incentivo Fiscal {self.indicador_incentivo_fiscal} inválido.&#39;)
-    
+        return self
+
 # =====================================================================
-async def emitir(token_emissor: str, 
+async def emitir(token_emissor: str,
            token_secret_emissor: str,
-           token_empresa: str, 
-           token_secret_empresa: str, 
-           objetoNfse: ObjetoEmissaoNFSe, 
+           token_empresa: str,
+           token_secret_empresa: str,
+           objetoNfse: ObjetoEmissaoNFSe,
            *args, **kwargs) -&gt; httpx.Response:
     &#39;&#39;&#39;Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
-    
+
     Args:
         obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe &#34;ObjetoEmissaoNFSe&#34; que contém todos os dados necessários
 
@@ -251,96 +228,96 @@ async def emitir(token_emissor: str,
     &#39;&#39;&#39;
 
     headers = HEADERS.copy()
-    
+
     # -----------------------------------------
     validate_tokens(token_emissor, token_secret_emissor)
     headers[&#39;token-emissor&#39;]        = token_emissor
     headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
-    
+
     validate_tokens(token_empresa, token_secret_empresa)
     headers[&#39;token-empresa&#39;]        = token_empresa
     headers[&#39;token-secret-empresa&#39;] = token_secret_empresa
-    
+
     # -----------------------------------------
-    json_str = jsonpickle.encode(objetoNfse.as_filtered_dict(), unpicklable=False)
-    
-    url     = f&#39;{BASE_URL}/nfse&#39;
+    json_str = objetoNfse.json()
+
+    url = f&#39;{BASE_URL}/nfse&#39;
     async with httpx.AsyncClient() as client:
         response = await client.post(url, headers=headers, json=json.loads(json_str))
-    
+
     # Resultado:
     # TODO: Retornar algo mais útil do que simplesmente o response...
     return response
 
-async def buscar_notas(token_emissor: str, 
+async def buscar_notas(token_emissor: str,
                  token_secret_emissor: str,
-                 cnpjEmpresa:list=None, 
-                 data_inicio:datetime=None, 
-                 data_fim:datetime=None, 
-                 ambiente:str=None, 
-                 status:str=None, 
-                 texto:str=None, 
-                 pagina:int=None, 
-                 qtd_por_pagina:int=None, 
-                 ordencao:str=None, 
+                 cnpjEmpresa:list=None,
+                 data_inicio:datetime=None,
+                 data_fim:datetime=None,
+                 ambiente:str=None,
+                 status:str=None,
+                 texto:str=None,
+                 pagina:int=None,
+                 qtd_por_pagina:int=None,
+                 ordencao:str=None,
                  tipo_ordenacao:str=None,
                  *args, **kwargs) -&gt; (httpx.Response, List[NotaFiscalServico]):
     &#39;&#39;&#39;Recupera as notas fiscais de serviço.
 
     Args:
         cnpj (str): CNPJ Empresa (apenas números).
-        
+
         data_inicio (datetime): Início intervalo de datas (dd/MM/yyyy HH:mm:ss).
-        
+
         data_fim (datetime): Fim intervalo de datas (dd/MM/yyyy HH:mm:ss).
-        
-        ambiente (str):  
-            1: Produção  
+
+        ambiente (str):
+            1: Produção
             2: Homologação
-            
+
         status (str): Status da NFSe.
-            - aprovado  
-            - reprovado  
-            - contingencia    
-            - cancelado  
+            - aprovado
+            - reprovado
+            - contingencia
+            - cancelado
             - Em digitação
-            
+
         texto (str): Texto de busca livre.
-        
+
         pagina (int): Número da página.
-        
+
         qtd_por_pagina (int): Quantidade de notas por página.
-        
-        ordencao (str): Campo para ordenação das notas.  
-            - empresa  
-            - ambiente  
-            - numero_nota  
-            - status  
-            - data_emissao  
-            - nome_destinatario  
-            - uf_destinatario  
+
+        ordencao (str): Campo para ordenação das notas.
+            - empresa
+            - ambiente
+            - numero_nota
+            - status
+            - data_emissao
+            - nome_destinatario
+            - uf_destinatario
             - valor_total
-            
+
         tipo_ordenacao (str): Tipo de Ordenação.
-            - desc  
-            - asc  
-    
+            - desc
+            - asc
+
     Returns:
         httpx.Reponse: Resposta do servidor
         List[NotaFiscalServico]: Lista com todas as NFSe
     &#39;&#39;&#39;
-    
+
     # TODO: o parâmetro cnpjEmpresa está errado na documentação (&#39;CNPJ Empresa&#39;)
     # TODO: o endpoint ignora o parâmetro cnpjEmpresa em alguns casos, descrir quais os casos.
     # TODO: textoBusca é case sensitive e leva em consideração acentos.
     # TODO: dataFim não precisa de dataInicio
-    
+
     headers = HEADERS.copy()
-    
+
     validate_tokens(token_emissor, token_secret_emissor)
     headers[&#39;token-emissor&#39;]        = token_emissor
     headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
-    
+
     params = {}
     if cnpjEmpresa:
         params[&#39;cnpjEmpresa&#39;] = cnpjEmpresa
@@ -351,7 +328,7 @@ async def buscar_notas(token_emissor: str,
     if ambiente:
         if ambiente not in AMBIENTES:
             raise ValueError(f&#39;Ambiente {ambiente} inválido.&#39;)
-        params[&#39;ambiente&#39;] = ambiente      
+        params[&#39;ambiente&#39;] = ambiente
     if status:
         if status not in STATUS:
             raise ValueError(f&#39;Status {status} inválido.&#39;)
@@ -368,29 +345,28 @@ async def buscar_notas(token_emissor: str,
         params[&#39;tipoOrdenacao&#39;] = tipo_ordenacao
 
     url = f&#39;{BASE_URL}/nfse&#39;
-    
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers, params=params)
 
     match (response.status_code):
         case 200:
             json_dados = response.json().get(&#39;dados&#39;)
-            nfses      = [NotaFiscalServico.from_json(**d) for d in json_dados[&#39;itens&#39;]]
+            nfses      = [NotaFiscalServico(d) for d in json_dados[&#39;itens&#39;]]
             return (response, nfses)
-    
+
     return (response, None)
 
-async def retransmitir(token_emissor: str, 
+async def retransmitir(token_emissor: str,
                  token_secret_emissor: str,
-                 token_empresa:str, 
-                 token_secret_empresa:str, 
+                 token_empresa:str,
+                 token_secret_empresa:str,
                  *args, **kwargs):
     raise NotImplementedError
 
-async def recuperar_dados(token_emissor: str, 
+async def recuperar_dados(token_emissor: str,
                     token_secret_emissor: str,
-                    token_empresa:str, 
-                    token_secret_empresa:str, 
+                    token_empresa:str,
+                    token_secret_empresa:str,
                     id_nfse:int,
                     *args, **kwargs) -&gt; httpx.Response:
     # TODO: Cada NFSe possui um ID mesmo que de empresas diferentes ?
@@ -398,28 +374,28 @@ async def recuperar_dados(token_emissor: str,
 
     if not isinstance(id_nfse, int):
         raise ValueError(&#39;Necessário informar um ID de NFSe válido.&#39;)
-    
+
     headers  = HEADERS.copy()
-    
+
     validate_tokens(token_emissor, token_secret_emissor)
     headers[&#39;token-emissor&#39;]        = token_emissor
     headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
-    
+
     validate_tokens(token_empresa, token_secret_empresa)
     headers[&#39;token-empresa&#39;]        = token_empresa
     headers[&#39;token-secret-empresa&#39;] = token_secret_empresa
-    
-    url      = f&#39;{BASE_URL}/nfse/{id_nfse}&#39;
+
+    url = f&#39;{BASE_URL}/nfse/{id_nfse}&#39;
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
-    
+
     # TODO: Retornar algo mais útil como uma instância de NotaFiscal por exemplo ?!
     return response
 
-async def cancelar(token_emissor: str, 
-             token_secret_emissor: str, 
+async def cancelar(token_emissor: str,
+             token_secret_emissor: str,
              token_empresa:str,
-             token_secret_empresa:str, 
+             token_secret_empresa:str,
              *args, **kwargs):
     raise NotImplementedError
 
@@ -446,16 +422,17 @@ async def cancelar(token_emissor: str,
 <dd>Início intervalo de datas (dd/MM/yyyy HH:mm:ss).</dd>
 <dt><strong><code>data_fim</code></strong> :&ensp;<code>datetime</code></dt>
 <dd>Fim intervalo de datas (dd/MM/yyyy HH:mm:ss).</dd>
-<dt><strong><code>ambiente</code></strong> :&ensp;<code>str</code></dt>
-<dd>1: Produção<br>
-2: Homologação</dd>
+</dl>
+<p>ambiente (str):
+1: Produção
+2: Homologação</p>
+<dl>
 <dt><strong><code>status</code></strong> :&ensp;<code>str</code></dt>
 <dd>Status da NFSe.
-- aprovado<br>
-- reprovado<br>
+- aprovado
+- reprovado
 - contingencia
-<br>
-- cancelado<br>
+- cancelado
 - Em digitação</dd>
 <dt><strong><code>texto</code></strong> :&ensp;<code>str</code></dt>
 <dd>Texto de busca livre.</dd>
@@ -464,20 +441,19 @@ async def cancelar(token_emissor: str,
 <dt><strong><code>qtd_por_pagina</code></strong> :&ensp;<code>int</code></dt>
 <dd>Quantidade de notas por página.</dd>
 <dt><strong><code>ordencao</code></strong> :&ensp;<code>str</code></dt>
-<dd>Campo para ordenação das notas.<br>
-- empresa<br>
-- ambiente<br>
-- numero_nota<br>
-- status<br>
-- data_emissao<br>
-- nome_destinatario<br>
-- uf_destinatario<br>
+<dd>Campo para ordenação das notas.
+- empresa
+- ambiente
+- numero_nota
+- status
+- data_emissao
+- nome_destinatario
+- uf_destinatario
 - valor_total</dd>
 <dt><strong><code>tipo_ordenacao</code></strong> :&ensp;<code>str</code></dt>
 <dd>Tipo de Ordenação.
-- desc<br>
-- asc
-</dd>
+- desc
+- asc</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -490,75 +466,75 @@ async def cancelar(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def buscar_notas(token_emissor: str, 
+<pre><code class="python">async def buscar_notas(token_emissor: str,
                  token_secret_emissor: str,
-                 cnpjEmpresa:list=None, 
-                 data_inicio:datetime=None, 
-                 data_fim:datetime=None, 
-                 ambiente:str=None, 
-                 status:str=None, 
-                 texto:str=None, 
-                 pagina:int=None, 
-                 qtd_por_pagina:int=None, 
-                 ordencao:str=None, 
+                 cnpjEmpresa:list=None,
+                 data_inicio:datetime=None,
+                 data_fim:datetime=None,
+                 ambiente:str=None,
+                 status:str=None,
+                 texto:str=None,
+                 pagina:int=None,
+                 qtd_por_pagina:int=None,
+                 ordencao:str=None,
                  tipo_ordenacao:str=None,
                  *args, **kwargs) -&gt; (httpx.Response, List[NotaFiscalServico]):
     &#39;&#39;&#39;Recupera as notas fiscais de serviço.
 
     Args:
         cnpj (str): CNPJ Empresa (apenas números).
-        
+
         data_inicio (datetime): Início intervalo de datas (dd/MM/yyyy HH:mm:ss).
-        
+
         data_fim (datetime): Fim intervalo de datas (dd/MM/yyyy HH:mm:ss).
-        
-        ambiente (str):  
-            1: Produção  
+
+        ambiente (str):
+            1: Produção
             2: Homologação
-            
+
         status (str): Status da NFSe.
-            - aprovado  
-            - reprovado  
-            - contingencia    
-            - cancelado  
+            - aprovado
+            - reprovado
+            - contingencia
+            - cancelado
             - Em digitação
-            
+
         texto (str): Texto de busca livre.
-        
+
         pagina (int): Número da página.
-        
+
         qtd_por_pagina (int): Quantidade de notas por página.
-        
-        ordencao (str): Campo para ordenação das notas.  
-            - empresa  
-            - ambiente  
-            - numero_nota  
-            - status  
-            - data_emissao  
-            - nome_destinatario  
-            - uf_destinatario  
+
+        ordencao (str): Campo para ordenação das notas.
+            - empresa
+            - ambiente
+            - numero_nota
+            - status
+            - data_emissao
+            - nome_destinatario
+            - uf_destinatario
             - valor_total
-            
+
         tipo_ordenacao (str): Tipo de Ordenação.
-            - desc  
-            - asc  
-    
+            - desc
+            - asc
+
     Returns:
         httpx.Reponse: Resposta do servidor
         List[NotaFiscalServico]: Lista com todas as NFSe
     &#39;&#39;&#39;
-    
+
     # TODO: o parâmetro cnpjEmpresa está errado na documentação (&#39;CNPJ Empresa&#39;)
     # TODO: o endpoint ignora o parâmetro cnpjEmpresa em alguns casos, descrir quais os casos.
     # TODO: textoBusca é case sensitive e leva em consideração acentos.
     # TODO: dataFim não precisa de dataInicio
-    
+
     headers = HEADERS.copy()
-    
+
     validate_tokens(token_emissor, token_secret_emissor)
     headers[&#39;token-emissor&#39;]        = token_emissor
     headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
-    
+
     params = {}
     if cnpjEmpresa:
         params[&#39;cnpjEmpresa&#39;] = cnpjEmpresa
@@ -569,7 +545,7 @@ async def cancelar(token_emissor: str,
     if ambiente:
         if ambiente not in AMBIENTES:
             raise ValueError(f&#39;Ambiente {ambiente} inválido.&#39;)
-        params[&#39;ambiente&#39;] = ambiente      
+        params[&#39;ambiente&#39;] = ambiente
     if status:
         if status not in STATUS:
             raise ValueError(f&#39;Status {status} inválido.&#39;)
@@ -586,16 +562,15 @@ async def cancelar(token_emissor: str,
         params[&#39;tipoOrdenacao&#39;] = tipo_ordenacao
 
     url = f&#39;{BASE_URL}/nfse&#39;
-    
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers, params=params)
 
     match (response.status_code):
         case 200:
             json_dados = response.json().get(&#39;dados&#39;)
-            nfses      = [NotaFiscalServico.from_json(**d) for d in json_dados[&#39;itens&#39;]]
+            nfses      = [NotaFiscalServico(d) for d in json_dados[&#39;itens&#39;]]
             return (response, nfses)
-    
+
     return (response, None)</code></pre>
 </details>
 </dd>
@@ -608,10 +583,10 @@ async def cancelar(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def cancelar(token_emissor: str, 
-             token_secret_emissor: str, 
+<pre><code class="python">async def cancelar(token_emissor: str,
+             token_secret_emissor: str,
              token_empresa:str,
-             token_secret_empresa:str, 
+             token_secret_empresa:str,
              *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -635,14 +610,14 @@ async def cancelar(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def emitir(token_emissor: str, 
+<pre><code class="python">async def emitir(token_emissor: str,
            token_secret_emissor: str,
-           token_empresa: str, 
-           token_secret_empresa: str, 
-           objetoNfse: ObjetoEmissaoNFSe, 
+           token_empresa: str,
+           token_secret_empresa: str,
+           objetoNfse: ObjetoEmissaoNFSe,
            *args, **kwargs) -&gt; httpx.Response:
     &#39;&#39;&#39;Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
-    
+
     Args:
         obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe &#34;ObjetoEmissaoNFSe&#34; que contém todos os dados necessários
 
@@ -651,23 +626,23 @@ async def cancelar(token_emissor: str,
     &#39;&#39;&#39;
 
     headers = HEADERS.copy()
-    
+
     # -----------------------------------------
     validate_tokens(token_emissor, token_secret_emissor)
     headers[&#39;token-emissor&#39;]        = token_emissor
     headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
-    
+
     validate_tokens(token_empresa, token_secret_empresa)
     headers[&#39;token-empresa&#39;]        = token_empresa
     headers[&#39;token-secret-empresa&#39;] = token_secret_empresa
-    
+
     # -----------------------------------------
-    json_str = jsonpickle.encode(objetoNfse.as_filtered_dict(), unpicklable=False)
-    
-    url     = f&#39;{BASE_URL}/nfse&#39;
+    json_str = objetoNfse.json()
+
+    url = f&#39;{BASE_URL}/nfse&#39;
     async with httpx.AsyncClient() as client:
         response = await client.post(url, headers=headers, json=json.loads(json_str))
-    
+
     # Resultado:
     # TODO: Retornar algo mais útil do que simplesmente o response...
     return response</code></pre>
@@ -682,10 +657,10 @@ async def cancelar(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def recuperar_dados(token_emissor: str, 
+<pre><code class="python">async def recuperar_dados(token_emissor: str,
                     token_secret_emissor: str,
-                    token_empresa:str, 
-                    token_secret_empresa:str, 
+                    token_empresa:str,
+                    token_secret_empresa:str,
                     id_nfse:int,
                     *args, **kwargs) -&gt; httpx.Response:
     # TODO: Cada NFSe possui um ID mesmo que de empresas diferentes ?
@@ -693,21 +668,21 @@ async def cancelar(token_emissor: str,
 
     if not isinstance(id_nfse, int):
         raise ValueError(&#39;Necessário informar um ID de NFSe válido.&#39;)
-    
+
     headers  = HEADERS.copy()
-    
+
     validate_tokens(token_emissor, token_secret_emissor)
     headers[&#39;token-emissor&#39;]        = token_emissor
     headers[&#39;token-secret-emissor&#39;] = token_secret_emissor
-    
+
     validate_tokens(token_empresa, token_secret_empresa)
     headers[&#39;token-empresa&#39;]        = token_empresa
     headers[&#39;token-secret-empresa&#39;] = token_secret_empresa
-    
-    url      = f&#39;{BASE_URL}/nfse/{id_nfse}&#39;
+
+    url = f&#39;{BASE_URL}/nfse/{id_nfse}&#39;
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers)
-    
+
     # TODO: Retornar algo mais útil como uma instância de NotaFiscal por exemplo ?!
     return response</code></pre>
 </details>
@@ -721,10 +696,10 @@ async def cancelar(token_emissor: str,
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">async def retransmitir(token_emissor: str, 
+<pre><code class="python">async def retransmitir(token_emissor: str,
                  token_secret_emissor: str,
-                 token_empresa:str, 
-                 token_secret_empresa:str, 
+                 token_empresa:str,
+                 token_secret_empresa:str,
                  *args, **kwargs):
     raise NotImplementedError</code></pre>
 </details>
@@ -736,19 +711,66 @@ async def cancelar(token_emissor: str,
 <dl>
 <dt id="pysisnoapi.nfse.ConstrucaoCivil"><code class="flex name class">
 <span>class <span class="ident">ConstrucaoCivil</span></span>
-<span>(</span><span>codigo_obra: Optional[str] = None, art: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>ConstrucaoCivil(codigo_obra: Optional[str] = None, art: Optional[str] = None)</p></div>
+<div class="desc"><p>Usage docs: <a href="https://docs.pydantic.dev/2.4/concepts/models/">https://docs.pydantic.dev/2.4/concepts/models/</a></p>
+<p>A base class for creating Pydantic models.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>__class_vars__</code></strong></dt>
+<dd>The names of classvars defined on the model.</dd>
+<dt><strong><code>__private_attributes__</code></strong></dt>
+<dd>Metadata about the private attributes of the model.</dd>
+<dt><strong><code>__signature__</code></strong></dt>
+<dd>The signature for instantiating the model.</dd>
+<dt><strong><code>__pydantic_complete__</code></strong></dt>
+<dd>Whether model building is completed, or if there are still undefined fields.</dd>
+<dt><strong><code>__pydantic_core_schema__</code></strong></dt>
+<dd>The pydantic-core schema used to build the SchemaValidator and SchemaSerializer.</dd>
+<dt><strong><code>__pydantic_custom_init__</code></strong></dt>
+<dd>Whether the model has a custom <code>__init__</code> function.</dd>
+<dt><strong><code>__pydantic_decorators__</code></strong></dt>
+<dd>Metadata containing the decorators defined on the model.
+This replaces <code>Model.__validators__</code> and <code>Model.__root_validators__</code> from Pydantic V1.</dd>
+<dt><strong><code>__pydantic_generic_metadata__</code></strong></dt>
+<dd>Metadata for generic models; contains data used for a similar purpose to
+<strong>args</strong>, <strong>origin</strong>, <strong>parameters</strong> in typing-module generics. May eventually be replaced by these.</dd>
+<dt><strong><code>__pydantic_parent_namespace__</code></strong></dt>
+<dd>Parent namespace of the model, used for automatic rebuilding of models.</dd>
+<dt><strong><code>__pydantic_post_init__</code></strong></dt>
+<dd>The name of the post-init method for the model, if defined.</dd>
+<dt><strong><code>__pydantic_root_model__</code></strong></dt>
+<dd>Whether the model is a <code>RootModel</code>.</dd>
+<dt><strong><code>__pydantic_serializer__</code></strong></dt>
+<dd>The pydantic-core SchemaSerializer used to dump instances of the model.</dd>
+<dt><strong><code>__pydantic_validator__</code></strong></dt>
+<dd>The pydantic-core SchemaValidator used to validate instances of the model.</dd>
+<dt><strong><code>__pydantic_extra__</code></strong></dt>
+<dd>An instance attribute with the values of extra fields from validation when
+<code>model_config['extra'] == 'allow'</code>.</dd>
+<dt><strong><code>__pydantic_fields_set__</code></strong></dt>
+<dd>An instance attribute with the names of fields explicitly specified during validation.</dd>
+<dt><strong><code>__pydantic_private__</code></strong></dt>
+<dd>Instance attribute with the values of private attributes set on the model instance.</dd>
+</dl>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class ConstrucaoCivil:
-    codigo_obra: Optional[str] = None
-    art        : Optional[str] = None</code></pre>
+<pre><code class="python">class ConstrucaoCivil(BaseModel):
+    codigo_obra: Optional[Annotated[str, Field()]] = None
+    art        : Optional[Annotated[str, Field()]] = None</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.nfse.ConstrucaoCivil.art"><code class="name">var <span class="ident">art</span> : Optional[str]</code></dt>
@@ -759,25 +781,38 @@ class ConstrucaoCivil:
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="pysisnoapi.nfse.ConstrucaoCivil.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.ConstrucaoCivil.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 </dl>
 </dd>
 <dt id="pysisnoapi.nfse.ImpostosServico"><code class="flex name class">
 <span>class <span class="ident">ImpostosServico</span></span>
-<span>(</span><span>pis: Pis, cofins: Cofins, issqn: <a title="pysisnoapi.nfse.Issqn" href="#pysisnoapi.nfse.Issqn">Issqn</a>)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>ImpostosServico(pis: 'Pis', cofins: 'Cofins', issqn: 'Issqn')</p></div>
+<div class="desc"><p>Classe Base para as Classes de Impostos de Produtos e Serviços.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class ImpostosServico(Impostos):
-    issqn: &#39;Issqn&#39;</code></pre>
+<pre><code class="python">class ImpostosServico(Impostos):
+    issqn: &#39;Issqn&#39; = Field()</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="pysisnoapi.Impostos" href="index.html#pysisnoapi.Impostos">Impostos</a></li>
+<li>pydantic.main.BaseModel</li>
 </ul>
 <h3>Class variables</h3>
 <dl>
@@ -785,45 +820,100 @@ class ImpostosServico(Impostos):
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="pysisnoapi.nfse.ImpostosServico.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.ImpostosServico.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 </dl>
 </dd>
 <dt id="pysisnoapi.nfse.Issqn"><code class="flex name class">
 <span>class <span class="ident">Issqn</span></span>
-<span>(</span><span>indicador_exigibilidade_iss: str, indicador_incentivo_fiscal: str, item_lista_servicos: str, aliquota: str, codigo_servico: str, codigo_nbs: str, numero_processo: Optional[str] = None, aliquota_retencao: Optional[str] = None, aliquota_irrf: Optional[str] = None, aliquota_csll: Optional[str] = None, aliquota_previdencia_social: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Issqn(indicador_exigibilidade_iss: str, indicador_incentivo_fiscal: str, item_lista_servicos: str, aliquota: str, codigo_servico: str, codigo_nbs: str, numero_processo: Optional[str] = None, aliquota_retencao: Optional[str] = None, aliquota_irrf: Optional[str] = None, aliquota_csll: Optional[str] = None, aliquota_previdencia_social: Optional[str] = None)</p></div>
+<div class="desc"><p>Usage docs: <a href="https://docs.pydantic.dev/2.4/concepts/models/">https://docs.pydantic.dev/2.4/concepts/models/</a></p>
+<p>A base class for creating Pydantic models.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>__class_vars__</code></strong></dt>
+<dd>The names of classvars defined on the model.</dd>
+<dt><strong><code>__private_attributes__</code></strong></dt>
+<dd>Metadata about the private attributes of the model.</dd>
+<dt><strong><code>__signature__</code></strong></dt>
+<dd>The signature for instantiating the model.</dd>
+<dt><strong><code>__pydantic_complete__</code></strong></dt>
+<dd>Whether model building is completed, or if there are still undefined fields.</dd>
+<dt><strong><code>__pydantic_core_schema__</code></strong></dt>
+<dd>The pydantic-core schema used to build the SchemaValidator and SchemaSerializer.</dd>
+<dt><strong><code>__pydantic_custom_init__</code></strong></dt>
+<dd>Whether the model has a custom <code>__init__</code> function.</dd>
+<dt><strong><code>__pydantic_decorators__</code></strong></dt>
+<dd>Metadata containing the decorators defined on the model.
+This replaces <code>Model.__validators__</code> and <code>Model.__root_validators__</code> from Pydantic V1.</dd>
+<dt><strong><code>__pydantic_generic_metadata__</code></strong></dt>
+<dd>Metadata for generic models; contains data used for a similar purpose to
+<strong>args</strong>, <strong>origin</strong>, <strong>parameters</strong> in typing-module generics. May eventually be replaced by these.</dd>
+<dt><strong><code>__pydantic_parent_namespace__</code></strong></dt>
+<dd>Parent namespace of the model, used for automatic rebuilding of models.</dd>
+<dt><strong><code>__pydantic_post_init__</code></strong></dt>
+<dd>The name of the post-init method for the model, if defined.</dd>
+<dt><strong><code>__pydantic_root_model__</code></strong></dt>
+<dd>Whether the model is a <code>RootModel</code>.</dd>
+<dt><strong><code>__pydantic_serializer__</code></strong></dt>
+<dd>The pydantic-core SchemaSerializer used to dump instances of the model.</dd>
+<dt><strong><code>__pydantic_validator__</code></strong></dt>
+<dd>The pydantic-core SchemaValidator used to validate instances of the model.</dd>
+<dt><strong><code>__pydantic_extra__</code></strong></dt>
+<dd>An instance attribute with the values of extra fields from validation when
+<code>model_config['extra'] == 'allow'</code>.</dd>
+<dt><strong><code>__pydantic_fields_set__</code></strong></dt>
+<dd>An instance attribute with the names of fields explicitly specified during validation.</dd>
+<dt><strong><code>__pydantic_private__</code></strong></dt>
+<dd>Instance attribute with the values of private attributes set on the model instance.</dd>
+</dl>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class Issqn:
-    indicador_exigibilidade_iss: str
-    indicador_incentivo_fiscal : str
-    item_lista_servicos        : str
-    aliquota                   : str
-    codigo_servico             : str
-    codigo_nbs                 : str
-    
-    numero_processo            : Optional[str] = None
-    aliquota_retencao          : Optional[str] = None
-    aliquota_irrf              : Optional[str] = None
-    aliquota_csll              : Optional[str] = None
-    aliquota_previdencia_social: Optional[str] = None
-    
-    def __post_init__(self, *args, **kwargs):
-        self.validate_indicador_exigibilidade_iss()
-        self.validate_indicador_incentivo_fiscal()
-    
+<pre><code class="python">class Issqn(BaseModel):
+    indicador_exigibilidade_iss: str = Field()
+    indicador_incentivo_fiscal : str = Field()
+    item_lista_servicos        : str = Field()
+    aliquota                   : str = Field()
+    codigo_servico             : str = Field()
+    codigo_nbs                 : str = Field()
+
+    numero_processo            : Optional[Annotated[str, Field()]] = None
+    aliquota_retencao          : Optional[Annotated[str, Field()]] = None
+    aliquota_irrf              : Optional[Annotated[str, Field()]] = None
+    aliquota_csll              : Optional[Annotated[str, Field()]] = None
+    aliquota_previdencia_social: Optional[Annotated[str, Field()]] = None
+
+    @model_validator(mode=&#39;after&#39;)
     def validate_indicador_exigibilidade_iss(self, *args, **kwargs):
         if self.indicador_exigibilidade_iss not in INDICADORES_EXIGIBILIDADE_ISS:
             raise ValueError(f&#39;Indicador de Exigibilidade Fiscal {self.indicador_exigibilidade_iss} inválido.&#39;)
-    
+        return self
+
+    @model_validator(mode=&#39;after&#39;)
     def validate_indicador_incentivo_fiscal(self, *args, **kwargs):
         if self.indicador_incentivo_fiscal not in INDICADORES_INCENTIVO_FISCAL:
-            raise ValueError(f&#39;Indicador de Incentivo Fiscal {self.indicador_incentivo_fiscal} inválido.&#39;)</code></pre>
+            raise ValueError(f&#39;Indicador de Incentivo Fiscal {self.indicador_incentivo_fiscal} inválido.&#39;)
+        return self</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.nfse.Issqn.aliquota"><code class="name">var <span class="ident">aliquota</span> : str</code></dt>
@@ -866,6 +956,14 @@ class Issqn:
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="pysisnoapi.nfse.Issqn.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.Issqn.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="pysisnoapi.nfse.Issqn.numero_processo"><code class="name">var <span class="ident">numero_processo</span> : Optional[str]</code></dt>
 <dd>
 <div class="desc"></div>
@@ -882,9 +980,11 @@ class Issqn:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_indicador_exigibilidade_iss(self, *args, **kwargs):
+<pre><code class="python">@model_validator(mode=&#39;after&#39;)
+def validate_indicador_exigibilidade_iss(self, *args, **kwargs):
     if self.indicador_exigibilidade_iss not in INDICADORES_EXIGIBILIDADE_ISS:
-        raise ValueError(f&#39;Indicador de Exigibilidade Fiscal {self.indicador_exigibilidade_iss} inválido.&#39;)</code></pre>
+        raise ValueError(f&#39;Indicador de Exigibilidade Fiscal {self.indicador_exigibilidade_iss} inválido.&#39;)
+    return self</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfse.Issqn.validate_indicador_incentivo_fiscal"><code class="name flex">
@@ -896,76 +996,103 @@ class Issqn:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_indicador_incentivo_fiscal(self, *args, **kwargs):
+<pre><code class="python">@model_validator(mode=&#39;after&#39;)
+def validate_indicador_incentivo_fiscal(self, *args, **kwargs):
     if self.indicador_incentivo_fiscal not in INDICADORES_INCENTIVO_FISCAL:
-        raise ValueError(f&#39;Indicador de Incentivo Fiscal {self.indicador_incentivo_fiscal} inválido.&#39;)</code></pre>
+        raise ValueError(f&#39;Indicador de Incentivo Fiscal {self.indicador_incentivo_fiscal} inválido.&#39;)
+    return self</code></pre>
 </details>
 </dd>
 </dl>
 </dd>
 <dt id="pysisnoapi.nfse.NotaFiscalServico"><code class="flex name class">
 <span>class <span class="ident">NotaFiscalServico</span></span>
-<span>(</span><span>id: Optional[int] = None, empresa: Optional[<a title="pysisnoapi.Empresa" href="index.html#pysisnoapi.Empresa">Empresa</a>] = None, uuid: Optional[str] = None, modelo: Optional[str] = None, status: Optional[str] = None, motivo: Optional[str] = None, numero_nota: Optional[str] = None, codigo_verificacao: Optional[str] = None, protocolo: Optional[str] = None, nome_destinatario: Optional[str] = None, uf_destinatario: Optional[str] = None, cpf_cnpj_destinatario: Optional[str] = None, valor_total: Optional[str] = None, data_emissao: Optional[str] = None, data_competencia: Optional[str] = None, uf_prestacao: Optional[<a title="pysisnoapi.Uf" href="index.html#pysisnoapi.Uf">Uf</a>] = None, municipio_prestacao: Optional[<a title="pysisnoapi.Municipio" href="index.html#pysisnoapi.Municipio">Municipio</a>] = None, ambiente: Optional[str] = None, json_objeto_nfse: Optional[str] = None, xml: Optional[str] = None, numer_nota: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>NotaFiscalServico(id: Optional[int] = None, empresa: Optional[pysisnoapi.Empresa] = None, uuid: Optional[str] = None, modelo: Optional[str] = None, status: Optional[str] = None, motivo: Optional[str] = None, numero_nota: Optional[str] = None, codigo_verificacao: Optional[str] = None, protocolo: Optional[str] = None, nome_destinatario: Optional[str] = None, uf_destinatario: Optional[str] = None, cpf_cnpj_destinatario: Optional[str] = None, valor_total: Optional[str] = None, data_emissao: Optional[str] = None, data_competencia: Optional[str] = None, uf_prestacao: Optional[pysisnoapi.Uf] = None, municipio_prestacao: Optional[pysisnoapi.Municipio] = None, ambiente: Optional[str] = None, json_objeto_nfse: Optional[str] = None, xml: Optional[str] = None, numer_nota: Optional[str] = None)</p></div>
+<div class="desc"><p>Usage docs: <a href="https://docs.pydantic.dev/2.4/concepts/models/">https://docs.pydantic.dev/2.4/concepts/models/</a></p>
+<p>A base class for creating Pydantic models.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>__class_vars__</code></strong></dt>
+<dd>The names of classvars defined on the model.</dd>
+<dt><strong><code>__private_attributes__</code></strong></dt>
+<dd>Metadata about the private attributes of the model.</dd>
+<dt><strong><code>__signature__</code></strong></dt>
+<dd>The signature for instantiating the model.</dd>
+<dt><strong><code>__pydantic_complete__</code></strong></dt>
+<dd>Whether model building is completed, or if there are still undefined fields.</dd>
+<dt><strong><code>__pydantic_core_schema__</code></strong></dt>
+<dd>The pydantic-core schema used to build the SchemaValidator and SchemaSerializer.</dd>
+<dt><strong><code>__pydantic_custom_init__</code></strong></dt>
+<dd>Whether the model has a custom <code>__init__</code> function.</dd>
+<dt><strong><code>__pydantic_decorators__</code></strong></dt>
+<dd>Metadata containing the decorators defined on the model.
+This replaces <code>Model.__validators__</code> and <code>Model.__root_validators__</code> from Pydantic V1.</dd>
+<dt><strong><code>__pydantic_generic_metadata__</code></strong></dt>
+<dd>Metadata for generic models; contains data used for a similar purpose to
+<strong>args</strong>, <strong>origin</strong>, <strong>parameters</strong> in typing-module generics. May eventually be replaced by these.</dd>
+<dt><strong><code>__pydantic_parent_namespace__</code></strong></dt>
+<dd>Parent namespace of the model, used for automatic rebuilding of models.</dd>
+<dt><strong><code>__pydantic_post_init__</code></strong></dt>
+<dd>The name of the post-init method for the model, if defined.</dd>
+<dt><strong><code>__pydantic_root_model__</code></strong></dt>
+<dd>Whether the model is a <code>RootModel</code>.</dd>
+<dt><strong><code>__pydantic_serializer__</code></strong></dt>
+<dd>The pydantic-core SchemaSerializer used to dump instances of the model.</dd>
+<dt><strong><code>__pydantic_validator__</code></strong></dt>
+<dd>The pydantic-core SchemaValidator used to validate instances of the model.</dd>
+<dt><strong><code>__pydantic_extra__</code></strong></dt>
+<dd>An instance attribute with the values of extra fields from validation when
+<code>model_config['extra'] == 'allow'</code>.</dd>
+<dt><strong><code>__pydantic_fields_set__</code></strong></dt>
+<dd>An instance attribute with the names of fields explicitly specified during validation.</dd>
+<dt><strong><code>__pydantic_private__</code></strong></dt>
+<dd>Instance attribute with the values of private attributes set on the model instance.</dd>
+</dl>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class NotaFiscalServico(BaseClass):
+<pre><code class="python">class NotaFiscalServico(BaseModel):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
-    
-    id                   : Optional[int]        = None
-    empresa              : Optional[Empresa]    = None
-    uuid                 : Optional[str]        = None
-    modelo               : Optional[str]        = None
-    status               : Optional[str]        = None
-    motivo               : Optional[str]        = None
-    numero_nota          : Optional[str]        = None
-    codigo_verificacao   : Optional[str]        = None
-    protocolo            : Optional[str]        = None
-    nome_destinatario    : Optional[str]        = None
-    uf_destinatario      : Optional[str]        = None
-    cpf_cnpj_destinatario: Optional[str]        = None
-    valor_total          : Optional[str]        = None
-    data_emissao         : Optional[str]        = None
-    data_competencia     : Optional[str]        = None
-    uf_prestacao         : Optional[Uf]         = None
-    municipio_prestacao  : Optional[Municipio]  = None
-    ambiente             : Optional[str]        = None
-    json_objeto_nfse     : Optional[str]        = None  # TODO: Não consta na documentação da API
-    xml                  : Optional[str]        = None  # TODO: Não consta na documentação da API
-    
-    numer_nota           : Optional[str]        = None  # TODO: EXCLUIR! É um typo de &#34;numero_nota&#34;, adicionei hoje (03/07/2023) apenas para o package não parar de funcionar.
-    
-    @classmethod
-    def from_json(cls, **kwargs):
-        empresa_dict = kwargs.pop(&#39;empresa&#39;, {})
-        empresa = Empresa.from_json(**empresa_dict)
-        
-        uf_dict = kwargs.pop(&#39;uf_prestacao&#39;, {})
-        uf      = Uf.from_json(**uf_dict)
-        
-        municipio_dict = kwargs.pop(&#39;municipio_prestacao&#39;, {})
-        municipio = Municipio.from_json(**municipio_dict)
-        
-        return cls(empresa=empresa, uf_prestacao=uf, municipio_prestacao=municipio, **kwargs)
 
-    def to_json(self, *args, **kwargs):
-        json_str = jsonpickle.encode(self.as_filtered_dict(), unpicklable=False)
-        return json_str
-    
+    id                   : Optional[Annotated[int, Field()]]         = None
+    empresa              : Optional[Annotated[&#39;Empresa&#39;, Field()]]   = None
+    uuid                 : Optional[Annotated[str, Field()]]         = None
+    modelo               : Optional[Annotated[str, Field()]]         = None
+    status               : Optional[Annotated[str, Field()]]         = None
+    motivo               : Optional[Annotated[str, Field()]]         = None
+    numero_nota          : Optional[Annotated[str, Field()]]         = None
+    codigo_verificacao   : Optional[Annotated[str, Field()]]         = None
+    protocolo            : Optional[Annotated[str, Field()]]         = None
+    nome_destinatario    : Optional[Annotated[str, Field()]]         = None
+    uf_destinatario      : Optional[Annotated[str, Field()]]         = None
+    cpf_cnpj_destinatario: Optional[Annotated[str, Field()]]         = None
+    valor_total          : Optional[Annotated[str, Field()]]         = None
+    data_emissao         : Optional[Annotated[str, Field()]]         = None
+    data_competencia     : Optional[Annotated[str, Field()]]         = None
+    uf_prestacao         : Optional[Annotated[&#39;Uf&#39;, Field()]]        = None
+    municipio_prestacao  : Optional[Annotated[&#39;Municipio&#39;, Field()]] = None
+    ambiente             : Optional[Annotated[str, Field()]]         = None
+    json_objeto_nfse     : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API
+    xml                  : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API
+    numer_nota           : Optional[Annotated[str, Field()]]         = None  # TODO: EXCLUIR! É um typo de &#34;numero_nota&#34;, adicionei hoje (03/07/2023) apenas para o package não parar de funcionar.
+
     def __str__(self):
         return f&#39;NFSe {self.uuid}&#39;
-    
+
     def __repr__(self):
         return f&#39;NFSe {self.uuid}&#39;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="pysisnoapi.BaseClass" href="index.html#pysisnoapi.BaseClass">BaseClass</a></li>
+<li>pydantic.main.BaseModel</li>
 </ul>
 <h3>Class variables</h3>
 <dl>
@@ -998,6 +1125,14 @@ class NotaFiscalServico(BaseClass):
 <div class="desc"></div>
 </dd>
 <dt id="pysisnoapi.nfse.NotaFiscalServico.json_objeto_nfse"><code class="name">var <span class="ident">json_objeto_nfse</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.NotaFiscalServico.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1054,78 +1189,70 @@ class NotaFiscalServico(BaseClass):
 <div class="desc"></div>
 </dd>
 </dl>
-<h3>Static methods</h3>
-<dl>
-<dt id="pysisnoapi.nfse.NotaFiscalServico.from_json"><code class="name flex">
-<span>def <span class="ident">from_json</span></span>(<span>**kwargs)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@classmethod
-def from_json(cls, **kwargs):
-    empresa_dict = kwargs.pop(&#39;empresa&#39;, {})
-    empresa = Empresa.from_json(**empresa_dict)
-    
-    uf_dict = kwargs.pop(&#39;uf_prestacao&#39;, {})
-    uf      = Uf.from_json(**uf_dict)
-    
-    municipio_dict = kwargs.pop(&#39;municipio_prestacao&#39;, {})
-    municipio = Municipio.from_json(**municipio_dict)
-    
-    return cls(empresa=empresa, uf_prestacao=uf, municipio_prestacao=municipio, **kwargs)</code></pre>
-</details>
-</dd>
-</dl>
-<h3>Methods</h3>
-<dl>
-<dt id="pysisnoapi.nfse.NotaFiscalServico.to_json"><code class="name flex">
-<span>def <span class="ident">to_json</span></span>(<span>self, *args, **kwargs)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_json(self, *args, **kwargs):
-    json_str = jsonpickle.encode(self.as_filtered_dict(), unpicklable=False)
-    return json_str</code></pre>
-</details>
-</dd>
-</dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="pysisnoapi.BaseClass" href="index.html#pysisnoapi.BaseClass">BaseClass</a></b></code>:
-<ul class="hlist">
-<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="index.html#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
-</ul>
-</li>
-</ul>
 </dd>
 <dt id="pysisnoapi.nfse.ObjetoEmissaoNFSe"><code class="flex name class">
 <span>class <span class="ident">ObjetoEmissaoNFSe</span></span>
-<span>(</span><span>cliente: Cliente, servico: <a title="pysisnoapi.nfse.Servico" href="#pysisnoapi.nfse.Servico">Servico</a>, construcao_civil: Optional[ForwardRef('<a title="pysisnoapi.nfse.ConstrucaoCivil" href="#pysisnoapi.nfse.ConstrucaoCivil">ConstrucaoCivil</a>')] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>ObjetoEmissaoNFSe(cliente: 'Cliente', servico: 'Servico', construcao_civil: Optional[ForwardRef('ConstrucaoCivil')] = None)</p></div>
+<div class="desc"><p>Usage docs: <a href="https://docs.pydantic.dev/2.4/concepts/models/">https://docs.pydantic.dev/2.4/concepts/models/</a></p>
+<p>A base class for creating Pydantic models.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>__class_vars__</code></strong></dt>
+<dd>The names of classvars defined on the model.</dd>
+<dt><strong><code>__private_attributes__</code></strong></dt>
+<dd>Metadata about the private attributes of the model.</dd>
+<dt><strong><code>__signature__</code></strong></dt>
+<dd>The signature for instantiating the model.</dd>
+<dt><strong><code>__pydantic_complete__</code></strong></dt>
+<dd>Whether model building is completed, or if there are still undefined fields.</dd>
+<dt><strong><code>__pydantic_core_schema__</code></strong></dt>
+<dd>The pydantic-core schema used to build the SchemaValidator and SchemaSerializer.</dd>
+<dt><strong><code>__pydantic_custom_init__</code></strong></dt>
+<dd>Whether the model has a custom <code>__init__</code> function.</dd>
+<dt><strong><code>__pydantic_decorators__</code></strong></dt>
+<dd>Metadata containing the decorators defined on the model.
+This replaces <code>Model.__validators__</code> and <code>Model.__root_validators__</code> from Pydantic V1.</dd>
+<dt><strong><code>__pydantic_generic_metadata__</code></strong></dt>
+<dd>Metadata for generic models; contains data used for a similar purpose to
+<strong>args</strong>, <strong>origin</strong>, <strong>parameters</strong> in typing-module generics. May eventually be replaced by these.</dd>
+<dt><strong><code>__pydantic_parent_namespace__</code></strong></dt>
+<dd>Parent namespace of the model, used for automatic rebuilding of models.</dd>
+<dt><strong><code>__pydantic_post_init__</code></strong></dt>
+<dd>The name of the post-init method for the model, if defined.</dd>
+<dt><strong><code>__pydantic_root_model__</code></strong></dt>
+<dd>Whether the model is a <code>RootModel</code>.</dd>
+<dt><strong><code>__pydantic_serializer__</code></strong></dt>
+<dd>The pydantic-core SchemaSerializer used to dump instances of the model.</dd>
+<dt><strong><code>__pydantic_validator__</code></strong></dt>
+<dd>The pydantic-core SchemaValidator used to validate instances of the model.</dd>
+<dt><strong><code>__pydantic_extra__</code></strong></dt>
+<dd>An instance attribute with the values of extra fields from validation when
+<code>model_config['extra'] == 'allow'</code>.</dd>
+<dt><strong><code>__pydantic_fields_set__</code></strong></dt>
+<dd>An instance attribute with the names of fields explicitly specified during validation.</dd>
+<dt><strong><code>__pydantic_private__</code></strong></dt>
+<dd>Instance attribute with the values of private attributes set on the model instance.</dd>
+</dl>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class ObjetoEmissaoNFSe(BaseClass):
-    cliente: &#39;Cliente&#39;
-    servico: &#39;Servico&#39;
-    
-    construcao_civil: Optional[&#39;ConstrucaoCivil&#39;] = None</code></pre>
+<pre><code class="python">class ObjetoEmissaoNFSe(BaseModel):
+    cliente: &#39;Cliente&#39; = Field()
+    servico: &#39;Servico&#39; = Field()
+
+    construcao_civil: Optional[Annotated[&#39;ConstrucaoCivil&#39;, Field()]] = None</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="pysisnoapi.BaseClass" href="index.html#pysisnoapi.BaseClass">BaseClass</a></li>
+<li>pydantic.main.BaseModel</li>
 </ul>
 <h3>Class variables</h3>
 <dl>
@@ -1137,37 +1264,84 @@ class ObjetoEmissaoNFSe(BaseClass):
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="pysisnoapi.nfse.ObjetoEmissaoNFSe.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.ObjetoEmissaoNFSe.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="pysisnoapi.nfse.ObjetoEmissaoNFSe.servico"><code class="name">var <span class="ident">servico</span> : <a title="pysisnoapi.nfse.Servico" href="#pysisnoapi.nfse.Servico">Servico</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="pysisnoapi.BaseClass" href="index.html#pysisnoapi.BaseClass">BaseClass</a></b></code>:
-<ul class="hlist">
-<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="index.html#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
-</ul>
-</li>
-</ul>
 </dd>
 <dt id="pysisnoapi.nfse.PaginaNotasServico"><code class="flex name class">
 <span>class <span class="ident">PaginaNotasServico</span></span>
-<span>(</span><span>total: Optional[str] = None, itens_por_pagina: Optional[str] = None, pagina_atual: Optional[str] = None, itens: Optional[List[ForwardRef('<a title="pysisnoapi.nfse.NotaFiscalServico" href="#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a>')]] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>PaginaNotasServico(total: Optional[str] = None, itens_por_pagina: Optional[str] = None, pagina_atual: Optional[str] = None, itens: Optional[List[ForwardRef('NotaFiscalServico')]] = None)</p></div>
+<div class="desc"><p>Usage docs: <a href="https://docs.pydantic.dev/2.4/concepts/models/">https://docs.pydantic.dev/2.4/concepts/models/</a></p>
+<p>A base class for creating Pydantic models.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>__class_vars__</code></strong></dt>
+<dd>The names of classvars defined on the model.</dd>
+<dt><strong><code>__private_attributes__</code></strong></dt>
+<dd>Metadata about the private attributes of the model.</dd>
+<dt><strong><code>__signature__</code></strong></dt>
+<dd>The signature for instantiating the model.</dd>
+<dt><strong><code>__pydantic_complete__</code></strong></dt>
+<dd>Whether model building is completed, or if there are still undefined fields.</dd>
+<dt><strong><code>__pydantic_core_schema__</code></strong></dt>
+<dd>The pydantic-core schema used to build the SchemaValidator and SchemaSerializer.</dd>
+<dt><strong><code>__pydantic_custom_init__</code></strong></dt>
+<dd>Whether the model has a custom <code>__init__</code> function.</dd>
+<dt><strong><code>__pydantic_decorators__</code></strong></dt>
+<dd>Metadata containing the decorators defined on the model.
+This replaces <code>Model.__validators__</code> and <code>Model.__root_validators__</code> from Pydantic V1.</dd>
+<dt><strong><code>__pydantic_generic_metadata__</code></strong></dt>
+<dd>Metadata for generic models; contains data used for a similar purpose to
+<strong>args</strong>, <strong>origin</strong>, <strong>parameters</strong> in typing-module generics. May eventually be replaced by these.</dd>
+<dt><strong><code>__pydantic_parent_namespace__</code></strong></dt>
+<dd>Parent namespace of the model, used for automatic rebuilding of models.</dd>
+<dt><strong><code>__pydantic_post_init__</code></strong></dt>
+<dd>The name of the post-init method for the model, if defined.</dd>
+<dt><strong><code>__pydantic_root_model__</code></strong></dt>
+<dd>Whether the model is a <code>RootModel</code>.</dd>
+<dt><strong><code>__pydantic_serializer__</code></strong></dt>
+<dd>The pydantic-core SchemaSerializer used to dump instances of the model.</dd>
+<dt><strong><code>__pydantic_validator__</code></strong></dt>
+<dd>The pydantic-core SchemaValidator used to validate instances of the model.</dd>
+<dt><strong><code>__pydantic_extra__</code></strong></dt>
+<dd>An instance attribute with the values of extra fields from validation when
+<code>model_config['extra'] == 'allow'</code>.</dd>
+<dt><strong><code>__pydantic_fields_set__</code></strong></dt>
+<dd>An instance attribute with the names of fields explicitly specified during validation.</dd>
+<dt><strong><code>__pydantic_private__</code></strong></dt>
+<dd>Instance attribute with the values of private attributes set on the model instance.</dd>
+</dl>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class PaginaNotasServico:
-    total           : Optional[str]                       = None
-    itens_por_pagina: Optional[str]                       = None
-    pagina_atual    : Optional[str]                       = None
-    itens           : Optional[List[&#39;NotaFiscalServico&#39;]] = None</code></pre>
+<pre><code class="python">class PaginaNotasServico(BaseModel):
+    total           : Optional[Annotated[str, Field()]]                       = None
+    itens_por_pagina: Optional[Annotated[str, Field()]]                       = None
+    pagina_atual    : Optional[Annotated[str, Field()]]                       = None
+    itens           : Optional[Annotated[List[&#39;NotaFiscalServico&#39;], Field()]] = None</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.nfse.PaginaNotasServico.itens"><code class="name">var <span class="ident">itens</span> : Optional[List[<a title="pysisnoapi.nfse.NotaFiscalServico" href="#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a>]]</code></dt>
@@ -1175,6 +1349,14 @@ class PaginaNotasServico:
 <div class="desc"></div>
 </dd>
 <dt id="pysisnoapi.nfse.PaginaNotasServico.itens_por_pagina"><code class="name">var <span class="ident">itens_por_pagina</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.PaginaNotasServico.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.PaginaNotasServico.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1190,7 +1372,7 @@ class PaginaNotasServico:
 </dd>
 <dt id="pysisnoapi.nfse.Servico"><code class="flex name class">
 <span>class <span class="ident">Servico</span></span>
-<span>(</span><span>valor_servicos: str, discriminacao: str, impostos: <a title="pysisnoapi.nfse.ImpostosServico" href="#pysisnoapi.nfse.ImpostosServico">ImpostosServico</a>, iss_retido: Optional[str] = None, responsavel_retencao_iss: Optional[str] = None, intermediario: Optional[ForwardRef('Cliente')] = None, deducoes: Optional[str] = None, desconto_incondicionado: Optional[str] = None, desconto_condicionado: Optional[str] = None, outras_retencoes: Optional[str] = None, informacoes_complementares: Optional[str] = None, data_competencia: Optional[str] = None, uf_local_prestacao: Optional[ForwardRef('Uf')] = None, municipio_local_prestacao: Optional[ForwardRef('Municipio')] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
 <div class="desc"><p><em>summary</em></p>
@@ -1198,47 +1380,55 @@ class PaginaNotasServico:
 <dl>
 <dt><code>_type_</code></dt>
 <dd><em>description</em></dd>
-</dl></div>
+</dl>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class Servico:
+<pre><code class="python">class Servico(BaseModel):
     &#39;&#39;&#39;_summary_
 
     Returns:
         _type_: _description_
     &#39;&#39;&#39;
-    valor_servicos            : str
-    discriminacao             : str
-    impostos                  : &#39;ImpostosServico&#39;
-    
-    iss_retido                : Optional[str]         = None
-    responsavel_retencao_iss  : Optional[str]         = None
-    
-    intermediario             : Optional[&#39;Cliente&#39;]   = None
-    deducoes                  : Optional[str]         = None
-    desconto_incondicionado   : Optional[str]         = None
-    desconto_condicionado     : Optional[str]         = None
-    outras_retencoes          : Optional[str]         = None
-    informacoes_complementares: Optional[str]         = None
-    data_competencia          : Optional[str]         = None
-    uf_local_prestacao        : Optional[&#39;Uf&#39;]        = None
-    municipio_local_prestacao : Optional[&#39;Municipio&#39;] = None
-    
-    def __post_init__(self, *args, **kwargs):
-        self.validate_iss_retido()
-        self.validate_responsavel_retencao_iss()
-    
+    valor_servicos            : str               = Field()
+    discriminacao             : str               = Field()
+    impostos                  : &#39;ImpostosServico&#39; = Field()
+
+    iss_retido                : Optional[Annotated[str, Field()]]         = None
+    responsavel_retencao_iss  : Optional[Annotated[str, Field()]]         = None
+
+    intermediario             : Optional[Annotated[&#39;Cliente&#39;, Field()]]   = None
+    deducoes                  : Optional[Annotated[str, Field()]]         = None
+    desconto_incondicionado   : Optional[Annotated[str, Field()]]         = None
+    desconto_condicionado     : Optional[Annotated[str, Field()]]         = None
+    outras_retencoes          : Optional[Annotated[str, Field()]]         = None
+    informacoes_complementares: Optional[Annotated[str, Field()]]         = None
+    data_competencia          : Optional[Annotated[str, Field()]]         = None
+    uf_local_prestacao        : Optional[Annotated[&#39;Uf&#39;, Field()]]        = None
+    municipio_local_prestacao : Optional[Annotated[&#39;Municipio&#39;, Field()]] = None
+
+    @model_validator(mode=&#39;after&#39;)
     def validate_iss_retido(self, *args, **kwargs):
         if self.iss_retido and self.iss_retido not in INDICADORES_ISS_RETIDO:
             raise ValueError(f&#39;Indicador de ISS retido {self.iss_retido} inválido.&#39;)
-    
+        return self
+
+    @model_validator(mode=&#39;after&#39;)
     def validate_responsavel_retencao_iss(self, *args, **kwargs):
         if self.responsavel_retencao_iss and self.responsavel_retencao_iss not in RESPONSAVEIS_RETENCAO_ISS:
-            raise ValueError(f&#39;Responsável pela retenção do ISS {self.responsavel_retencao_iss} inválido.&#39;)</code></pre>
+            raise ValueError(f&#39;Responsável pela retenção do ISS {self.responsavel_retencao_iss} inválido.&#39;)
+        return self</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.nfse.Servico.data_competencia"><code class="name">var <span class="ident">data_competencia</span> : Optional[str]</code></dt>
@@ -1277,6 +1467,14 @@ class Servico:
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="pysisnoapi.nfse.Servico.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.nfse.Servico.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="pysisnoapi.nfse.Servico.municipio_local_prestacao"><code class="name">var <span class="ident">municipio_local_prestacao</span> : Optional[<a title="pysisnoapi.Municipio" href="index.html#pysisnoapi.Municipio">Municipio</a>]</code></dt>
 <dd>
 <div class="desc"></div>
@@ -1309,9 +1507,11 @@ class Servico:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_iss_retido(self, *args, **kwargs):
+<pre><code class="python">@model_validator(mode=&#39;after&#39;)
+def validate_iss_retido(self, *args, **kwargs):
     if self.iss_retido and self.iss_retido not in INDICADORES_ISS_RETIDO:
-        raise ValueError(f&#39;Indicador de ISS retido {self.iss_retido} inválido.&#39;)</code></pre>
+        raise ValueError(f&#39;Indicador de ISS retido {self.iss_retido} inválido.&#39;)
+    return self</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.nfse.Servico.validate_responsavel_retencao_iss"><code class="name flex">
@@ -1323,9 +1523,11 @@ class Servico:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_responsavel_retencao_iss(self, *args, **kwargs):
+<pre><code class="python">@model_validator(mode=&#39;after&#39;)
+def validate_responsavel_retencao_iss(self, *args, **kwargs):
     if self.responsavel_retencao_iss and self.responsavel_retencao_iss not in RESPONSAVEIS_RETENCAO_ISS:
-        raise ValueError(f&#39;Responsável pela retenção do ISS {self.responsavel_retencao_iss} inválido.&#39;)</code></pre>
+        raise ValueError(f&#39;Responsável pela retenção do ISS {self.responsavel_retencao_iss} inválido.&#39;)
+    return self</code></pre>
 </details>
 </dd>
 </dl>
@@ -1360,12 +1562,16 @@ class Servico:
 <ul class="">
 <li><code><a title="pysisnoapi.nfse.ConstrucaoCivil.art" href="#pysisnoapi.nfse.ConstrucaoCivil.art">art</a></code></li>
 <li><code><a title="pysisnoapi.nfse.ConstrucaoCivil.codigo_obra" href="#pysisnoapi.nfse.ConstrucaoCivil.codigo_obra">codigo_obra</a></code></li>
+<li><code><a title="pysisnoapi.nfse.ConstrucaoCivil.model_config" href="#pysisnoapi.nfse.ConstrucaoCivil.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.nfse.ConstrucaoCivil.model_fields" href="#pysisnoapi.nfse.ConstrucaoCivil.model_fields">model_fields</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.nfse.ImpostosServico" href="#pysisnoapi.nfse.ImpostosServico">ImpostosServico</a></code></h4>
 <ul class="">
 <li><code><a title="pysisnoapi.nfse.ImpostosServico.issqn" href="#pysisnoapi.nfse.ImpostosServico.issqn">issqn</a></code></li>
+<li><code><a title="pysisnoapi.nfse.ImpostosServico.model_config" href="#pysisnoapi.nfse.ImpostosServico.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.nfse.ImpostosServico.model_fields" href="#pysisnoapi.nfse.ImpostosServico.model_fields">model_fields</a></code></li>
 </ul>
 </li>
 <li>
@@ -1381,6 +1587,8 @@ class Servico:
 <li><code><a title="pysisnoapi.nfse.Issqn.indicador_exigibilidade_iss" href="#pysisnoapi.nfse.Issqn.indicador_exigibilidade_iss">indicador_exigibilidade_iss</a></code></li>
 <li><code><a title="pysisnoapi.nfse.Issqn.indicador_incentivo_fiscal" href="#pysisnoapi.nfse.Issqn.indicador_incentivo_fiscal">indicador_incentivo_fiscal</a></code></li>
 <li><code><a title="pysisnoapi.nfse.Issqn.item_lista_servicos" href="#pysisnoapi.nfse.Issqn.item_lista_servicos">item_lista_servicos</a></code></li>
+<li><code><a title="pysisnoapi.nfse.Issqn.model_config" href="#pysisnoapi.nfse.Issqn.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.nfse.Issqn.model_fields" href="#pysisnoapi.nfse.Issqn.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.nfse.Issqn.numero_processo" href="#pysisnoapi.nfse.Issqn.numero_processo">numero_processo</a></code></li>
 <li><code><a title="pysisnoapi.nfse.Issqn.validate_indicador_exigibilidade_iss" href="#pysisnoapi.nfse.Issqn.validate_indicador_exigibilidade_iss">validate_indicador_exigibilidade_iss</a></code></li>
 <li><code><a title="pysisnoapi.nfse.Issqn.validate_indicador_incentivo_fiscal" href="#pysisnoapi.nfse.Issqn.validate_indicador_incentivo_fiscal">validate_indicador_incentivo_fiscal</a></code></li>
@@ -1395,9 +1603,10 @@ class Servico:
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.data_competencia" href="#pysisnoapi.nfse.NotaFiscalServico.data_competencia">data_competencia</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.data_emissao" href="#pysisnoapi.nfse.NotaFiscalServico.data_emissao">data_emissao</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.empresa" href="#pysisnoapi.nfse.NotaFiscalServico.empresa">empresa</a></code></li>
-<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.from_json" href="#pysisnoapi.nfse.NotaFiscalServico.from_json">from_json</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.id" href="#pysisnoapi.nfse.NotaFiscalServico.id">id</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.json_objeto_nfse" href="#pysisnoapi.nfse.NotaFiscalServico.json_objeto_nfse">json_objeto_nfse</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.model_config" href="#pysisnoapi.nfse.NotaFiscalServico.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.model_fields" href="#pysisnoapi.nfse.NotaFiscalServico.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.modelo" href="#pysisnoapi.nfse.NotaFiscalServico.modelo">modelo</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.motivo" href="#pysisnoapi.nfse.NotaFiscalServico.motivo">motivo</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.municipio_prestacao" href="#pysisnoapi.nfse.NotaFiscalServico.municipio_prestacao">municipio_prestacao</a></code></li>
@@ -1406,7 +1615,6 @@ class Servico:
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.numero_nota" href="#pysisnoapi.nfse.NotaFiscalServico.numero_nota">numero_nota</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.protocolo" href="#pysisnoapi.nfse.NotaFiscalServico.protocolo">protocolo</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.status" href="#pysisnoapi.nfse.NotaFiscalServico.status">status</a></code></li>
-<li><code><a title="pysisnoapi.nfse.NotaFiscalServico.to_json" href="#pysisnoapi.nfse.NotaFiscalServico.to_json">to_json</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.uf_destinatario" href="#pysisnoapi.nfse.NotaFiscalServico.uf_destinatario">uf_destinatario</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.uf_prestacao" href="#pysisnoapi.nfse.NotaFiscalServico.uf_prestacao">uf_prestacao</a></code></li>
 <li><code><a title="pysisnoapi.nfse.NotaFiscalServico.uuid" href="#pysisnoapi.nfse.NotaFiscalServico.uuid">uuid</a></code></li>
@@ -1419,14 +1627,18 @@ class Servico:
 <ul class="">
 <li><code><a title="pysisnoapi.nfse.ObjetoEmissaoNFSe.cliente" href="#pysisnoapi.nfse.ObjetoEmissaoNFSe.cliente">cliente</a></code></li>
 <li><code><a title="pysisnoapi.nfse.ObjetoEmissaoNFSe.construcao_civil" href="#pysisnoapi.nfse.ObjetoEmissaoNFSe.construcao_civil">construcao_civil</a></code></li>
+<li><code><a title="pysisnoapi.nfse.ObjetoEmissaoNFSe.model_config" href="#pysisnoapi.nfse.ObjetoEmissaoNFSe.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.nfse.ObjetoEmissaoNFSe.model_fields" href="#pysisnoapi.nfse.ObjetoEmissaoNFSe.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.nfse.ObjetoEmissaoNFSe.servico" href="#pysisnoapi.nfse.ObjetoEmissaoNFSe.servico">servico</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.nfse.PaginaNotasServico" href="#pysisnoapi.nfse.PaginaNotasServico">PaginaNotasServico</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="pysisnoapi.nfse.PaginaNotasServico.itens" href="#pysisnoapi.nfse.PaginaNotasServico.itens">itens</a></code></li>
 <li><code><a title="pysisnoapi.nfse.PaginaNotasServico.itens_por_pagina" href="#pysisnoapi.nfse.PaginaNotasServico.itens_por_pagina">itens_por_pagina</a></code></li>
+<li><code><a title="pysisnoapi.nfse.PaginaNotasServico.model_config" href="#pysisnoapi.nfse.PaginaNotasServico.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.nfse.PaginaNotasServico.model_fields" href="#pysisnoapi.nfse.PaginaNotasServico.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.nfse.PaginaNotasServico.pagina_atual" href="#pysisnoapi.nfse.PaginaNotasServico.pagina_atual">pagina_atual</a></code></li>
 <li><code><a title="pysisnoapi.nfse.PaginaNotasServico.total" href="#pysisnoapi.nfse.PaginaNotasServico.total">total</a></code></li>
 </ul>
@@ -1443,6 +1655,8 @@ class Servico:
 <li><code><a title="pysisnoapi.nfse.Servico.informacoes_complementares" href="#pysisnoapi.nfse.Servico.informacoes_complementares">informacoes_complementares</a></code></li>
 <li><code><a title="pysisnoapi.nfse.Servico.intermediario" href="#pysisnoapi.nfse.Servico.intermediario">intermediario</a></code></li>
 <li><code><a title="pysisnoapi.nfse.Servico.iss_retido" href="#pysisnoapi.nfse.Servico.iss_retido">iss_retido</a></code></li>
+<li><code><a title="pysisnoapi.nfse.Servico.model_config" href="#pysisnoapi.nfse.Servico.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.nfse.Servico.model_fields" href="#pysisnoapi.nfse.Servico.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.nfse.Servico.municipio_local_prestacao" href="#pysisnoapi.nfse.Servico.municipio_local_prestacao">municipio_local_prestacao</a></code></li>
 <li><code><a title="pysisnoapi.nfse.Servico.outras_retencoes" href="#pysisnoapi.nfse.Servico.outras_retencoes">outras_retencoes</a></code></li>
 <li><code><a title="pysisnoapi.nfse.Servico.responsavel_retencao_iss" href="#pysisnoapi.nfse.Servico.responsavel_retencao_iss">responsavel_retencao_iss</a></code></li>

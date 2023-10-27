@@ -23,10 +23,9 @@
 </header>
 <section id="section-intro">
 <p>Package criado para integração com a API da plataforma SISNO.</p>
-<p>Para utilizar esse package basta importá-lo da seguinte forma:<br>
-<code>import <a title="pysisnoapi" href="#pysisnoapi">pysisnoapi</a></code>
-</p>
-<p>Ou também poderá importar apenas os módulos necessários, como por exemplo:<br>
+<p>Para utilizar esse package basta importá-lo da seguinte forma:
+<code>import <a title="pysisnoapi" href="#pysisnoapi">pysisnoapi</a></code></p>
+<p>Ou também poderá importar apenas os módulos necessários, como por exemplo:
 <code>from <a title="pysisnoapi" href="#pysisnoapi">pysisnoapi</a> import <a title="pysisnoapi.nfe" href="nfe.html">pysisnoapi.nfe</a></code></p>
 <details class="source">
 <summary>
@@ -35,28 +34,24 @@
 <pre><code class="python">&#39;&#39;&#39;
     Package criado para integração com a API da plataforma SISNO.
 
-    Para utilizar esse package basta importá-lo da seguinte forma:  
-    `import pysisnoapi`  
-    
-    Ou também poderá importar apenas os módulos necessários, como por exemplo:  
-    `from pysisnoapi import nfe` 
+    Para utilizar esse package basta importá-lo da seguinte forma:
+    `import pysisnoapi`
+
+    Ou também poderá importar apenas os módulos necessários, como por exemplo:
+    `from pysisnoapi import nfe`
 &#39;&#39;&#39;
 
 # ======================================================================================================================
 # Imports:
-import os
-import functools
-
-from dataclasses import dataclass, asdict
-from typing      import Optional, List, Tuple, Dict
-from datetime    import datetime
-from dateutil    import parser
+from typing            import Optional
+from typing_extensions import Annotated
+from datetime          import datetime
+from dateutil          import parser
+from pydantic          import BaseModel, Field, model_validator
 
 # ======================================================================================================================
 # Globals:
-
 BASE_URL = &#39;https://homolog.arkaonline.com.br/nfe-service&#39;               # TODO: Provisório, em breve voltará para &#39;https://homolog.sisno.com.br/nfe-service/&#39;
-
 HEADERS  = {
     &#39;accept&#39;      : &#39;application/json&#39;,
     &#39;Content-Type&#39;: &#39;application/json&#39;,
@@ -260,480 +255,429 @@ UNIDADES = [
 
 # ======================================================================================================================
 # Classes:
-@dataclass
-class BaseClass:
-    &#39;&#39;&#39;Classe genérica utilizada como base para as demais classes neste package.
-    
-    A principal finalidade desta classe é fornecer o método `as_filtered_dict` para filtrar e retornar um dicionário com os atributos relevantes da instância.
-    Para maiores informações consulte a documentação do método [aqui](#pysisnoapi.BaseClass.as_filtered_dict).
-    &#39;&#39;&#39;
-    
-    def as_filtered_dict(self)-&gt; dict[str:str]:
-        &#39;&#39;&#39;
-        Retorna um dicionário contendo os campos/atributos da classe com valores não nulos.
-
-        O dicionário resultante possui chaves (str) correspondentes aos nomes dos campos
-        da classe e valores (str) representando os respectivos valores desses campos,
-        desde que esses valores não sejam nulos (None).
-        
-        Returns:
-            dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
-        &#39;&#39;&#39;
-        return asdict(self, dict_factory=_dict_factory)
-
-@dataclass
-class Cfop:
+class Cfop(BaseModel):
     &#39;&#39;&#39;Classe `CFOP` (Código Fiscal de Operações e Prestações)
     &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
-    codigo: Optional[str] = None
-    descricao: Optional[str] = None
-    aplicacao: Optional[str] = None
+    codigo   : Optional[Annotated[str, Field()]] = None
+    descricao: Optional[Annotated[str, Field()]] = None
+    aplicacao: Optional[Annotated[str, Field()]] = None
 
-@dataclass
-class Cliente:
+class Cliente(BaseModel):
     &#39;&#39;&#39;Classe `Cliente`
     Geralmente é o destinatário da NFe.
     &#39;&#39;&#39;
-    consumidor_final: str
-    contribuinte    : str
-    endereco        : &#39;Endereco&#39;
-    
-    pessoa_fisica   : Optional[&#39;PessoaFisica&#39;]   = None
-    pessoa_juridica : Optional[&#39;PessoaJuridica&#39;] = None
-    
-    id              : Optional[int] = None
-    ie              : Optional[str] = None
-    telefone        : Optional[str] = None
-    email           : Optional[str] = None
-    faz_retencao    : Optional[str] = None
-        
-    def __post_init__(self):        
-        self.validate_pessoa()
-        self.validate_consumidor_final()
-        self.validate_contribuinte()
-    
-    def validate_pessoa(self):
-        if self.pessoa_fisica and self.pessoa_juridica:
-            raise ValueError(&#39;Informe apenas um dos campos pessoa_fisica ou pessoa_juridica&#39;)
-        if not self.pessoa_fisica and not self.pessoa_juridica:
-            raise ValueError(&#39;Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica&#39;)
-    
-    def validate_consumidor_final(self):
-        if self.consumidor_final not in TIPOS_CONSUMIDOR_FINAL:
-            raise ValueError(f&#39;Consumidor Final {self.consumidor_final} inválido&#39;)
-    
-    def validate_contribuinte(self):
+    consumidor_final: str        = Field()
+    contribuinte    : str        = Field()
+    endereco        : &#39;Endereco&#39; = Field()
+
+    pessoa_fisica   : Optional[Annotated[&#39;PessoaFisica&#39;  , Field()]] = None
+    pessoa_juridica : Optional[Annotated[&#39;PessoaJuridica&#39;, Field()]] = None
+
+    id              : Optional[Annotated[int, Field()]] = None
+    ie              : Optional[Annotated[str, Field()]] = None
+    telefone        : Optional[Annotated[str, Field()]] = None
+    email           : Optional[Annotated[str, Field()]] = None
+    faz_retencao    : Optional[Annotated[str, Field()]] = None
+
+    @model_validator(mode=&#39;after&#39;)
+    def check_tipo_contribuinte(self):
         if self.contribuinte not in TIPOS_CONTRIBUINTES:
             raise ValueError(f&#39;Contribuinte {self.contribuinte} inválido&#39;)
+        return self
 
-@dataclass
-class Cofins:
+    @model_validator(mode=&#39;after&#39;)
+    def check_tipo_consumidor(self):
+        if self.consumidor_final not in TIPOS_CONSUMIDOR_FINAL:
+            raise ValueError(f&#39;Consumidor Final {self.consumidor_final} inválido&#39;)
+        return self
+
+    @model_validator(mode=&#39;after&#39;)
+    def check_tipo_pessoa(self):
+        if (self.pessoa_fisica and self.pessoa_juridica):
+            raise ValueError(&#39;Informe somente um dos campos pessoa_fisica ou pessoa_juridica&#39;)
+        if not self.pessoa_fisica and not self.pessoa_juridica:
+            raise ValueError(&#39;Informe um dos campos pessoa_fisica ou pessoa_juridica&#39;)
+        return self
+
+class Cofins(BaseModel):
     &#39;&#39;&#39;Contribuição para Financiamento da Seguridade Social.
 
-    situacao_tributaria:  
-        01: Operação Tributável com Alíquota Básica  
-        02: Operação Tributável com Alíquota por Unidade de Medida de Produto  
-        03: Operação Tributável com Alíquota por Unidade de Medida de Produto  
-        04: Operação Tributável Monofásica - Revenda a Alíquota Zero  
-        05: Operação Tributável por Substituição Tributária  
-        06: Operação Tributável a Alíquota Zero  
-        07: Operação Isenta da Contribuição  
-        08: Operação sem Incidência da Contribuição  
-        09: Operação com Suspensão da Contribuição  
-        49: Outras Operações de Saída  
-        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno  
-        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno  
-        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação  
-        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno  
-        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação  
-        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação  
-        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação  
-        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno  
-        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno  
-        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação  
-        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno  
-        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação  
-        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação  
-        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação  
-        67: Crédito Presumido - Outras Operações  
-        70: Operação de Aquisição sem Direito a Crédito  
-        71: Operação de Aquisição com Isenção  
-        72: Operação de Aquisição com Suspensão  
-        73: Operação de Aquisição a Alíquota Zero  
-        74: Operação de Aquisição sem Incidência da Contribuição  
-        75: Operação de Aquisição por Substituição Tributária  
-        98: Outras Operações de Entrada  
-        99: Outras Operações  
-    
-    aliquota (str): $0.0000  
-        Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
-    
+    situacao_tributaria:
+        01: Operação Tributável com Alíquota Básica
+        02: Operação Tributável com Alíquota por Unidade de Medida de Produto
+        03: Operação Tributável com Alíquota por Unidade de Medida de Produto
+        04: Operação Tributável Monofásica - Revenda a Alíquota Zero
+        05: Operação Tributável por Substituição Tributária
+        06: Operação Tributável a Alíquota Zero
+        07: Operação Isenta da Contribuição
+        08: Operação sem Incidência da Contribuição
+        09: Operação com Suspensão da Contribuição
+        49: Outras Operações de Saída
+        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno
+        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno
+        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação
+        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno
+        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação
+        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação
+        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação
+        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno
+        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno
+        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação
+        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno
+        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação
+        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação
+        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação
+        67: Crédito Presumido - Outras Operações
+        70: Operação de Aquisição sem Direito a Crédito
+        71: Operação de Aquisição com Isenção
+        72: Operação de Aquisição com Suspensão
+        73: Operação de Aquisição a Alíquota Zero
+        74: Operação de Aquisição sem Incidência da Contribuição
+        75: Operação de Aquisição por Substituição Tributária
+        98: Outras Operações de Entrada
+        99: Outras Operações
+
+    aliquota (str): $0.0000
+        Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade
+
     aliquota_st (str): $0.0000
-    
+
     aliquota_retencao (str): $0.0000
     &#39;&#39;&#39;
-    situacao_tributaria : str
-    
-    aliquota            : Optional[str] = None
-    aliquota_st         : Optional[str] = None
-    aliquota_retencao   : Optional[str] = None
-    
-    def __post_init__(self, *args, **kwargs):
-        self.validate_situacao_tributaria()
-        
-    def validate_situacao_tributaria(self, *args, **kwargs):
+    situacao_tributaria : str = Field()
+
+    aliquota            : Optional[Annotated[str, Field()]] = None
+    aliquota_st         : Optional[Annotated[str, Field()]] = None
+    aliquota_retencao   : Optional[Annotated[str, Field()]] = None
+
+    @model_validator(mode=&#39;after&#39;)
+    def validate_situacao_tributaria(self):
         if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
             raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)
+        return self
 
-@dataclass
-class DeclaracaoImportacaoAdicao:
-    numero_sequencial: Optional[str] = None
-    numero           : Optional[str] = None
-    cod_fabricante   : Optional[str] = None
-    desconto         : Optional[str] = None
-    drawback         : Optional[str] = None
-    
-@dataclass
-class Empresa:  
+class DeclaracaoImportacaoAdicao(BaseModel):
+    numero_sequencial: Optional[Annotated[str, Field()]] = None
+    numero           : Optional[Annotated[str, Field()]] = None
+    cod_fabricante   : Optional[Annotated[str, Field()]] = None
+    desconto         : Optional[Annotated[str, Field()]] = None
+    drawback         : Optional[Annotated[str, Field()]] = None
+
+class Empresa(BaseModel):
     &#39;&#39;&#39;
         Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
         Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
         Em resumo: não há necessidade de se preocupar com os campos, caso não saiba algum deles, pois, eles serão preenchidos automaticamente com aquilo que vier do endpoint.
     &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
-    id                                          : Optional[str]         = None
-    token                                       : Optional[str]         = None # Necessário para emitir, mas não para consultar
-    token_secret                                : Optional[str]         = None # Necessário para emitir, mas não para consultar
-    cnpj                                        : Optional[str]         = None
-    nome_fantasia                               : Optional[str]         = None
-    razao_social                                : Optional[str]         = None
-    endereco                                    : Optional[&#39;Endereco&#39;]  = None
-    telefone                                    : Optional[str]         = None
-    inscricao_estadual                          : Optional[str]         = None
-    inscricao_municipal                         : Optional[str]         = None
-    inscricao_estadual_substituicao_tributaria  : Optional[str]         = None
-    regime_tributario                           : Optional[str]         = None
-    classificacao_nacional_atividades_economicas: Optional[str]         = None
-    ambiente                                    : Optional[str]         = None
-    id_csc                                      : Optional[str]         = None
-    csc                                         : Optional[str]         = None
-    codigo_regime_especial_tributacao           : Optional[str]         = None
-    porcentagem_icms_aproveitado                : Optional[str]         = None
-    site                                        : Optional[str]         = None
-    email                                       : Optional[str]         = None
-    utiliza_tributos_aproximados                : Optional[bool]        = None  # TODO: Não consta na documentação da API
-    informacoes_complementares                  : Optional[str]         = None  # TODO: Não consta na documentação da API
-    senha_portal_prefeitura                     : Optional[str]         = None  # TODO: Não consta na documentação da API
-    serie_rps                                   : Optional[str]         = None  # TODO: Não consta na documentação da API 
-    proximo_numero_rps                          : Optional[str]         = None  # TODO: Não consta na documentação da API 
-    proximo_numero_rps_homologacao              : Optional[str]         = None  # TODO: Não consta na documentação da API 
-    numero_lote_rps                             : Optional[str]         = None  # TODO: Não consta na documentação da API 
-    
-    @classmethod
-    def from_json(cls, **kwargs):
-        endereco_dict = kwargs.pop(&#39;endereco&#39;, {})
-        endereco = Endereco.from_json(**endereco_dict)
-        
-        return cls(endereco=endereco, **kwargs)
+    id                                          : Optional[Annotated[str, Field()]]         = None
+    token                                       : Optional[Annotated[str, Field()]]         = None # Necessário para emitir, mas não para consultar
+    token_secret                                : Optional[Annotated[str, Field()]]         = None # Necessário para emitir, mas não para consultar
+    cnpj                                        : Optional[Annotated[str, Field()]]         = None
+    nome_fantasia                               : Optional[Annotated[str, Field()]]         = None
+    razao_social                                : Optional[Annotated[str, Field()]]         = None
+    endereco                                    : Optional[Annotated[&#39;Endereco&#39;, Field()]]  = None
+    telefone                                    : Optional[Annotated[str, Field()]]         = None
+    inscricao_estadual                          : Optional[Annotated[str, Field()]]         = None
+    inscricao_municipal                         : Optional[Annotated[str, Field()]]         = None
+    inscricao_estadual_substituicao_tributaria  : Optional[Annotated[str, Field()]]         = None
+    regime_tributario                           : Optional[Annotated[str, Field()]]         = None
+    classificacao_nacional_atividades_economicas: Optional[Annotated[str, Field()]]         = None
+    ambiente                                    : Optional[Annotated[str, Field()]]         = None
+    id_csc                                      : Optional[Annotated[str, Field()]]         = None
+    csc                                         : Optional[Annotated[str, Field()]]         = None
+    codigo_regime_especial_tributacao           : Optional[Annotated[str, Field()]]         = None
+    porcentagem_icms_aproveitado                : Optional[Annotated[str, Field()]]         = None
+    site                                        : Optional[Annotated[str, Field()]]         = None
+    email                                       : Optional[Annotated[str, Field()]]         = None
+    utiliza_tributos_aproximados                : Optional[Annotated[bool, Field()]]        = None  # TODO: Não consta na documentação da API
+    informacoes_complementares                  : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API
+    senha_portal_prefeitura                     : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API
+    serie_rps                                   : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API
+    proximo_numero_rps                          : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API
+    proximo_numero_rps_homologacao              : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API
+    numero_lote_rps                             : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API
 
-@dataclass
-class Endereco:
+class Endereco(BaseModel):
     &#39;&#39;&#39;Classe `Endereço`
     &#39;&#39;&#39;
-    
-    codigo_pais        : str
-    descricao_pais     : str
-    bairro             : str
-    logradouro         : str
-    numero             : str
-    
-    id                 : Optional[int] = None
-    uf                 : Optional[str] = None
-    codigo_municipio   : Optional[str] = None
-    descricao_municipio: Optional[str] = None
-    cep                : Optional[str] = None
-    complemento        : Optional[str] = None
-    
-    @classmethod
-    def from_json(cls, **kwargs):
-        return cls(**kwargs)
-    
-@dataclass
-class Ibpt:
+
+    codigo_pais        : str = Field()
+    descricao_pais     : str = Field()
+    bairro             : str = Field()
+    logradouro         : str = Field()
+    numero             : str = Field()
+
+    id                 : Optional[Annotated[int, Field()]] = None
+    uf                 : Optional[Annotated[str, Field()]] = None
+    codigo_municipio   : Optional[Annotated[str, Field()]] = None
+    descricao_municipio: Optional[Annotated[str, Field()]] = None
+    cep                : Optional[Annotated[str, Field()]] = None
+    complemento        : Optional[Annotated[str, Field()]] = None
+
+class Ibpt(BaseModel):
     &#39;&#39;&#39;Classe `IBPT` (Impostos sobre Produtos e Serviços)
     &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
-    codigo            : Optional[str]  = None
-    ex                : Optional[str]  = None
-    tipo              : Optional[str]  = None
-    descricao         : Optional[str]  = None
-    nacional_federal  : Optional[str]  = None
-    importados_federal: Optional[str]  = None
-    estadual          : Optional[str]  = None
-    municipal         : Optional[str]  = None
-    vigencia_inicio   : Optional[str]  = None
-    vigencia_fim      : Optional[str]  = None
-    versao            : Optional[str]  = None
-    fonte             : Optional[str]  = None
-    unidade_federativa: Optional[&#39;Uf&#39;] = None
-    ativo             : Optional[str]  = None     # TODO: Até o dia 01/06/2023, não consta na Documentação
-    
+    codigo            : Optional[Annotated[str, Field()]]  = None
+    ex                : Optional[Annotated[str, Field()]]  = None
+    tipo              : Optional[Annotated[str, Field()]]  = None
+    descricao         : Optional[Annotated[str, Field()]]  = None
+    nacional_federal  : Optional[Annotated[str, Field()]]  = None
+    importados_federal: Optional[Annotated[str, Field()]]  = None
+    estadual          : Optional[Annotated[str, Field()]]  = None
+    municipal         : Optional[Annotated[str, Field()]]  = None
+    vigencia_inicio   : Optional[Annotated[str, Field()]]  = None
+    vigencia_fim      : Optional[Annotated[str, Field()]]  = None
+    versao            : Optional[Annotated[str, Field()]]  = None
+    fonte             : Optional[Annotated[str, Field()]]  = None
+    unidade_federativa: Optional[Annotated[&#39;Uf&#39;, Field()]] = None
+    ativo             : Optional[Annotated[str, Field()]]  = None     # TODO: Até o dia 01/06/2023, não consta na Documentação
+
     @classmethod
     def from_json(cls, **kwargs):
         uf_dict = kwargs.pop(&#39;unidade_federativa&#39;, {})
         uf = Uf.from_json(**uf_dict)
         return cls(unidade_federativa=uf, **kwargs)
 
-@dataclass
-class Icms:
+class Icms(BaseModel):
     &#39;&#39;&#39;Classe `ICMS` (Imposto sobre Circulação de Mercadorias e Serviços)
     &#39;&#39;&#39;
-    situacao_tributaria                       : str
-    
-    codigo_cfop                               : Optional[str]  = None
-    aliquota_icms                             : Optional[str]  = None
-    percentual_reducao_bc_icms                : Optional[str]  = None
-    aliquota_fcp                              : Optional[str]  = None
-    percentual_reducao_bc_icms_st             : Optional[str]  = None
-    aliquota_aplicavel_calculo_credito        : Optional[str]  = None
-    aliquota_icms_st                          : Optional[str]  = None
-    aliquota_fcp_st                           : Optional[str]  = None
-    percentual_margem_valor_agregado_icms_st  : Optional[str]  = None
-    percentual_diferimento                    : Optional[str]  = None
-    percentual_desonerado                     : Optional[str]  = None
-    motivo_desoneracao                        : Optional[str]  = None
-    percentual_icms_st_retido                 : Optional[str]  = None
-    utilizar_tabela_aliquotas_interestaduais  : Optional[bool] = None
-    utilizar_aliquota_interestadual_importacao: Optional[bool] = None
-    
-    def __post_init__(self, *args, **kwargs):
-        self.validate_situacao_tributaria()
-        self.validate_motivo_desoneracao()
-        
-    def validate_situacao_tributaria(self, *args, **kwargs):
+    situacao_tributaria                       : str = Field()
+
+    codigo_cfop                               : Optional[Annotated[str, Field()]]  = None
+    aliquota_icms                             : Optional[Annotated[str, Field()]]  = None
+    percentual_reducao_bc_icms                : Optional[Annotated[str, Field()]]  = None
+    aliquota_fcp                              : Optional[Annotated[str, Field()]]  = None
+    percentual_reducao_bc_icms_st             : Optional[Annotated[str, Field()]]  = None
+    aliquota_aplicavel_calculo_credito        : Optional[Annotated[str, Field()]]  = None
+    aliquota_icms_st                          : Optional[Annotated[str, Field()]]  = None
+    aliquota_fcp_st                           : Optional[Annotated[str, Field()]]  = None
+    percentual_margem_valor_agregado_icms_st  : Optional[Annotated[str, Field()]]  = None
+    percentual_diferimento                    : Optional[Annotated[str, Field()]]  = None
+    percentual_desonerado                     : Optional[Annotated[str, Field()]]  = None
+    motivo_desoneracao                        : Optional[Annotated[str, Field()]]  = None
+    percentual_icms_st_retido                 : Optional[Annotated[str, Field()]]  = None
+    utilizar_tabela_aliquotas_interestaduais  : Optional[Annotated[bool, Field()]] = None
+    utilizar_aliquota_interestadual_importacao: Optional[Annotated[bool, Field()]] = None
+
+    @model_validator(mode=&#39;after&#39;)
+    def validate_situacao_tributaria(self):
         if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_ICMS:
             raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)
-    
-    def validate_motivo_desoneracao(self, *args, **kwargs):
+        return self
+
+    @model_validator(mode=&#39;after&#39;)
+    def validate_motivo_desoneracao(self):
         if self.motivo_desoneracao:
             if self.motivo_desoneracao not in MOTIVOS_DESONERACAO:
                 raise ValueError(f&#39;Motivo de Desoneração {self.motivo_desoneracao} inválido.&#39;)
+        return self
 
-@dataclass
-class Impostos:
+class Impostos(BaseModel):
     &#39;&#39;&#39;Classe Base para as Classes de Impostos de Produtos e Serviços.
     &#39;&#39;&#39;
-    pis   : &#39;Pis&#39;
-    cofins: &#39;Cofins&#39;
+    pis   : &#39;Pis&#39;    = Field()
+    cofins: &#39;Cofins&#39; = Field()
 
-@dataclass
-class Ipi:
+class Ipi(BaseModel):
     &#39;&#39;&#39;Classe `IPI` (Imposto Sobre Produtos Industrializados)
 
-    situacao_tributaria:  
-        00: Entrada com Recuperação de Crédito  
-        01: Entrada Tributada com Alíquota Zero  
-        02: Entrada Isenta  
-        03: Entrada Não Tributada  
-        04: Entrada Imune  
-        05: Entrada com Suspensão  
-        49: Outras Entradas  
-        50: Saída Tributada  
-        51: Saída Tributável com Alíquota Zero  
-        52: Saída Isenta  
-        53: Saída Não Tributada  
-        54: Saída Imune  
-        55: Saída com Suspensão  
-        99: Outras Saídas  
+    situacao_tributaria:
+        00: Entrada com Recuperação de Crédito
+        01: Entrada Tributada com Alíquota Zero
+        02: Entrada Isenta
+        03: Entrada Não Tributada
+        04: Entrada Imune
+        05: Entrada com Suspensão
+        49: Outras Entradas
+        50: Saída Tributada
+        51: Saída Tributável com Alíquota Zero
+        52: Saída Isenta
+        53: Saída Não Tributada
+        54: Saída Imune
+        55: Saída com Suspensão
+        99: Outras Saídas
     &#39;&#39;&#39;
-    situacao_tributaria : str
-    
-    aliquota            : Optional[str] = None
-    codigo_enquadramento: Optional[str] = None
-    codigo_selo         : Optional[str] = None
-    qtd_selo            : Optional[str] = None
-    
-    def __post_init__(self, *args, **kwargs):
-        self.validate_situacao_tributaria()
-    
+    situacao_tributaria : str = Field()
+
+    aliquota            : Optional[Annotated[str, Field()]] = None
+    codigo_enquadramento: Optional[Annotated[str, Field()]] = None
+    codigo_selo         : Optional[Annotated[str, Field()]] = None
+    qtd_selo            : Optional[Annotated[str, Field()]] = None
+
+    @model_validator(mode=&#39;after&#39;)
     def validate_situacao_tributaria(self, *args, **kwargs):
         if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_IPI:
             raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)
+        return self
 
-@dataclass
-class Municipio:
+class Municipio(BaseModel):
     &#39;&#39;&#39;Classe `Município`
     &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
-    codigo_ibge : Optional[int] = None
-    descricao   : Optional[str] = None
-    
+    codigo_ibge : Optional[Annotated[int, Field()]] = None
+    descricao   : Optional[Annotated[str, Field()]] = None
+
     @classmethod
     def from_json(cls, **kwargs):
         return cls(**kwargs)
 
-@dataclass
-class NotaFiscal:
+class NotaFiscal(BaseModel):
     &#39;&#39;&#39;Classe `Nota Fiscal`.
-    
+
     Até 01/2023 essa classe também era usada para Notas Fiscais de Serviço (NFSe).
     &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
-    id                      : Optional[int]         = None
-    empresa                 : Optional[&#39;Empresa&#39;]   = None
-    tipo                    : Optional[str]         = None
-    serie                   : Optional[str]         = None
-    numero_nota             : Optional[str]         = None
-    chave_acesso            : Optional[str]         = None
-    protocolo               : Optional[str]         = None
-    nome_destinatario       : Optional[str]         = None
-    uf_destinatario         : Optional[str]         = None
-    cpf_cnpj_destinatario   : Optional[str]         = None
-    valor_total             : Optional[str]         = None
-    status                  : Optional[str]         = None
-    motivo                  : Optional[str]         = None
-    data_emissao            : Optional[datetime]    = None
-    data_autorizacao        : Optional[datetime]    = None
-    modelo                  : Optional[str]         = None
-    ambiente                : Optional[str]         = None
-    xml                     : Optional[str]         = None
-    json_objeto_nfe         : Optional[str]         = None
-    tipo_emissao            : Optional[str]         = None
-    numero_lote             : Optional[str]         = None
-    
+    id                      : Optional[Annotated[int, Field()]]       = None
+    empresa                 : Optional[Annotated[&#39;Empresa&#39;, Field()]] = None
+    tipo                    : Optional[Annotated[str, Field()]]       = None
+    serie                   : Optional[Annotated[str, Field()]]       = None
+    numero_nota             : Optional[Annotated[str, Field()]]       = None
+    chave_acesso            : Optional[Annotated[str, Field()]]       = None
+    protocolo               : Optional[Annotated[str, Field()]]       = None
+    nome_destinatario       : Optional[Annotated[str, Field()]]       = None
+    uf_destinatario         : Optional[Annotated[str, Field()]]       = None
+    cpf_cnpj_destinatario   : Optional[Annotated[str, Field()]]       = None
+    valor_total             : Optional[Annotated[str, Field()]]       = None
+    status                  : Optional[Annotated[str, Field()]]       = None
+    motivo                  : Optional[Annotated[str, Field()]]       = None
+    data_emissao            : Optional[Annotated[datetime, Field()]]  = None
+    data_autorizacao        : Optional[Annotated[datetime, Field()]]  = None
+    modelo                  : Optional[Annotated[str, Field()]]       = None
+    ambiente                : Optional[Annotated[str, Field()]]       = None
+    xml                     : Optional[Annotated[str, Field()]]       = None
+    json_objeto_nfe         : Optional[Annotated[str, Field()]]       = None
+    tipo_emissao            : Optional[Annotated[str, Field()]]       = None
+    numero_lote             : Optional[Annotated[str, Field()]]       = None
+
     @classmethod
     def from_json(cls, **kwargs):
         empresa_dict = kwargs.pop(&#39;empresa&#39;, {})
         empresa = Empresa.from_json(**empresa_dict)
-        
+
         if data_emissao := kwargs.pop(&#39;data_emissao&#39;, None):
             data_emissao = parser.parse(data_emissao, dayfirst=True)
-        
+
         if data_autorizacao := kwargs.pop(&#39;data_autorizacao&#39;, None):
             data_autorizacao = parser.parse(data_autorizacao, dayfirst=True)
-        
+
         return cls(
             empresa=empresa,
-            data_emissao=data_emissao, 
-            data_autorizacao=data_autorizacao, 
+            data_emissao=data_emissao,
+            data_autorizacao=data_autorizacao,
             **kwargs
         )
-        
+
     def __str__(self):
         return f&#39;NFe {self.id}&#39;
-    
+
     def __repr__(self):
         return f&#39;NFe {self.id}&#39;
 
-@dataclass
-class Observacao:
-    campo: Optional[str] = None
-    texto: Optional[str] = None
-    
-@dataclass
-class PessoaFisica:
+class Observacao(BaseModel):
+    campo: Optional[Annotated[str, Field()]] = None
+    texto: Optional[Annotated[str, Field()]] = None
+
+class PessoaFisica(BaseModel):
     &#39;&#39;&#39;Classe `Pessoa Física`
-    
+
     Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
     &#39;&#39;&#39;
-    nome_completo: str
-    
-    cpf           : Optional[str] = None
-    id_estrangeiro: Optional[str] = None
-    
-    def __post_init__(self):
+    nome_completo: str = Field()
+
+    cpf           : Optional[Annotated[str, Field()]] = None
+    id_estrangeiro: Optional[Annotated[str, Field()]] = None
+
+    @model_validator(mode=&#39;after&#39;)
+    def check_documentos(self):
         if self.cpf and self.id_estrangeiro:
             raise ValueError(&#39;Informe somente um dos campos: cpf ou id_estrangeiro&#39;)
         if not self.cpf and not self.id_estrangeiro:
             raise ValueError(&#39;Informe um dos campos: cpf ou id_estrangeiro&#39;)
+        return self
 
-@dataclass
-class PessoaJuridica:
+class PessoaJuridica(BaseModel):
     &#39;&#39;&#39;Classe `Pessoa Jurídica`
     &#39;&#39;&#39;
-    cnpj        : str
-    razao_social: str
-    
-    im          : Optional[str] = None
-    suframa     : Optional[str] = None
+    cnpj        : str = Field()
+    razao_social: str = Field()
 
-@dataclass
-class Pis:
+    im          : Optional[Annotated[str, Field()]] = None
+    suframa     : Optional[Annotated[str, Field()]] = None
+
+class Pis(BaseModel):
     &#39;&#39;&#39;Classe `PIS` (Programas de Integração Social)
 
-    situacao_tributaria (str): Situação Tributária  
-        01: Operação Tributável com Alíquota Básica  
-        02: Operação Tributável com Alíquota por Unidade de Medida de Produto  
-        03: Operação Tributável com Alíquota por Unidade de Medida de Produto  
-        04: Operação Tributável Monofásica - Revenda a Alíquota Zero  
-        05: Operação Tributável por Substituição Tributária  
-        06: Operação Tributável a Alíquota Zero  
-        07: Operação Isenta da Contribuição  
-        08: Operação sem Incidência da Contribuição  
-        09: Operação com Suspensão da Contribuição  
-        49: Outras Operações de Saída  
-        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno  
-        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno  
-        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação  
-        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno  
-        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação  
-        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação  
-        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação  
-        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno  
-        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno  
-        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação  
-        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno  
-        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação  
-        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação  
-        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação  
-        67: Crédito Presumido - Outras Operações  
-        70: Operação de Aquisição sem Direito a Crédito  
-        71: Operação de Aquisição com Isenção  
-        72: Operação de Aquisição com Suspensão  
-        73: Operação de Aquisição a Alíquota Zero  
-        74: Operação de Aquisição sem Incidência da Contribuição  
-        75: Operação de Aquisição por Substituição Tributária  
-        98: Outras Operações de Entrada  
-        99: Outras Operações  
-    
-    aliquota (str): $0.0000 
-        Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
-    
-    aliquota_st (str): $0.0000  
-    
-    aliquota_retencao (str): $0.0000
-    
-    &#39;&#39;&#39;
-    situacao_tributaria: str
-    
-    aliquota           : Optional[str] = None
-    aliquota_st        : Optional[str] = None
-    aliquota_retencao  : Optional[str] = None
+    situacao_tributaria (str): Situação Tributária
+        01: Operação Tributável com Alíquota Básica
+        02: Operação Tributável com Alíquota por Unidade de Medida de Produto
+        03: Operação Tributável com Alíquota por Unidade de Medida de Produto
+        04: Operação Tributável Monofásica - Revenda a Alíquota Zero
+        05: Operação Tributável por Substituição Tributária
+        06: Operação Tributável a Alíquota Zero
+        07: Operação Isenta da Contribuição
+        08: Operação sem Incidência da Contribuição
+        09: Operação com Suspensão da Contribuição
+        49: Outras Operações de Saída
+        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno
+        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno
+        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação
+        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno
+        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação
+        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação
+        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação
+        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno
+        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno
+        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação
+        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno
+        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação
+        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação
+        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação
+        67: Crédito Presumido - Outras Operações
+        70: Operação de Aquisição sem Direito a Crédito
+        71: Operação de Aquisição com Isenção
+        72: Operação de Aquisição com Suspensão
+        73: Operação de Aquisição a Alíquota Zero
+        74: Operação de Aquisição sem Incidência da Contribuição
+        75: Operação de Aquisição por Substituição Tributária
+        98: Outras Operações de Entrada
+        99: Outras Operações
 
-    def __post_init__(self, *args, **kwargs):
-        self.validate_situacao_tributaria()
-        
+    aliquota (str): $0.0000
+        Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade
+
+    aliquota_st (str): $0.0000
+
+    aliquota_retencao (str): $0.0000
+
+    &#39;&#39;&#39;
+    situacao_tributaria: str = Field()
+
+    aliquota           : Optional[Annotated[str, Field()]] = None
+    aliquota_st        : Optional[Annotated[str, Field()]] = None
+    aliquota_retencao  : Optional[Annotated[str, Field()]] = None
+
+    @model_validator(mode=&#39;after&#39;)
     def validate_situacao_tributaria(self, *args, **kwargs):
         if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
             raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)
+        return self
 
-@dataclass
-class RetencaoIcmsTransporte:
-    valor_servico                                           : Optional[str] = None
-    valor_icms_retido                                       : Optional[str] = None
-    cfop                                                    : Optional[str] = None
-    codigo_municipio_ocorrencia_fato_gerador_icms_transporte: Optional[str] = None
-    base_calculo_retencao_icms                              : Optional[str] = None
-    aliquota_retencao                                       : Optional[str] = None
-    
-@dataclass
-class Transporte:
+class RetencaoIcmsTransporte(BaseModel):
+    valor_servico                                           : Optional[Annotated[str, Field()]] = None
+    valor_icms_retido                                       : Optional[Annotated[str, Field()]] = None
+    cfop                                                    : Optional[Annotated[str, Field()]] = None
+    codigo_municipio_ocorrencia_fato_gerador_icms_transporte: Optional[Annotated[str, Field()]] = None
+    base_calculo_retencao_icms                              : Optional[Annotated[str, Field()]] = None
+    aliquota_retencao                                       : Optional[Annotated[str, Field()]] = None
+
+class Transporte(BaseModel):
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
     ...
 
-@dataclass
-class Uf:
+class Uf(BaseModel):
     &#39;&#39;&#39;Classe `UF`(Unidade Federativa)
 
     Returns:
@@ -741,9 +685,9 @@ class Uf:
     &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     # TODO: Até o dia 01/06/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
-    codigo_ibge: Optional[str]  = None
-    sigla      : Optional[str]  = None
-    descricao  : Optional[str]  = None
+    codigo_ibge: Optional[Annotated[str, Field()]] = None
+    sigla      : Optional[Annotated[str, Field()]] = None
+    descricao  : Optional[Annotated[str, Field()]] = None
 
     @classmethod
     def from_json(cls, **kwargs):
@@ -752,32 +696,13 @@ class Uf:
 # ======================================================================================================================
 def validate_tokens(token:str, token_secret:str):
     &#39;&#39;&#39;Verifica se os tokens informados pelo usuário estão corretos e válidos.&#39;&#39;&#39;
-    
+
     if not isinstance(token, str) or len(token) &lt; 1:
         raise Exception(&#39;Token Empresa inválido&#39;)
     if not isinstance(token_secret, str) or len(token_secret) &lt; 1:
         raise Exception(&#39;Token Secret Empresa inválido&#39;)
-    
+
     return True
-
-def _dict_factory(x: List[Tuple]) -&gt; Dict | None:
-    &#39;&#39;&#39;Cria um dicionário filtrado contendo apenas as chaves cujos valores são diferentes de None.
-
-    Essa função é chamada automaticamente durante a conversão de uma classe para um dicionário usando `dataclasses.asdict`, 
-    quando é atribuída a opção `dict_factory` como seu valor. 
-    
-    No caso, estamos usando essa função no método `as_filtered_dict` da classe `BaseClass`.
-    
-    A função recebe uma lista de tuplas contendo pares chave-valor e retorna um dicionário contendo apenas as chaves cujos valores são diferentes de None.
-
-    Args:
-        x (List[Tuple]): Uma lista de tuplas contendo pares chave-valor.
-
-    Returns:
-        dict ou None: Um dicionário filtrado com as chaves cujos valores são diferentes de None ou retorna None se o dicionário resultante estiver vazio.
-    &#39;&#39;&#39;
-    dic = {k: v for (k, v) in x if v is not None}
-    return dic if len(dic) &gt; 0 else None
 
 # ======================================================================================================================</code></pre>
 </details>
@@ -815,12 +740,12 @@ def _dict_factory(x: List[Tuple]) -&gt; Dict | None:
 </summary>
 <pre><code class="python">def validate_tokens(token:str, token_secret:str):
     &#39;&#39;&#39;Verifica se os tokens informados pelo usuário estão corretos e válidos.&#39;&#39;&#39;
-    
+
     if not isinstance(token, str) or len(token) &lt; 1:
         raise Exception(&#39;Token Empresa inválido&#39;)
     if not isinstance(token_secret, str) or len(token_secret) &lt; 1:
         raise Exception(&#39;Token Secret Empresa inválido&#39;)
-    
+
     return True</code></pre>
 </details>
 </dd>
@@ -829,98 +754,33 @@ def _dict_factory(x: List[Tuple]) -&gt; Dict | None:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="pysisnoapi.BaseClass"><code class="flex name class">
-<span>class <span class="ident">BaseClass</span></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Classe genérica utilizada como base para as demais classes neste package.</p>
-<p>A principal finalidade desta classe é fornecer o método <code>as_filtered_dict</code> para filtrar e retornar um dicionário com os atributos relevantes da instância.
-Para maiores informações consulte a documentação do método <a href="#pysisnoapi.BaseClass.as_filtered_dict">aqui</a>.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@dataclass
-class BaseClass:
-    &#39;&#39;&#39;Classe genérica utilizada como base para as demais classes neste package.
-    
-    A principal finalidade desta classe é fornecer o método `as_filtered_dict` para filtrar e retornar um dicionário com os atributos relevantes da instância.
-    Para maiores informações consulte a documentação do método [aqui](#pysisnoapi.BaseClass.as_filtered_dict).
-    &#39;&#39;&#39;
-    
-    def as_filtered_dict(self)-&gt; dict[str:str]:
-        &#39;&#39;&#39;
-        Retorna um dicionário contendo os campos/atributos da classe com valores não nulos.
-
-        O dicionário resultante possui chaves (str) correspondentes aos nomes dos campos
-        da classe e valores (str) representando os respectivos valores desses campos,
-        desde que esses valores não sejam nulos (None).
-        
-        Returns:
-            dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
-        &#39;&#39;&#39;
-        return asdict(self, dict_factory=_dict_factory)</code></pre>
-</details>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="pysisnoapi.nfe.ObjetoEmissaoNFe" href="nfe.html#pysisnoapi.nfe.ObjetoEmissaoNFe">ObjetoEmissaoNFe</a></li>
-<li><a title="pysisnoapi.nfse.NotaFiscalServico" href="nfse.html#pysisnoapi.nfse.NotaFiscalServico">NotaFiscalServico</a></li>
-<li><a title="pysisnoapi.nfse.ObjetoEmissaoNFSe" href="nfse.html#pysisnoapi.nfse.ObjetoEmissaoNFSe">ObjetoEmissaoNFSe</a></li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="pysisnoapi.BaseClass.as_filtered_dict"><code class="name flex">
-<span>def <span class="ident">as_filtered_dict</span></span>(<span>self) ‑> dict[slice(<class 'str'>, <class 'str'>, None)]</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Retorna um dicionário contendo os campos/atributos da classe com valores não nulos.</p>
-<p>O dicionário resultante possui chaves (str) correspondentes aos nomes dos campos
-da classe e valores (str) representando os respectivos valores desses campos,
-desde que esses valores não sejam nulos (None).</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>dict</code></dt>
-<dd>Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def as_filtered_dict(self)-&gt; dict[str:str]:
-    &#39;&#39;&#39;
-    Retorna um dicionário contendo os campos/atributos da classe com valores não nulos.
-
-    O dicionário resultante possui chaves (str) correspondentes aos nomes dos campos
-    da classe e valores (str) representando os respectivos valores desses campos,
-    desde que esses valores não sejam nulos (None).
-    
-    Returns:
-        dict: Um dicionário que mapeia os campos não nulos da classe em pares chave-valor.
-    &#39;&#39;&#39;
-    return asdict(self, dict_factory=_dict_factory)</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
 <dt id="pysisnoapi.Cfop"><code class="flex name class">
 <span>class <span class="ident">Cfop</span></span>
-<span>(</span><span>codigo: Optional[str] = None, descricao: Optional[str] = None, aplicacao: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Classe <code>CFOP</code> (Código Fiscal de Operações e Prestações)</p></div>
+<div class="desc"><p>Classe <code>CFOP</code> (Código Fiscal de Operações e Prestações)</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class Cfop:
+<pre><code class="python">class Cfop(BaseModel):
     &#39;&#39;&#39;Classe `CFOP` (Código Fiscal de Operações e Prestações)
     &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
-    codigo: Optional[str] = None
-    descricao: Optional[str] = None
-    aplicacao: Optional[str] = None</code></pre>
+    codigo   : Optional[Annotated[str, Field()]] = None
+    descricao: Optional[Annotated[str, Field()]] = None
+    aplicacao: Optional[Annotated[str, Field()]] = None</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Cfop.aplicacao"><code class="name">var <span class="ident">aplicacao</span> : Optional[str]</code></dt>
@@ -935,56 +795,73 @@ class Cfop:
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="pysisnoapi.Cfop.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Cfop.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 </dl>
 </dd>
 <dt id="pysisnoapi.Cliente"><code class="flex name class">
 <span>class <span class="ident">Cliente</span></span>
-<span>(</span><span>consumidor_final: str, contribuinte: str, endereco: <a title="pysisnoapi.Endereco" href="#pysisnoapi.Endereco">Endereco</a>, pessoa_fisica: Optional[ForwardRef('<a title="pysisnoapi.PessoaFisica" href="#pysisnoapi.PessoaFisica">PessoaFisica</a>')] = None, pessoa_juridica: Optional[ForwardRef('<a title="pysisnoapi.PessoaJuridica" href="#pysisnoapi.PessoaJuridica">PessoaJuridica</a>')] = None, id: Optional[int] = None, ie: Optional[str] = None, telefone: Optional[str] = None, email: Optional[str] = None, faz_retencao: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Classe <code><a title="pysisnoapi.Cliente" href="#pysisnoapi.Cliente">Cliente</a></code>
-Geralmente é o destinatário da NFe.</p></div>
+Geralmente é o destinatário da NFe.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class Cliente:
+<pre><code class="python">class Cliente(BaseModel):
     &#39;&#39;&#39;Classe `Cliente`
     Geralmente é o destinatário da NFe.
     &#39;&#39;&#39;
-    consumidor_final: str
-    contribuinte    : str
-    endereco        : &#39;Endereco&#39;
-    
-    pessoa_fisica   : Optional[&#39;PessoaFisica&#39;]   = None
-    pessoa_juridica : Optional[&#39;PessoaJuridica&#39;] = None
-    
-    id              : Optional[int] = None
-    ie              : Optional[str] = None
-    telefone        : Optional[str] = None
-    email           : Optional[str] = None
-    faz_retencao    : Optional[str] = None
-        
-    def __post_init__(self):        
-        self.validate_pessoa()
-        self.validate_consumidor_final()
-        self.validate_contribuinte()
-    
-    def validate_pessoa(self):
-        if self.pessoa_fisica and self.pessoa_juridica:
-            raise ValueError(&#39;Informe apenas um dos campos pessoa_fisica ou pessoa_juridica&#39;)
-        if not self.pessoa_fisica and not self.pessoa_juridica:
-            raise ValueError(&#39;Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica&#39;)
-    
-    def validate_consumidor_final(self):
+    consumidor_final: str        = Field()
+    contribuinte    : str        = Field()
+    endereco        : &#39;Endereco&#39; = Field()
+
+    pessoa_fisica   : Optional[Annotated[&#39;PessoaFisica&#39;  , Field()]] = None
+    pessoa_juridica : Optional[Annotated[&#39;PessoaJuridica&#39;, Field()]] = None
+
+    id              : Optional[Annotated[int, Field()]] = None
+    ie              : Optional[Annotated[str, Field()]] = None
+    telefone        : Optional[Annotated[str, Field()]] = None
+    email           : Optional[Annotated[str, Field()]] = None
+    faz_retencao    : Optional[Annotated[str, Field()]] = None
+
+    @model_validator(mode=&#39;after&#39;)
+    def check_tipo_contribuinte(self):
+        if self.contribuinte not in TIPOS_CONTRIBUINTES:
+            raise ValueError(f&#39;Contribuinte {self.contribuinte} inválido&#39;)
+        return self
+
+    @model_validator(mode=&#39;after&#39;)
+    def check_tipo_consumidor(self):
         if self.consumidor_final not in TIPOS_CONSUMIDOR_FINAL:
             raise ValueError(f&#39;Consumidor Final {self.consumidor_final} inválido&#39;)
-    
-    def validate_contribuinte(self):
-        if self.contribuinte not in TIPOS_CONTRIBUINTES:
-            raise ValueError(f&#39;Contribuinte {self.contribuinte} inválido&#39;)</code></pre>
+        return self
+
+    @model_validator(mode=&#39;after&#39;)
+    def check_tipo_pessoa(self):
+        if (self.pessoa_fisica and self.pessoa_juridica):
+            raise ValueError(&#39;Informe somente um dos campos pessoa_fisica ou pessoa_juridica&#39;)
+        if not self.pessoa_fisica and not self.pessoa_juridica:
+            raise ValueError(&#39;Informe um dos campos pessoa_fisica ou pessoa_juridica&#39;)
+        return self</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Cliente.consumidor_final"><code class="name">var <span class="ident">consumidor_final</span> : str</code></dt>
@@ -1015,6 +892,14 @@ class Cliente:
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="pysisnoapi.Cliente.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Cliente.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="pysisnoapi.Cliente.pessoa_fisica"><code class="name">var <span class="ident">pessoa_fisica</span> : Optional[<a title="pysisnoapi.PessoaFisica" href="#pysisnoapi.PessoaFisica">PessoaFisica</a>]</code></dt>
 <dd>
 <div class="desc"></div>
@@ -1030,8 +915,8 @@ class Cliente:
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="pysisnoapi.Cliente.validate_consumidor_final"><code class="name flex">
-<span>def <span class="ident">validate_consumidor_final</span></span>(<span>self)</span>
+<dt id="pysisnoapi.Cliente.check_tipo_consumidor"><code class="name flex">
+<span>def <span class="ident">check_tipo_consumidor</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1039,13 +924,15 @@ class Cliente:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_consumidor_final(self):
+<pre><code class="python">@model_validator(mode=&#39;after&#39;)
+def check_tipo_consumidor(self):
     if self.consumidor_final not in TIPOS_CONSUMIDOR_FINAL:
-        raise ValueError(f&#39;Consumidor Final {self.consumidor_final} inválido&#39;)</code></pre>
+        raise ValueError(f&#39;Consumidor Final {self.consumidor_final} inválido&#39;)
+    return self</code></pre>
 </details>
 </dd>
-<dt id="pysisnoapi.Cliente.validate_contribuinte"><code class="name flex">
-<span>def <span class="ident">validate_contribuinte</span></span>(<span>self)</span>
+<dt id="pysisnoapi.Cliente.check_tipo_contribuinte"><code class="name flex">
+<span>def <span class="ident">check_tipo_contribuinte</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1053,13 +940,15 @@ class Cliente:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_contribuinte(self):
+<pre><code class="python">@model_validator(mode=&#39;after&#39;)
+def check_tipo_contribuinte(self):
     if self.contribuinte not in TIPOS_CONTRIBUINTES:
-        raise ValueError(f&#39;Contribuinte {self.contribuinte} inválido&#39;)</code></pre>
+        raise ValueError(f&#39;Contribuinte {self.contribuinte} inválido&#39;)
+    return self</code></pre>
 </details>
 </dd>
-<dt id="pysisnoapi.Cliente.validate_pessoa"><code class="name flex">
-<span>def <span class="ident">validate_pessoa</span></span>(<span>self)</span>
+<dt id="pysisnoapi.Cliente.check_tipo_pessoa"><code class="name flex">
+<span>def <span class="ident">check_tipo_pessoa</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1067,124 +956,131 @@ class Cliente:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_pessoa(self):
-    if self.pessoa_fisica and self.pessoa_juridica:
-        raise ValueError(&#39;Informe apenas um dos campos pessoa_fisica ou pessoa_juridica&#39;)
+<pre><code class="python">@model_validator(mode=&#39;after&#39;)
+def check_tipo_pessoa(self):
+    if (self.pessoa_fisica and self.pessoa_juridica):
+        raise ValueError(&#39;Informe somente um dos campos pessoa_fisica ou pessoa_juridica&#39;)
     if not self.pessoa_fisica and not self.pessoa_juridica:
-        raise ValueError(&#39;Informe pelo menos um dos campos pessoa_fisica ou pessoa_juridica&#39;)</code></pre>
+        raise ValueError(&#39;Informe um dos campos pessoa_fisica ou pessoa_juridica&#39;)
+    return self</code></pre>
 </details>
 </dd>
 </dl>
 </dd>
 <dt id="pysisnoapi.Cofins"><code class="flex name class">
 <span>class <span class="ident">Cofins</span></span>
-<span>(</span><span>situacao_tributaria: str, aliquota: Optional[str] = None, aliquota_st: Optional[str] = None, aliquota_retencao: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Contribuição para Financiamento da Seguridade Social.</p>
-<p>situacao_tributaria:<br>
-01: Operação Tributável com Alíquota Básica<br>
-02: Operação Tributável com Alíquota por Unidade de Medida de Produto<br>
-03: Operação Tributável com Alíquota por Unidade de Medida de Produto<br>
-04: Operação Tributável Monofásica - Revenda a Alíquota Zero<br>
-05: Operação Tributável por Substituição Tributária<br>
-06: Operação Tributável a Alíquota Zero<br>
-07: Operação Isenta da Contribuição<br>
-08: Operação sem Incidência da Contribuição<br>
-09: Operação com Suspensão da Contribuição<br>
-49: Outras Operações de Saída<br>
-50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno<br>
-51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno<br>
-52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação<br>
-53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno<br>
-54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação<br>
-55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação<br>
-56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação<br>
-60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno<br>
-61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno<br>
-62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação<br>
-63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno<br>
-64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação<br>
-65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação<br>
-66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação<br>
-67: Crédito Presumido - Outras Operações<br>
-70: Operação de Aquisição sem Direito a Crédito<br>
-71: Operação de Aquisição com Isenção<br>
-72: Operação de Aquisição com Suspensão<br>
-73: Operação de Aquisição a Alíquota Zero<br>
-74: Operação de Aquisição sem Incidência da Contribuição<br>
-75: Operação de Aquisição por Substituição Tributária<br>
-98: Outras Operações de Entrada<br>
-99: Outras Operações
-</p>
-<p>aliquota (str): $0.0000<br>
-Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade
-</p>
+<p>situacao_tributaria:
+01: Operação Tributável com Alíquota Básica
+02: Operação Tributável com Alíquota por Unidade de Medida de Produto
+03: Operação Tributável com Alíquota por Unidade de Medida de Produto
+04: Operação Tributável Monofásica - Revenda a Alíquota Zero
+05: Operação Tributável por Substituição Tributária
+06: Operação Tributável a Alíquota Zero
+07: Operação Isenta da Contribuição
+08: Operação sem Incidência da Contribuição
+09: Operação com Suspensão da Contribuição
+49: Outras Operações de Saída
+50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno
+51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno
+52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação
+53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno
+54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação
+55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação
+56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação
+60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno
+61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno
+62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação
+63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno
+64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação
+65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação
+66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação
+67: Crédito Presumido - Outras Operações
+70: Operação de Aquisição sem Direito a Crédito
+71: Operação de Aquisição com Isenção
+72: Operação de Aquisição com Suspensão
+73: Operação de Aquisição a Alíquota Zero
+74: Operação de Aquisição sem Incidência da Contribuição
+75: Operação de Aquisição por Substituição Tributária
+98: Outras Operações de Entrada
+99: Outras Operações</p>
+<p>aliquota (str): $0.0000
+Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade</p>
 <p>aliquota_st (str): $0.0000</p>
-<p>aliquota_retencao (str): $0.0000</p></div>
+<p>aliquota_retencao (str): $0.0000</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class Cofins:
+<pre><code class="python">class Cofins(BaseModel):
     &#39;&#39;&#39;Contribuição para Financiamento da Seguridade Social.
 
-    situacao_tributaria:  
-        01: Operação Tributável com Alíquota Básica  
-        02: Operação Tributável com Alíquota por Unidade de Medida de Produto  
-        03: Operação Tributável com Alíquota por Unidade de Medida de Produto  
-        04: Operação Tributável Monofásica - Revenda a Alíquota Zero  
-        05: Operação Tributável por Substituição Tributária  
-        06: Operação Tributável a Alíquota Zero  
-        07: Operação Isenta da Contribuição  
-        08: Operação sem Incidência da Contribuição  
-        09: Operação com Suspensão da Contribuição  
-        49: Outras Operações de Saída  
-        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno  
-        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno  
-        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação  
-        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno  
-        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação  
-        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação  
-        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação  
-        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno  
-        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno  
-        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação  
-        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno  
-        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação  
-        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação  
-        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação  
-        67: Crédito Presumido - Outras Operações  
-        70: Operação de Aquisição sem Direito a Crédito  
-        71: Operação de Aquisição com Isenção  
-        72: Operação de Aquisição com Suspensão  
-        73: Operação de Aquisição a Alíquota Zero  
-        74: Operação de Aquisição sem Incidência da Contribuição  
-        75: Operação de Aquisição por Substituição Tributária  
-        98: Outras Operações de Entrada  
-        99: Outras Operações  
-    
-    aliquota (str): $0.0000  
-        Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
-    
+    situacao_tributaria:
+        01: Operação Tributável com Alíquota Básica
+        02: Operação Tributável com Alíquota por Unidade de Medida de Produto
+        03: Operação Tributável com Alíquota por Unidade de Medida de Produto
+        04: Operação Tributável Monofásica - Revenda a Alíquota Zero
+        05: Operação Tributável por Substituição Tributária
+        06: Operação Tributável a Alíquota Zero
+        07: Operação Isenta da Contribuição
+        08: Operação sem Incidência da Contribuição
+        09: Operação com Suspensão da Contribuição
+        49: Outras Operações de Saída
+        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno
+        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno
+        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação
+        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno
+        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação
+        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação
+        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação
+        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno
+        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno
+        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação
+        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno
+        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação
+        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação
+        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação
+        67: Crédito Presumido - Outras Operações
+        70: Operação de Aquisição sem Direito a Crédito
+        71: Operação de Aquisição com Isenção
+        72: Operação de Aquisição com Suspensão
+        73: Operação de Aquisição a Alíquota Zero
+        74: Operação de Aquisição sem Incidência da Contribuição
+        75: Operação de Aquisição por Substituição Tributária
+        98: Outras Operações de Entrada
+        99: Outras Operações
+
+    aliquota (str): $0.0000
+        Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade
+
     aliquota_st (str): $0.0000
-    
+
     aliquota_retencao (str): $0.0000
     &#39;&#39;&#39;
-    situacao_tributaria : str
-    
-    aliquota            : Optional[str] = None
-    aliquota_st         : Optional[str] = None
-    aliquota_retencao   : Optional[str] = None
-    
-    def __post_init__(self, *args, **kwargs):
-        self.validate_situacao_tributaria()
-        
-    def validate_situacao_tributaria(self, *args, **kwargs):
+    situacao_tributaria : str = Field()
+
+    aliquota            : Optional[Annotated[str, Field()]] = None
+    aliquota_st         : Optional[Annotated[str, Field()]] = None
+    aliquota_retencao   : Optional[Annotated[str, Field()]] = None
+
+    @model_validator(mode=&#39;after&#39;)
+    def validate_situacao_tributaria(self):
         if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
-            raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)</code></pre>
+            raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)
+        return self</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Cofins.aliquota"><code class="name">var <span class="ident">aliquota</span> : Optional[str]</code></dt>
@@ -1199,6 +1095,14 @@ class Cofins:
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="pysisnoapi.Cofins.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Cofins.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="pysisnoapi.Cofins.situacao_tributaria"><code class="name">var <span class="ident">situacao_tributaria</span> : str</code></dt>
 <dd>
 <div class="desc"></div>
@@ -1207,7 +1111,7 @@ class Cofins:
 <h3>Methods</h3>
 <dl>
 <dt id="pysisnoapi.Cofins.validate_situacao_tributaria"><code class="name flex">
-<span>def <span class="ident">validate_situacao_tributaria</span></span>(<span>self, *args, **kwargs)</span>
+<span>def <span class="ident">validate_situacao_tributaria</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1215,31 +1119,80 @@ class Cofins:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_situacao_tributaria(self, *args, **kwargs):
+<pre><code class="python">@model_validator(mode=&#39;after&#39;)
+def validate_situacao_tributaria(self):
     if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
-        raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)</code></pre>
+        raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)
+    return self</code></pre>
 </details>
 </dd>
 </dl>
 </dd>
 <dt id="pysisnoapi.DeclaracaoImportacaoAdicao"><code class="flex name class">
 <span>class <span class="ident">DeclaracaoImportacaoAdicao</span></span>
-<span>(</span><span>numero_sequencial: Optional[str] = None, numero: Optional[str] = None, cod_fabricante: Optional[str] = None, desconto: Optional[str] = None, drawback: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>DeclaracaoImportacaoAdicao(numero_sequencial: Optional[str] = None, numero: Optional[str] = None, cod_fabricante: Optional[str] = None, desconto: Optional[str] = None, drawback: Optional[str] = None)</p></div>
+<div class="desc"><p>Usage docs: <a href="https://docs.pydantic.dev/2.4/concepts/models/">https://docs.pydantic.dev/2.4/concepts/models/</a></p>
+<p>A base class for creating Pydantic models.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>__class_vars__</code></strong></dt>
+<dd>The names of classvars defined on the model.</dd>
+<dt><strong><code>__private_attributes__</code></strong></dt>
+<dd>Metadata about the private attributes of the model.</dd>
+<dt><strong><code>__signature__</code></strong></dt>
+<dd>The signature for instantiating the model.</dd>
+<dt><strong><code>__pydantic_complete__</code></strong></dt>
+<dd>Whether model building is completed, or if there are still undefined fields.</dd>
+<dt><strong><code>__pydantic_core_schema__</code></strong></dt>
+<dd>The pydantic-core schema used to build the SchemaValidator and SchemaSerializer.</dd>
+<dt><strong><code>__pydantic_custom_init__</code></strong></dt>
+<dd>Whether the model has a custom <code>__init__</code> function.</dd>
+<dt><strong><code>__pydantic_decorators__</code></strong></dt>
+<dd>Metadata containing the decorators defined on the model.
+This replaces <code>Model.__validators__</code> and <code>Model.__root_validators__</code> from Pydantic V1.</dd>
+<dt><strong><code>__pydantic_generic_metadata__</code></strong></dt>
+<dd>Metadata for generic models; contains data used for a similar purpose to
+<strong>args</strong>, <strong>origin</strong>, <strong>parameters</strong> in typing-module generics. May eventually be replaced by these.</dd>
+<dt><strong><code>__pydantic_parent_namespace__</code></strong></dt>
+<dd>Parent namespace of the model, used for automatic rebuilding of models.</dd>
+<dt><strong><code>__pydantic_post_init__</code></strong></dt>
+<dd>The name of the post-init method for the model, if defined.</dd>
+<dt><strong><code>__pydantic_root_model__</code></strong></dt>
+<dd>Whether the model is a <code>RootModel</code>.</dd>
+<dt><strong><code>__pydantic_serializer__</code></strong></dt>
+<dd>The pydantic-core SchemaSerializer used to dump instances of the model.</dd>
+<dt><strong><code>__pydantic_validator__</code></strong></dt>
+<dd>The pydantic-core SchemaValidator used to validate instances of the model.</dd>
+<dt><strong><code>__pydantic_extra__</code></strong></dt>
+<dd>An instance attribute with the values of extra fields from validation when
+<code>model_config['extra'] == 'allow'</code>.</dd>
+<dt><strong><code>__pydantic_fields_set__</code></strong></dt>
+<dd>An instance attribute with the names of fields explicitly specified during validation.</dd>
+<dt><strong><code>__pydantic_private__</code></strong></dt>
+<dd>Instance attribute with the values of private attributes set on the model instance.</dd>
+</dl>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class DeclaracaoImportacaoAdicao:
-    numero_sequencial: Optional[str] = None
-    numero           : Optional[str] = None
-    cod_fabricante   : Optional[str] = None
-    desconto         : Optional[str] = None
-    drawback         : Optional[str] = None</code></pre>
+<pre><code class="python">class DeclaracaoImportacaoAdicao(BaseModel):
+    numero_sequencial: Optional[Annotated[str, Field()]] = None
+    numero           : Optional[Annotated[str, Field()]] = None
+    cod_fabricante   : Optional[Annotated[str, Field()]] = None
+    desconto         : Optional[Annotated[str, Field()]] = None
+    drawback         : Optional[Annotated[str, Field()]] = None</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.DeclaracaoImportacaoAdicao.cod_fabricante"><code class="name">var <span class="ident">cod_fabricante</span> : Optional[str]</code></dt>
@@ -1251,6 +1204,14 @@ class DeclaracaoImportacaoAdicao:
 <div class="desc"></div>
 </dd>
 <dt id="pysisnoapi.DeclaracaoImportacaoAdicao.drawback"><code class="name">var <span class="ident">drawback</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.DeclaracaoImportacaoAdicao.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.DeclaracaoImportacaoAdicao.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1266,59 +1227,60 @@ class DeclaracaoImportacaoAdicao:
 </dd>
 <dt id="pysisnoapi.Empresa"><code class="flex name class">
 <span>class <span class="ident">Empresa</span></span>
-<span>(</span><span>id: Optional[str] = None, token: Optional[str] = None, token_secret: Optional[str] = None, cnpj: Optional[str] = None, nome_fantasia: Optional[str] = None, razao_social: Optional[str] = None, endereco: Optional[ForwardRef('<a title="pysisnoapi.Endereco" href="#pysisnoapi.Endereco">Endereco</a>')] = None, telefone: Optional[str] = None, inscricao_estadual: Optional[str] = None, inscricao_municipal: Optional[str] = None, inscricao_estadual_substituicao_tributaria: Optional[str] = None, regime_tributario: Optional[str] = None, classificacao_nacional_atividades_economicas: Optional[str] = None, ambiente: Optional[str] = None, id_csc: Optional[str] = None, csc: Optional[str] = None, codigo_regime_especial_tributacao: Optional[str] = None, porcentagem_icms_aproveitado: Optional[str] = None, site: Optional[str] = None, email: Optional[str] = None, utiliza_tributos_aproximados: Optional[bool] = None, informacoes_complementares: Optional[str] = None, senha_portal_prefeitura: Optional[str] = None, serie_rps: Optional[str] = None, proximo_numero_rps: Optional[str] = None, proximo_numero_rps_homologacao: Optional[str] = None, numero_lote_rps: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
 Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
-Em resumo: não há necessidade de se preocupar com os campos, caso não saiba algum deles, pois, eles serão preenchidos automaticamente com aquilo que vier do endpoint.</p></div>
+Em resumo: não há necessidade de se preocupar com os campos, caso não saiba algum deles, pois, eles serão preenchidos automaticamente com aquilo que vier do endpoint.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class Empresa:  
+<pre><code class="python">class Empresa(BaseModel):
     &#39;&#39;&#39;
         Classe que irá representar todas as empresas cadastradas da plataforma SISNO.
         Pela documentação do dia 11/05/2023, essa classe basicamente só terá sua utilidade ao consultar notas.
         Em resumo: não há necessidade de se preocupar com os campos, caso não saiba algum deles, pois, eles serão preenchidos automaticamente com aquilo que vier do endpoint.
     &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
-    id                                          : Optional[str]         = None
-    token                                       : Optional[str]         = None # Necessário para emitir, mas não para consultar
-    token_secret                                : Optional[str]         = None # Necessário para emitir, mas não para consultar
-    cnpj                                        : Optional[str]         = None
-    nome_fantasia                               : Optional[str]         = None
-    razao_social                                : Optional[str]         = None
-    endereco                                    : Optional[&#39;Endereco&#39;]  = None
-    telefone                                    : Optional[str]         = None
-    inscricao_estadual                          : Optional[str]         = None
-    inscricao_municipal                         : Optional[str]         = None
-    inscricao_estadual_substituicao_tributaria  : Optional[str]         = None
-    regime_tributario                           : Optional[str]         = None
-    classificacao_nacional_atividades_economicas: Optional[str]         = None
-    ambiente                                    : Optional[str]         = None
-    id_csc                                      : Optional[str]         = None
-    csc                                         : Optional[str]         = None
-    codigo_regime_especial_tributacao           : Optional[str]         = None
-    porcentagem_icms_aproveitado                : Optional[str]         = None
-    site                                        : Optional[str]         = None
-    email                                       : Optional[str]         = None
-    utiliza_tributos_aproximados                : Optional[bool]        = None  # TODO: Não consta na documentação da API
-    informacoes_complementares                  : Optional[str]         = None  # TODO: Não consta na documentação da API
-    senha_portal_prefeitura                     : Optional[str]         = None  # TODO: Não consta na documentação da API
-    serie_rps                                   : Optional[str]         = None  # TODO: Não consta na documentação da API 
-    proximo_numero_rps                          : Optional[str]         = None  # TODO: Não consta na documentação da API 
-    proximo_numero_rps_homologacao              : Optional[str]         = None  # TODO: Não consta na documentação da API 
-    numero_lote_rps                             : Optional[str]         = None  # TODO: Não consta na documentação da API 
-    
-    @classmethod
-    def from_json(cls, **kwargs):
-        endereco_dict = kwargs.pop(&#39;endereco&#39;, {})
-        endereco = Endereco.from_json(**endereco_dict)
-        
-        return cls(endereco=endereco, **kwargs)</code></pre>
+    id                                          : Optional[Annotated[str, Field()]]         = None
+    token                                       : Optional[Annotated[str, Field()]]         = None # Necessário para emitir, mas não para consultar
+    token_secret                                : Optional[Annotated[str, Field()]]         = None # Necessário para emitir, mas não para consultar
+    cnpj                                        : Optional[Annotated[str, Field()]]         = None
+    nome_fantasia                               : Optional[Annotated[str, Field()]]         = None
+    razao_social                                : Optional[Annotated[str, Field()]]         = None
+    endereco                                    : Optional[Annotated[&#39;Endereco&#39;, Field()]]  = None
+    telefone                                    : Optional[Annotated[str, Field()]]         = None
+    inscricao_estadual                          : Optional[Annotated[str, Field()]]         = None
+    inscricao_municipal                         : Optional[Annotated[str, Field()]]         = None
+    inscricao_estadual_substituicao_tributaria  : Optional[Annotated[str, Field()]]         = None
+    regime_tributario                           : Optional[Annotated[str, Field()]]         = None
+    classificacao_nacional_atividades_economicas: Optional[Annotated[str, Field()]]         = None
+    ambiente                                    : Optional[Annotated[str, Field()]]         = None
+    id_csc                                      : Optional[Annotated[str, Field()]]         = None
+    csc                                         : Optional[Annotated[str, Field()]]         = None
+    codigo_regime_especial_tributacao           : Optional[Annotated[str, Field()]]         = None
+    porcentagem_icms_aproveitado                : Optional[Annotated[str, Field()]]         = None
+    site                                        : Optional[Annotated[str, Field()]]         = None
+    email                                       : Optional[Annotated[str, Field()]]         = None
+    utiliza_tributos_aproximados                : Optional[Annotated[bool, Field()]]        = None  # TODO: Não consta na documentação da API
+    informacoes_complementares                  : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API
+    senha_portal_prefeitura                     : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API
+    serie_rps                                   : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API
+    proximo_numero_rps                          : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API
+    proximo_numero_rps_homologacao              : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API
+    numero_lote_rps                             : Optional[Annotated[str, Field()]]         = None  # TODO: Não consta na documentação da API</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Empresa.ambiente"><code class="name">var <span class="ident">ambiente</span> : Optional[str]</code></dt>
@@ -1370,6 +1332,14 @@ class Empresa:
 <div class="desc"></div>
 </dd>
 <dt id="pysisnoapi.Empresa.inscricao_municipal"><code class="name">var <span class="ident">inscricao_municipal</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Empresa.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1430,59 +1400,43 @@ class Empresa:
 <div class="desc"></div>
 </dd>
 </dl>
-<h3>Static methods</h3>
-<dl>
-<dt id="pysisnoapi.Empresa.from_json"><code class="name flex">
-<span>def <span class="ident">from_json</span></span>(<span>**kwargs)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@classmethod
-def from_json(cls, **kwargs):
-    endereco_dict = kwargs.pop(&#39;endereco&#39;, {})
-    endereco = Endereco.from_json(**endereco_dict)
-    
-    return cls(endereco=endereco, **kwargs)</code></pre>
-</details>
-</dd>
-</dl>
 </dd>
 <dt id="pysisnoapi.Endereco"><code class="flex name class">
 <span>class <span class="ident">Endereco</span></span>
-<span>(</span><span>codigo_pais: str, descricao_pais: str, bairro: str, logradouro: str, numero: str, id: Optional[int] = None, uf: Optional[str] = None, codigo_municipio: Optional[str] = None, descricao_municipio: Optional[str] = None, cep: Optional[str] = None, complemento: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Classe <code>Endereço</code></p></div>
+<div class="desc"><p>Classe <code>Endereço</code></p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class Endereco:
+<pre><code class="python">class Endereco(BaseModel):
     &#39;&#39;&#39;Classe `Endereço`
     &#39;&#39;&#39;
-    
-    codigo_pais        : str
-    descricao_pais     : str
-    bairro             : str
-    logradouro         : str
-    numero             : str
-    
-    id                 : Optional[int] = None
-    uf                 : Optional[str] = None
-    codigo_municipio   : Optional[str] = None
-    descricao_municipio: Optional[str] = None
-    cep                : Optional[str] = None
-    complemento        : Optional[str] = None
-    
-    @classmethod
-    def from_json(cls, **kwargs):
-        return cls(**kwargs)</code></pre>
+
+    codigo_pais        : str = Field()
+    descricao_pais     : str = Field()
+    bairro             : str = Field()
+    logradouro         : str = Field()
+    numero             : str = Field()
+
+    id                 : Optional[Annotated[int, Field()]] = None
+    uf                 : Optional[Annotated[str, Field()]] = None
+    codigo_municipio   : Optional[Annotated[str, Field()]] = None
+    descricao_municipio: Optional[Annotated[str, Field()]] = None
+    cep                : Optional[Annotated[str, Field()]] = None
+    complemento        : Optional[Annotated[str, Field()]] = None</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Endereco.bairro"><code class="name">var <span class="ident">bairro</span> : str</code></dt>
@@ -1521,6 +1475,14 @@ class Endereco:
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="pysisnoapi.Endereco.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Endereco.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="pysisnoapi.Endereco.numero"><code class="name">var <span class="ident">numero</span> : str</code></dt>
 <dd>
 <div class="desc"></div>
@@ -1530,60 +1492,51 @@ class Endereco:
 <div class="desc"></div>
 </dd>
 </dl>
-<h3>Static methods</h3>
-<dl>
-<dt id="pysisnoapi.Endereco.from_json"><code class="name flex">
-<span>def <span class="ident">from_json</span></span>(<span>**kwargs)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@classmethod
-def from_json(cls, **kwargs):
-    return cls(**kwargs)</code></pre>
-</details>
-</dd>
-</dl>
 </dd>
 <dt id="pysisnoapi.Ibpt"><code class="flex name class">
 <span>class <span class="ident">Ibpt</span></span>
-<span>(</span><span>codigo: Optional[str] = None, ex: Optional[str] = None, tipo: Optional[str] = None, descricao: Optional[str] = None, nacional_federal: Optional[str] = None, importados_federal: Optional[str] = None, estadual: Optional[str] = None, municipal: Optional[str] = None, vigencia_inicio: Optional[str] = None, vigencia_fim: Optional[str] = None, versao: Optional[str] = None, fonte: Optional[str] = None, unidade_federativa: Optional[ForwardRef('<a title="pysisnoapi.Uf" href="#pysisnoapi.Uf">Uf</a>')] = None, ativo: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Classe <code>IBPT</code> (Impostos sobre Produtos e Serviços)</p></div>
+<div class="desc"><p>Classe <code>IBPT</code> (Impostos sobre Produtos e Serviços)</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class Ibpt:
+<pre><code class="python">class Ibpt(BaseModel):
     &#39;&#39;&#39;Classe `IBPT` (Impostos sobre Produtos e Serviços)
     &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
-    codigo            : Optional[str]  = None
-    ex                : Optional[str]  = None
-    tipo              : Optional[str]  = None
-    descricao         : Optional[str]  = None
-    nacional_federal  : Optional[str]  = None
-    importados_federal: Optional[str]  = None
-    estadual          : Optional[str]  = None
-    municipal         : Optional[str]  = None
-    vigencia_inicio   : Optional[str]  = None
-    vigencia_fim      : Optional[str]  = None
-    versao            : Optional[str]  = None
-    fonte             : Optional[str]  = None
-    unidade_federativa: Optional[&#39;Uf&#39;] = None
-    ativo             : Optional[str]  = None     # TODO: Até o dia 01/06/2023, não consta na Documentação
-    
+    codigo            : Optional[Annotated[str, Field()]]  = None
+    ex                : Optional[Annotated[str, Field()]]  = None
+    tipo              : Optional[Annotated[str, Field()]]  = None
+    descricao         : Optional[Annotated[str, Field()]]  = None
+    nacional_federal  : Optional[Annotated[str, Field()]]  = None
+    importados_federal: Optional[Annotated[str, Field()]]  = None
+    estadual          : Optional[Annotated[str, Field()]]  = None
+    municipal         : Optional[Annotated[str, Field()]]  = None
+    vigencia_inicio   : Optional[Annotated[str, Field()]]  = None
+    vigencia_fim      : Optional[Annotated[str, Field()]]  = None
+    versao            : Optional[Annotated[str, Field()]]  = None
+    fonte             : Optional[Annotated[str, Field()]]  = None
+    unidade_federativa: Optional[Annotated[&#39;Uf&#39;, Field()]] = None
+    ativo             : Optional[Annotated[str, Field()]]  = None     # TODO: Até o dia 01/06/2023, não consta na Documentação
+
     @classmethod
     def from_json(cls, **kwargs):
         uf_dict = kwargs.pop(&#39;unidade_federativa&#39;, {})
         uf = Uf.from_json(**uf_dict)
         return cls(unidade_federativa=uf, **kwargs)</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Ibpt.ativo"><code class="name">var <span class="ident">ativo</span> : Optional[str]</code></dt>
@@ -1611,6 +1564,14 @@ class Ibpt:
 <div class="desc"></div>
 </dd>
 <dt id="pysisnoapi.Ibpt.importados_federal"><code class="name">var <span class="ident">importados_federal</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ibpt.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ibpt.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1665,49 +1626,57 @@ def from_json(cls, **kwargs):
 </dd>
 <dt id="pysisnoapi.Icms"><code class="flex name class">
 <span>class <span class="ident">Icms</span></span>
-<span>(</span><span>situacao_tributaria: str, codigo_cfop: Optional[str] = None, aliquota_icms: Optional[str] = None, percentual_reducao_bc_icms: Optional[str] = None, aliquota_fcp: Optional[str] = None, percentual_reducao_bc_icms_st: Optional[str] = None, aliquota_aplicavel_calculo_credito: Optional[str] = None, aliquota_icms_st: Optional[str] = None, aliquota_fcp_st: Optional[str] = None, percentual_margem_valor_agregado_icms_st: Optional[str] = None, percentual_diferimento: Optional[str] = None, percentual_desonerado: Optional[str] = None, motivo_desoneracao: Optional[str] = None, percentual_icms_st_retido: Optional[str] = None, utilizar_tabela_aliquotas_interestaduais: Optional[bool] = None, utilizar_aliquota_interestadual_importacao: Optional[bool] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Classe <code>ICMS</code> (Imposto sobre Circulação de Mercadorias e Serviços)</p></div>
+<div class="desc"><p>Classe <code>ICMS</code> (Imposto sobre Circulação de Mercadorias e Serviços)</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class Icms:
+<pre><code class="python">class Icms(BaseModel):
     &#39;&#39;&#39;Classe `ICMS` (Imposto sobre Circulação de Mercadorias e Serviços)
     &#39;&#39;&#39;
-    situacao_tributaria                       : str
-    
-    codigo_cfop                               : Optional[str]  = None
-    aliquota_icms                             : Optional[str]  = None
-    percentual_reducao_bc_icms                : Optional[str]  = None
-    aliquota_fcp                              : Optional[str]  = None
-    percentual_reducao_bc_icms_st             : Optional[str]  = None
-    aliquota_aplicavel_calculo_credito        : Optional[str]  = None
-    aliquota_icms_st                          : Optional[str]  = None
-    aliquota_fcp_st                           : Optional[str]  = None
-    percentual_margem_valor_agregado_icms_st  : Optional[str]  = None
-    percentual_diferimento                    : Optional[str]  = None
-    percentual_desonerado                     : Optional[str]  = None
-    motivo_desoneracao                        : Optional[str]  = None
-    percentual_icms_st_retido                 : Optional[str]  = None
-    utilizar_tabela_aliquotas_interestaduais  : Optional[bool] = None
-    utilizar_aliquota_interestadual_importacao: Optional[bool] = None
-    
-    def __post_init__(self, *args, **kwargs):
-        self.validate_situacao_tributaria()
-        self.validate_motivo_desoneracao()
-        
-    def validate_situacao_tributaria(self, *args, **kwargs):
+    situacao_tributaria                       : str = Field()
+
+    codigo_cfop                               : Optional[Annotated[str, Field()]]  = None
+    aliquota_icms                             : Optional[Annotated[str, Field()]]  = None
+    percentual_reducao_bc_icms                : Optional[Annotated[str, Field()]]  = None
+    aliquota_fcp                              : Optional[Annotated[str, Field()]]  = None
+    percentual_reducao_bc_icms_st             : Optional[Annotated[str, Field()]]  = None
+    aliquota_aplicavel_calculo_credito        : Optional[Annotated[str, Field()]]  = None
+    aliquota_icms_st                          : Optional[Annotated[str, Field()]]  = None
+    aliquota_fcp_st                           : Optional[Annotated[str, Field()]]  = None
+    percentual_margem_valor_agregado_icms_st  : Optional[Annotated[str, Field()]]  = None
+    percentual_diferimento                    : Optional[Annotated[str, Field()]]  = None
+    percentual_desonerado                     : Optional[Annotated[str, Field()]]  = None
+    motivo_desoneracao                        : Optional[Annotated[str, Field()]]  = None
+    percentual_icms_st_retido                 : Optional[Annotated[str, Field()]]  = None
+    utilizar_tabela_aliquotas_interestaduais  : Optional[Annotated[bool, Field()]] = None
+    utilizar_aliquota_interestadual_importacao: Optional[Annotated[bool, Field()]] = None
+
+    @model_validator(mode=&#39;after&#39;)
+    def validate_situacao_tributaria(self):
         if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_ICMS:
             raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)
-    
-    def validate_motivo_desoneracao(self, *args, **kwargs):
+        return self
+
+    @model_validator(mode=&#39;after&#39;)
+    def validate_motivo_desoneracao(self):
         if self.motivo_desoneracao:
             if self.motivo_desoneracao not in MOTIVOS_DESONERACAO:
-                raise ValueError(f&#39;Motivo de Desoneração {self.motivo_desoneracao} inválido.&#39;)</code></pre>
+                raise ValueError(f&#39;Motivo de Desoneração {self.motivo_desoneracao} inválido.&#39;)
+        return self</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Icms.aliquota_aplicavel_calculo_credito"><code class="name">var <span class="ident">aliquota_aplicavel_calculo_credito</span> : Optional[str]</code></dt>
@@ -1731,6 +1700,14 @@ class Icms:
 <div class="desc"></div>
 </dd>
 <dt id="pysisnoapi.Icms.codigo_cfop"><code class="name">var <span class="ident">codigo_cfop</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Icms.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Icms.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1778,7 +1755,7 @@ class Icms:
 <h3>Methods</h3>
 <dl>
 <dt id="pysisnoapi.Icms.validate_motivo_desoneracao"><code class="name flex">
-<span>def <span class="ident">validate_motivo_desoneracao</span></span>(<span>self, *args, **kwargs)</span>
+<span>def <span class="ident">validate_motivo_desoneracao</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1786,14 +1763,16 @@ class Icms:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_motivo_desoneracao(self, *args, **kwargs):
+<pre><code class="python">@model_validator(mode=&#39;after&#39;)
+def validate_motivo_desoneracao(self):
     if self.motivo_desoneracao:
         if self.motivo_desoneracao not in MOTIVOS_DESONERACAO:
-            raise ValueError(f&#39;Motivo de Desoneração {self.motivo_desoneracao} inválido.&#39;)</code></pre>
+            raise ValueError(f&#39;Motivo de Desoneração {self.motivo_desoneracao} inválido.&#39;)
+    return self</code></pre>
 </details>
 </dd>
 <dt id="pysisnoapi.Icms.validate_situacao_tributaria"><code class="name flex">
-<span>def <span class="ident">validate_situacao_tributaria</span></span>(<span>self, *args, **kwargs)</span>
+<span>def <span class="ident">validate_situacao_tributaria</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1801,30 +1780,40 @@ class Icms:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_situacao_tributaria(self, *args, **kwargs):
+<pre><code class="python">@model_validator(mode=&#39;after&#39;)
+def validate_situacao_tributaria(self):
     if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_ICMS:
-        raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)</code></pre>
+        raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)
+    return self</code></pre>
 </details>
 </dd>
 </dl>
 </dd>
 <dt id="pysisnoapi.Impostos"><code class="flex name class">
 <span>class <span class="ident">Impostos</span></span>
-<span>(</span><span>pis: <a title="pysisnoapi.Pis" href="#pysisnoapi.Pis">Pis</a>, cofins: <a title="pysisnoapi.Cofins" href="#pysisnoapi.Cofins">Cofins</a>)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Classe Base para as Classes de Impostos de Produtos e Serviços.</p></div>
+<div class="desc"><p>Classe Base para as Classes de Impostos de Produtos e Serviços.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class Impostos:
+<pre><code class="python">class Impostos(BaseModel):
     &#39;&#39;&#39;Classe Base para as Classes de Impostos de Produtos e Serviços.
     &#39;&#39;&#39;
-    pis   : &#39;Pis&#39;
-    cofins: &#39;Cofins&#39;</code></pre>
+    pis   : &#39;Pis&#39;    = Field()
+    cofins: &#39;Cofins&#39; = Field()</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="pysisnoapi.nfe.ImpostosProduto" href="nfe.html#pysisnoapi.nfe.ImpostosProduto">ImpostosProduto</a></li>
@@ -1836,6 +1825,14 @@ class Impostos:
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="pysisnoapi.Impostos.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Impostos.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="pysisnoapi.Impostos.pis"><code class="name">var <span class="ident">pis</span> : <a title="pysisnoapi.Pis" href="#pysisnoapi.Pis">Pis</a></code></dt>
 <dd>
 <div class="desc"></div>
@@ -1844,63 +1841,70 @@ class Impostos:
 </dd>
 <dt id="pysisnoapi.Ipi"><code class="flex name class">
 <span>class <span class="ident">Ipi</span></span>
-<span>(</span><span>situacao_tributaria: str, aliquota: Optional[str] = None, codigo_enquadramento: Optional[str] = None, codigo_selo: Optional[str] = None, qtd_selo: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Classe <code>IPI</code> (Imposto Sobre Produtos Industrializados)</p>
-<p>situacao_tributaria:<br>
-00: Entrada com Recuperação de Crédito<br>
-01: Entrada Tributada com Alíquota Zero<br>
-02: Entrada Isenta<br>
-03: Entrada Não Tributada<br>
-04: Entrada Imune<br>
-05: Entrada com Suspensão<br>
-49: Outras Entradas<br>
-50: Saída Tributada<br>
-51: Saída Tributável com Alíquota Zero<br>
-52: Saída Isenta<br>
-53: Saída Não Tributada<br>
-54: Saída Imune<br>
-55: Saída com Suspensão<br>
-99: Outras Saídas</p></div>
+<p>situacao_tributaria:
+00: Entrada com Recuperação de Crédito
+01: Entrada Tributada com Alíquota Zero
+02: Entrada Isenta
+03: Entrada Não Tributada
+04: Entrada Imune
+05: Entrada com Suspensão
+49: Outras Entradas
+50: Saída Tributada
+51: Saída Tributável com Alíquota Zero
+52: Saída Isenta
+53: Saída Não Tributada
+54: Saída Imune
+55: Saída com Suspensão
+99: Outras Saídas</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class Ipi:
+<pre><code class="python">class Ipi(BaseModel):
     &#39;&#39;&#39;Classe `IPI` (Imposto Sobre Produtos Industrializados)
 
-    situacao_tributaria:  
-        00: Entrada com Recuperação de Crédito  
-        01: Entrada Tributada com Alíquota Zero  
-        02: Entrada Isenta  
-        03: Entrada Não Tributada  
-        04: Entrada Imune  
-        05: Entrada com Suspensão  
-        49: Outras Entradas  
-        50: Saída Tributada  
-        51: Saída Tributável com Alíquota Zero  
-        52: Saída Isenta  
-        53: Saída Não Tributada  
-        54: Saída Imune  
-        55: Saída com Suspensão  
-        99: Outras Saídas  
+    situacao_tributaria:
+        00: Entrada com Recuperação de Crédito
+        01: Entrada Tributada com Alíquota Zero
+        02: Entrada Isenta
+        03: Entrada Não Tributada
+        04: Entrada Imune
+        05: Entrada com Suspensão
+        49: Outras Entradas
+        50: Saída Tributada
+        51: Saída Tributável com Alíquota Zero
+        52: Saída Isenta
+        53: Saída Não Tributada
+        54: Saída Imune
+        55: Saída com Suspensão
+        99: Outras Saídas
     &#39;&#39;&#39;
-    situacao_tributaria : str
-    
-    aliquota            : Optional[str] = None
-    codigo_enquadramento: Optional[str] = None
-    codigo_selo         : Optional[str] = None
-    qtd_selo            : Optional[str] = None
-    
-    def __post_init__(self, *args, **kwargs):
-        self.validate_situacao_tributaria()
-    
+    situacao_tributaria : str = Field()
+
+    aliquota            : Optional[Annotated[str, Field()]] = None
+    codigo_enquadramento: Optional[Annotated[str, Field()]] = None
+    codigo_selo         : Optional[Annotated[str, Field()]] = None
+    qtd_selo            : Optional[Annotated[str, Field()]] = None
+
+    @model_validator(mode=&#39;after&#39;)
     def validate_situacao_tributaria(self, *args, **kwargs):
         if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_IPI:
-            raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)</code></pre>
+            raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)
+        return self</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Ipi.aliquota"><code class="name">var <span class="ident">aliquota</span> : Optional[str]</code></dt>
@@ -1912,6 +1916,14 @@ class Ipi:
 <div class="desc"></div>
 </dd>
 <dt id="pysisnoapi.Ipi.codigo_selo"><code class="name">var <span class="ident">codigo_selo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ipi.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Ipi.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1935,35 +1947,45 @@ class Ipi:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_situacao_tributaria(self, *args, **kwargs):
+<pre><code class="python">@model_validator(mode=&#39;after&#39;)
+def validate_situacao_tributaria(self, *args, **kwargs):
     if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_IPI:
-        raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)</code></pre>
+        raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)
+    return self</code></pre>
 </details>
 </dd>
 </dl>
 </dd>
 <dt id="pysisnoapi.Municipio"><code class="flex name class">
 <span>class <span class="ident">Municipio</span></span>
-<span>(</span><span>codigo_ibge: Optional[int] = None, descricao: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Classe <code>Município</code></p></div>
+<div class="desc"><p>Classe <code>Município</code></p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class Municipio:
+<pre><code class="python">class Municipio(BaseModel):
     &#39;&#39;&#39;Classe `Município`
     &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
-    codigo_ibge : Optional[int] = None
-    descricao   : Optional[str] = None
-    
+    codigo_ibge : Optional[Annotated[int, Field()]] = None
+    descricao   : Optional[Annotated[str, Field()]] = None
+
     @classmethod
     def from_json(cls, **kwargs):
         return cls(**kwargs)</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Municipio.codigo_ibge"><code class="name">var <span class="ident">codigo_ibge</span> : Optional[int]</code></dt>
@@ -1971,6 +1993,14 @@ class Municipio:
 <div class="desc"></div>
 </dd>
 <dt id="pysisnoapi.Municipio.descricao"><code class="name">var <span class="ident">descricao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Municipio.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Municipio.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1995,68 +2025,76 @@ def from_json(cls, **kwargs):
 </dd>
 <dt id="pysisnoapi.NotaFiscal"><code class="flex name class">
 <span>class <span class="ident">NotaFiscal</span></span>
-<span>(</span><span>id: Optional[int] = None, empresa: Optional[ForwardRef('<a title="pysisnoapi.Empresa" href="#pysisnoapi.Empresa">Empresa</a>')] = None, tipo: Optional[str] = None, serie: Optional[str] = None, numero_nota: Optional[str] = None, chave_acesso: Optional[str] = None, protocolo: Optional[str] = None, nome_destinatario: Optional[str] = None, uf_destinatario: Optional[str] = None, cpf_cnpj_destinatario: Optional[str] = None, valor_total: Optional[str] = None, status: Optional[str] = None, motivo: Optional[str] = None, data_emissao: Optional[datetime.datetime] = None, data_autorizacao: Optional[datetime.datetime] = None, modelo: Optional[str] = None, ambiente: Optional[str] = None, xml: Optional[str] = None, json_objeto_nfe: Optional[str] = None, tipo_emissao: Optional[str] = None, numero_lote: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Classe <code>Nota Fiscal</code>.</p>
-<p>Até 01/2023 essa classe também era usada para Notas Fiscais de Serviço (NFSe).</p></div>
+<p>Até 01/2023 essa classe também era usada para Notas Fiscais de Serviço (NFSe).</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class NotaFiscal:
+<pre><code class="python">class NotaFiscal(BaseModel):
     &#39;&#39;&#39;Classe `Nota Fiscal`.
-    
+
     Até 01/2023 essa classe também era usada para Notas Fiscais de Serviço (NFSe).
     &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
-    id                      : Optional[int]         = None
-    empresa                 : Optional[&#39;Empresa&#39;]   = None
-    tipo                    : Optional[str]         = None
-    serie                   : Optional[str]         = None
-    numero_nota             : Optional[str]         = None
-    chave_acesso            : Optional[str]         = None
-    protocolo               : Optional[str]         = None
-    nome_destinatario       : Optional[str]         = None
-    uf_destinatario         : Optional[str]         = None
-    cpf_cnpj_destinatario   : Optional[str]         = None
-    valor_total             : Optional[str]         = None
-    status                  : Optional[str]         = None
-    motivo                  : Optional[str]         = None
-    data_emissao            : Optional[datetime]    = None
-    data_autorizacao        : Optional[datetime]    = None
-    modelo                  : Optional[str]         = None
-    ambiente                : Optional[str]         = None
-    xml                     : Optional[str]         = None
-    json_objeto_nfe         : Optional[str]         = None
-    tipo_emissao            : Optional[str]         = None
-    numero_lote             : Optional[str]         = None
-    
+    id                      : Optional[Annotated[int, Field()]]       = None
+    empresa                 : Optional[Annotated[&#39;Empresa&#39;, Field()]] = None
+    tipo                    : Optional[Annotated[str, Field()]]       = None
+    serie                   : Optional[Annotated[str, Field()]]       = None
+    numero_nota             : Optional[Annotated[str, Field()]]       = None
+    chave_acesso            : Optional[Annotated[str, Field()]]       = None
+    protocolo               : Optional[Annotated[str, Field()]]       = None
+    nome_destinatario       : Optional[Annotated[str, Field()]]       = None
+    uf_destinatario         : Optional[Annotated[str, Field()]]       = None
+    cpf_cnpj_destinatario   : Optional[Annotated[str, Field()]]       = None
+    valor_total             : Optional[Annotated[str, Field()]]       = None
+    status                  : Optional[Annotated[str, Field()]]       = None
+    motivo                  : Optional[Annotated[str, Field()]]       = None
+    data_emissao            : Optional[Annotated[datetime, Field()]]  = None
+    data_autorizacao        : Optional[Annotated[datetime, Field()]]  = None
+    modelo                  : Optional[Annotated[str, Field()]]       = None
+    ambiente                : Optional[Annotated[str, Field()]]       = None
+    xml                     : Optional[Annotated[str, Field()]]       = None
+    json_objeto_nfe         : Optional[Annotated[str, Field()]]       = None
+    tipo_emissao            : Optional[Annotated[str, Field()]]       = None
+    numero_lote             : Optional[Annotated[str, Field()]]       = None
+
     @classmethod
     def from_json(cls, **kwargs):
         empresa_dict = kwargs.pop(&#39;empresa&#39;, {})
         empresa = Empresa.from_json(**empresa_dict)
-        
+
         if data_emissao := kwargs.pop(&#39;data_emissao&#39;, None):
             data_emissao = parser.parse(data_emissao, dayfirst=True)
-        
+
         if data_autorizacao := kwargs.pop(&#39;data_autorizacao&#39;, None):
             data_autorizacao = parser.parse(data_autorizacao, dayfirst=True)
-        
+
         return cls(
             empresa=empresa,
-            data_emissao=data_emissao, 
-            data_autorizacao=data_autorizacao, 
+            data_emissao=data_emissao,
+            data_autorizacao=data_autorizacao,
             **kwargs
         )
-        
+
     def __str__(self):
         return f&#39;NFe {self.id}&#39;
-    
+
     def __repr__(self):
         return f&#39;NFe {self.id}&#39;</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.NotaFiscal.ambiente"><code class="name">var <span class="ident">ambiente</span> : Optional[str]</code></dt>
@@ -2088,6 +2126,14 @@ class NotaFiscal:
 <div class="desc"></div>
 </dd>
 <dt id="pysisnoapi.NotaFiscal.json_objeto_nfe"><code class="name">var <span class="ident">json_objeto_nfe</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.NotaFiscal.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2159,17 +2205,17 @@ class NotaFiscal:
 def from_json(cls, **kwargs):
     empresa_dict = kwargs.pop(&#39;empresa&#39;, {})
     empresa = Empresa.from_json(**empresa_dict)
-    
+
     if data_emissao := kwargs.pop(&#39;data_emissao&#39;, None):
         data_emissao = parser.parse(data_emissao, dayfirst=True)
-    
+
     if data_autorizacao := kwargs.pop(&#39;data_autorizacao&#39;, None):
         data_autorizacao = parser.parse(data_autorizacao, dayfirst=True)
-    
+
     return cls(
         empresa=empresa,
-        data_emissao=data_emissao, 
-        data_autorizacao=data_autorizacao, 
+        data_emissao=data_emissao,
+        data_autorizacao=data_autorizacao,
         **kwargs
     )</code></pre>
 </details>
@@ -2178,22 +2224,77 @@ def from_json(cls, **kwargs):
 </dd>
 <dt id="pysisnoapi.Observacao"><code class="flex name class">
 <span>class <span class="ident">Observacao</span></span>
-<span>(</span><span>campo: Optional[str] = None, texto: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Observacao(campo: Optional[str] = None, texto: Optional[str] = None)</p></div>
+<div class="desc"><p>Usage docs: <a href="https://docs.pydantic.dev/2.4/concepts/models/">https://docs.pydantic.dev/2.4/concepts/models/</a></p>
+<p>A base class for creating Pydantic models.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>__class_vars__</code></strong></dt>
+<dd>The names of classvars defined on the model.</dd>
+<dt><strong><code>__private_attributes__</code></strong></dt>
+<dd>Metadata about the private attributes of the model.</dd>
+<dt><strong><code>__signature__</code></strong></dt>
+<dd>The signature for instantiating the model.</dd>
+<dt><strong><code>__pydantic_complete__</code></strong></dt>
+<dd>Whether model building is completed, or if there are still undefined fields.</dd>
+<dt><strong><code>__pydantic_core_schema__</code></strong></dt>
+<dd>The pydantic-core schema used to build the SchemaValidator and SchemaSerializer.</dd>
+<dt><strong><code>__pydantic_custom_init__</code></strong></dt>
+<dd>Whether the model has a custom <code>__init__</code> function.</dd>
+<dt><strong><code>__pydantic_decorators__</code></strong></dt>
+<dd>Metadata containing the decorators defined on the model.
+This replaces <code>Model.__validators__</code> and <code>Model.__root_validators__</code> from Pydantic V1.</dd>
+<dt><strong><code>__pydantic_generic_metadata__</code></strong></dt>
+<dd>Metadata for generic models; contains data used for a similar purpose to
+<strong>args</strong>, <strong>origin</strong>, <strong>parameters</strong> in typing-module generics. May eventually be replaced by these.</dd>
+<dt><strong><code>__pydantic_parent_namespace__</code></strong></dt>
+<dd>Parent namespace of the model, used for automatic rebuilding of models.</dd>
+<dt><strong><code>__pydantic_post_init__</code></strong></dt>
+<dd>The name of the post-init method for the model, if defined.</dd>
+<dt><strong><code>__pydantic_root_model__</code></strong></dt>
+<dd>Whether the model is a <code>RootModel</code>.</dd>
+<dt><strong><code>__pydantic_serializer__</code></strong></dt>
+<dd>The pydantic-core SchemaSerializer used to dump instances of the model.</dd>
+<dt><strong><code>__pydantic_validator__</code></strong></dt>
+<dd>The pydantic-core SchemaValidator used to validate instances of the model.</dd>
+<dt><strong><code>__pydantic_extra__</code></strong></dt>
+<dd>An instance attribute with the values of extra fields from validation when
+<code>model_config['extra'] == 'allow'</code>.</dd>
+<dt><strong><code>__pydantic_fields_set__</code></strong></dt>
+<dd>An instance attribute with the names of fields explicitly specified during validation.</dd>
+<dt><strong><code>__pydantic_private__</code></strong></dt>
+<dd>Instance attribute with the values of private attributes set on the model instance.</dd>
+</dl>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class Observacao:
-    campo: Optional[str] = None
-    texto: Optional[str] = None</code></pre>
+<pre><code class="python">class Observacao(BaseModel):
+    campo: Optional[Annotated[str, Field()]] = None
+    texto: Optional[Annotated[str, Field()]] = None</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Observacao.campo"><code class="name">var <span class="ident">campo</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Observacao.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Observacao.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2205,32 +2306,42 @@ class Observacao:
 </dd>
 <dt id="pysisnoapi.PessoaFisica"><code class="flex name class">
 <span>class <span class="ident">PessoaFisica</span></span>
-<span>(</span><span>nome_completo: str, cpf: Optional[str] = None, id_estrangeiro: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Classe <code>Pessoa Física</code></p>
-<p>Deve ser informado apenas um dos campos [cpf, id_estrangeiro]</p></div>
+<p>Deve ser informado apenas um dos campos [cpf, id_estrangeiro]</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class PessoaFisica:
+<pre><code class="python">class PessoaFisica(BaseModel):
     &#39;&#39;&#39;Classe `Pessoa Física`
-    
+
     Deve ser informado apenas um dos campos [cpf, id_estrangeiro]
     &#39;&#39;&#39;
-    nome_completo: str
-    
-    cpf           : Optional[str] = None
-    id_estrangeiro: Optional[str] = None
-    
-    def __post_init__(self):
+    nome_completo: str = Field()
+
+    cpf           : Optional[Annotated[str, Field()]] = None
+    id_estrangeiro: Optional[Annotated[str, Field()]] = None
+
+    @model_validator(mode=&#39;after&#39;)
+    def check_documentos(self):
         if self.cpf and self.id_estrangeiro:
             raise ValueError(&#39;Informe somente um dos campos: cpf ou id_estrangeiro&#39;)
         if not self.cpf and not self.id_estrangeiro:
-            raise ValueError(&#39;Informe um dos campos: cpf ou id_estrangeiro&#39;)</code></pre>
+            raise ValueError(&#39;Informe um dos campos: cpf ou id_estrangeiro&#39;)
+        return self</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.PessoaFisica.cpf"><code class="name">var <span class="ident">cpf</span> : Optional[str]</code></dt>
@@ -2241,32 +2352,69 @@ class PessoaFisica:
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="pysisnoapi.PessoaFisica.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.PessoaFisica.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="pysisnoapi.PessoaFisica.nome_completo"><code class="name">var <span class="ident">nome_completo</span> : str</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
-</dd>
-<dt id="pysisnoapi.PessoaJuridica"><code class="flex name class">
-<span>class <span class="ident">PessoaJuridica</span></span>
-<span>(</span><span>cnpj: str, razao_social: str, im: Optional[str] = None, suframa: Optional[str] = None)</span>
+<h3>Methods</h3>
+<dl>
+<dt id="pysisnoapi.PessoaFisica.check_documentos"><code class="name flex">
+<span>def <span class="ident">check_documentos</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Classe <code>Pessoa Jurídica</code></p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class PessoaJuridica:
+<pre><code class="python">@model_validator(mode=&#39;after&#39;)
+def check_documentos(self):
+    if self.cpf and self.id_estrangeiro:
+        raise ValueError(&#39;Informe somente um dos campos: cpf ou id_estrangeiro&#39;)
+    if not self.cpf and not self.id_estrangeiro:
+        raise ValueError(&#39;Informe um dos campos: cpf ou id_estrangeiro&#39;)
+    return self</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="pysisnoapi.PessoaJuridica"><code class="flex name class">
+<span>class <span class="ident">PessoaJuridica</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Classe <code>Pessoa Jurídica</code></p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PessoaJuridica(BaseModel):
     &#39;&#39;&#39;Classe `Pessoa Jurídica`
     &#39;&#39;&#39;
-    cnpj        : str
-    razao_social: str
-    
-    im          : Optional[str] = None
-    suframa     : Optional[str] = None</code></pre>
+    cnpj        : str = Field()
+    razao_social: str = Field()
+
+    im          : Optional[Annotated[str, Field()]] = None
+    suframa     : Optional[Annotated[str, Field()]] = None</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.PessoaJuridica.cnpj"><code class="name">var <span class="ident">cnpj</span> : str</code></dt>
@@ -2274,6 +2422,14 @@ class PessoaJuridica:
 <div class="desc"></div>
 </dd>
 <dt id="pysisnoapi.PessoaJuridica.im"><code class="name">var <span class="ident">im</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.PessoaJuridica.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.PessoaJuridica.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2289,115 +2445,119 @@ class PessoaJuridica:
 </dd>
 <dt id="pysisnoapi.Pis"><code class="flex name class">
 <span>class <span class="ident">Pis</span></span>
-<span>(</span><span>situacao_tributaria: str, aliquota: Optional[str] = None, aliquota_st: Optional[str] = None, aliquota_retencao: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Classe <code>PIS</code> (Programas de Integração Social)</p>
-<p>situacao_tributaria (str): Situação Tributária<br>
-01: Operação Tributável com Alíquota Básica<br>
-02: Operação Tributável com Alíquota por Unidade de Medida de Produto<br>
-03: Operação Tributável com Alíquota por Unidade de Medida de Produto<br>
-04: Operação Tributável Monofásica - Revenda a Alíquota Zero<br>
-05: Operação Tributável por Substituição Tributária<br>
-06: Operação Tributável a Alíquota Zero<br>
-07: Operação Isenta da Contribuição<br>
-08: Operação sem Incidência da Contribuição<br>
-09: Operação com Suspensão da Contribuição<br>
-49: Outras Operações de Saída<br>
-50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno<br>
-51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno<br>
-52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação<br>
-53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno<br>
-54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação<br>
-55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação<br>
-56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação<br>
-60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno<br>
-61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno<br>
-62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação<br>
-63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno<br>
-64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação<br>
-65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação<br>
-66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação<br>
-67: Crédito Presumido - Outras Operações<br>
-70: Operação de Aquisição sem Direito a Crédito<br>
-71: Operação de Aquisição com Isenção<br>
-72: Operação de Aquisição com Suspensão<br>
-73: Operação de Aquisição a Alíquota Zero<br>
-74: Operação de Aquisição sem Incidência da Contribuição<br>
-75: Operação de Aquisição por Substituição Tributária<br>
-98: Outras Operações de Entrada<br>
-99: Outras Operações
-</p>
+<p>situacao_tributaria (str): Situação Tributária
+01: Operação Tributável com Alíquota Básica
+02: Operação Tributável com Alíquota por Unidade de Medida de Produto
+03: Operação Tributável com Alíquota por Unidade de Medida de Produto
+04: Operação Tributável Monofásica - Revenda a Alíquota Zero
+05: Operação Tributável por Substituição Tributária
+06: Operação Tributável a Alíquota Zero
+07: Operação Isenta da Contribuição
+08: Operação sem Incidência da Contribuição
+09: Operação com Suspensão da Contribuição
+49: Outras Operações de Saída
+50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno
+51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno
+52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação
+53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno
+54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação
+55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação
+56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação
+60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno
+61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno
+62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação
+63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno
+64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação
+65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação
+66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação
+67: Crédito Presumido - Outras Operações
+70: Operação de Aquisição sem Direito a Crédito
+71: Operação de Aquisição com Isenção
+72: Operação de Aquisição com Suspensão
+73: Operação de Aquisição a Alíquota Zero
+74: Operação de Aquisição sem Incidência da Contribuição
+75: Operação de Aquisição por Substituição Tributária
+98: Outras Operações de Entrada
+99: Outras Operações</p>
 <p>aliquota (str): $0.0000
-Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade
-</p>
-<p>aliquota_st (str): $0.0000
-</p>
-<p>aliquota_retencao (str): $0.0000</p></div>
+Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade</p>
+<p>aliquota_st (str): $0.0000</p>
+<p>aliquota_retencao (str): $0.0000</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class Pis:
+<pre><code class="python">class Pis(BaseModel):
     &#39;&#39;&#39;Classe `PIS` (Programas de Integração Social)
 
-    situacao_tributaria (str): Situação Tributária  
-        01: Operação Tributável com Alíquota Básica  
-        02: Operação Tributável com Alíquota por Unidade de Medida de Produto  
-        03: Operação Tributável com Alíquota por Unidade de Medida de Produto  
-        04: Operação Tributável Monofásica - Revenda a Alíquota Zero  
-        05: Operação Tributável por Substituição Tributária  
-        06: Operação Tributável a Alíquota Zero  
-        07: Operação Isenta da Contribuição  
-        08: Operação sem Incidência da Contribuição  
-        09: Operação com Suspensão da Contribuição  
-        49: Outras Operações de Saída  
-        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno  
-        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno  
-        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação  
-        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno  
-        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação  
-        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação  
-        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação  
-        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno  
-        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno  
-        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação  
-        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno  
-        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação  
-        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação  
-        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação  
-        67: Crédito Presumido - Outras Operações  
-        70: Operação de Aquisição sem Direito a Crédito  
-        71: Operação de Aquisição com Isenção  
-        72: Operação de Aquisição com Suspensão  
-        73: Operação de Aquisição a Alíquota Zero  
-        74: Operação de Aquisição sem Incidência da Contribuição  
-        75: Operação de Aquisição por Substituição Tributária  
-        98: Outras Operações de Entrada  
-        99: Outras Operações  
-    
-    aliquota (str): $0.0000 
-        Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade  
-    
-    aliquota_st (str): $0.0000  
-    
-    aliquota_retencao (str): $0.0000
-    
-    &#39;&#39;&#39;
-    situacao_tributaria: str
-    
-    aliquota           : Optional[str] = None
-    aliquota_st        : Optional[str] = None
-    aliquota_retencao  : Optional[str] = None
+    situacao_tributaria (str): Situação Tributária
+        01: Operação Tributável com Alíquota Básica
+        02: Operação Tributável com Alíquota por Unidade de Medida de Produto
+        03: Operação Tributável com Alíquota por Unidade de Medida de Produto
+        04: Operação Tributável Monofásica - Revenda a Alíquota Zero
+        05: Operação Tributável por Substituição Tributária
+        06: Operação Tributável a Alíquota Zero
+        07: Operação Isenta da Contribuição
+        08: Operação sem Incidência da Contribuição
+        09: Operação com Suspensão da Contribuição
+        49: Outras Operações de Saída
+        50: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Tributada no Mercado Interno
+        51: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno
+        52: Operação com Direito a Crédito - Vinculada Exclusivamente a Receita de Exportação
+        53: Operação com Direito a Crédito - Vinculada a Receitas Tributadas e Não-Tributadas no Mercado Interno
+        54: Operação com Direito a Crédito - Vinculada a Receitas Tributadas no Mercado Interno e de Exportação
+        55: Operação com Direito a Crédito - Vinculada a Receitas Não Tributadas Mercado Interno e de Exportação
+        56: Oper. c/ Direito a Créd. Vinculada a Rec. Tributadas e Não-Tributadas Mercado Interno e de Exportação
+        60: Crédito Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Tributada no Mercado Interno
+        61: Créd. Presumido - Oper. de Aquisição Vinculada Exclusivamente a Rec. Não-Tributada Mercado Interno
+        62: Crédito Presumido - Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação
+        63: Créd. Presumido - Oper. de Aquisição Vinculada a Rec.Tributadas e Não-Tributadas no Mercado Interno
+        64: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Tributadas no Mercado Interno e de Exportação
+        65: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Não-Tributadas Mercado Interno e Exportação
+        66: Créd. Presumido - Oper. de Aquisição Vinculada a Rec. Trib. e Não-Trib. Mercado Interno e Exportação
+        67: Crédito Presumido - Outras Operações
+        70: Operação de Aquisição sem Direito a Crédito
+        71: Operação de Aquisição com Isenção
+        72: Operação de Aquisição com Suspensão
+        73: Operação de Aquisição a Alíquota Zero
+        74: Operação de Aquisição sem Incidência da Contribuição
+        75: Operação de Aquisição por Substituição Tributária
+        98: Outras Operações de Entrada
+        99: Outras Operações
 
-    def __post_init__(self, *args, **kwargs):
-        self.validate_situacao_tributaria()
-        
+    aliquota (str): $0.0000
+        Passar percentual quando tributado pela alíquota ou em reais quando tributado por quantidade
+
+    aliquota_st (str): $0.0000
+
+    aliquota_retencao (str): $0.0000
+
+    &#39;&#39;&#39;
+    situacao_tributaria: str = Field()
+
+    aliquota           : Optional[Annotated[str, Field()]] = None
+    aliquota_st        : Optional[Annotated[str, Field()]] = None
+    aliquota_retencao  : Optional[Annotated[str, Field()]] = None
+
+    @model_validator(mode=&#39;after&#39;)
     def validate_situacao_tributaria(self, *args, **kwargs):
         if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
-            raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)</code></pre>
+            raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)
+        return self</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Pis.aliquota"><code class="name">var <span class="ident">aliquota</span> : Optional[str]</code></dt>
@@ -2409,6 +2569,14 @@ class Pis:
 <div class="desc"></div>
 </dd>
 <dt id="pysisnoapi.Pis.aliquota_st"><code class="name">var <span class="ident">aliquota_st</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Pis.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Pis.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2428,32 +2596,81 @@ class Pis:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_situacao_tributaria(self, *args, **kwargs):
+<pre><code class="python">@model_validator(mode=&#39;after&#39;)
+def validate_situacao_tributaria(self, *args, **kwargs):
     if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
-        raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)</code></pre>
+        raise ValueError(f&#39;Situação tributária {self.situacao_tributaria} inválida.&#39;)
+    return self</code></pre>
 </details>
 </dd>
 </dl>
 </dd>
 <dt id="pysisnoapi.RetencaoIcmsTransporte"><code class="flex name class">
 <span>class <span class="ident">RetencaoIcmsTransporte</span></span>
-<span>(</span><span>valor_servico: Optional[str] = None, valor_icms_retido: Optional[str] = None, cfop: Optional[str] = None, codigo_municipio_ocorrencia_fato_gerador_icms_transporte: Optional[str] = None, base_calculo_retencao_icms: Optional[str] = None, aliquota_retencao: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>RetencaoIcmsTransporte(valor_servico: Optional[str] = None, valor_icms_retido: Optional[str] = None, cfop: Optional[str] = None, codigo_municipio_ocorrencia_fato_gerador_icms_transporte: Optional[str] = None, base_calculo_retencao_icms: Optional[str] = None, aliquota_retencao: Optional[str] = None)</p></div>
+<div class="desc"><p>Usage docs: <a href="https://docs.pydantic.dev/2.4/concepts/models/">https://docs.pydantic.dev/2.4/concepts/models/</a></p>
+<p>A base class for creating Pydantic models.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>__class_vars__</code></strong></dt>
+<dd>The names of classvars defined on the model.</dd>
+<dt><strong><code>__private_attributes__</code></strong></dt>
+<dd>Metadata about the private attributes of the model.</dd>
+<dt><strong><code>__signature__</code></strong></dt>
+<dd>The signature for instantiating the model.</dd>
+<dt><strong><code>__pydantic_complete__</code></strong></dt>
+<dd>Whether model building is completed, or if there are still undefined fields.</dd>
+<dt><strong><code>__pydantic_core_schema__</code></strong></dt>
+<dd>The pydantic-core schema used to build the SchemaValidator and SchemaSerializer.</dd>
+<dt><strong><code>__pydantic_custom_init__</code></strong></dt>
+<dd>Whether the model has a custom <code>__init__</code> function.</dd>
+<dt><strong><code>__pydantic_decorators__</code></strong></dt>
+<dd>Metadata containing the decorators defined on the model.
+This replaces <code>Model.__validators__</code> and <code>Model.__root_validators__</code> from Pydantic V1.</dd>
+<dt><strong><code>__pydantic_generic_metadata__</code></strong></dt>
+<dd>Metadata for generic models; contains data used for a similar purpose to
+<strong>args</strong>, <strong>origin</strong>, <strong>parameters</strong> in typing-module generics. May eventually be replaced by these.</dd>
+<dt><strong><code>__pydantic_parent_namespace__</code></strong></dt>
+<dd>Parent namespace of the model, used for automatic rebuilding of models.</dd>
+<dt><strong><code>__pydantic_post_init__</code></strong></dt>
+<dd>The name of the post-init method for the model, if defined.</dd>
+<dt><strong><code>__pydantic_root_model__</code></strong></dt>
+<dd>Whether the model is a <code>RootModel</code>.</dd>
+<dt><strong><code>__pydantic_serializer__</code></strong></dt>
+<dd>The pydantic-core SchemaSerializer used to dump instances of the model.</dd>
+<dt><strong><code>__pydantic_validator__</code></strong></dt>
+<dd>The pydantic-core SchemaValidator used to validate instances of the model.</dd>
+<dt><strong><code>__pydantic_extra__</code></strong></dt>
+<dd>An instance attribute with the values of extra fields from validation when
+<code>model_config['extra'] == 'allow'</code>.</dd>
+<dt><strong><code>__pydantic_fields_set__</code></strong></dt>
+<dd>An instance attribute with the names of fields explicitly specified during validation.</dd>
+<dt><strong><code>__pydantic_private__</code></strong></dt>
+<dd>Instance attribute with the values of private attributes set on the model instance.</dd>
+</dl>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class RetencaoIcmsTransporte:
-    valor_servico                                           : Optional[str] = None
-    valor_icms_retido                                       : Optional[str] = None
-    cfop                                                    : Optional[str] = None
-    codigo_municipio_ocorrencia_fato_gerador_icms_transporte: Optional[str] = None
-    base_calculo_retencao_icms                              : Optional[str] = None
-    aliquota_retencao                                       : Optional[str] = None</code></pre>
+<pre><code class="python">class RetencaoIcmsTransporte(BaseModel):
+    valor_servico                                           : Optional[Annotated[str, Field()]] = None
+    valor_icms_retido                                       : Optional[Annotated[str, Field()]] = None
+    cfop                                                    : Optional[Annotated[str, Field()]] = None
+    codigo_municipio_ocorrencia_fato_gerador_icms_transporte: Optional[Annotated[str, Field()]] = None
+    base_calculo_retencao_icms                              : Optional[Annotated[str, Field()]] = None
+    aliquota_retencao                                       : Optional[Annotated[str, Field()]] = None</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.RetencaoIcmsTransporte.aliquota_retencao"><code class="name">var <span class="ident">aliquota_retencao</span> : Optional[str]</code></dt>
@@ -2472,6 +2689,14 @@ class RetencaoIcmsTransporte:
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="pysisnoapi.RetencaoIcmsTransporte.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.RetencaoIcmsTransporte.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="pysisnoapi.RetencaoIcmsTransporte.valor_icms_retido"><code class="name">var <span class="ident">valor_icms_retido</span> : Optional[str]</code></dt>
 <dd>
 <div class="desc"></div>
@@ -2484,22 +2709,81 @@ class RetencaoIcmsTransporte:
 </dd>
 <dt id="pysisnoapi.Transporte"><code class="flex name class">
 <span>class <span class="ident">Transporte</span></span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Transporte()</p></div>
+<div class="desc"><p>Usage docs: <a href="https://docs.pydantic.dev/2.4/concepts/models/">https://docs.pydantic.dev/2.4/concepts/models/</a></p>
+<p>A base class for creating Pydantic models.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>__class_vars__</code></strong></dt>
+<dd>The names of classvars defined on the model.</dd>
+<dt><strong><code>__private_attributes__</code></strong></dt>
+<dd>Metadata about the private attributes of the model.</dd>
+<dt><strong><code>__signature__</code></strong></dt>
+<dd>The signature for instantiating the model.</dd>
+<dt><strong><code>__pydantic_complete__</code></strong></dt>
+<dd>Whether model building is completed, or if there are still undefined fields.</dd>
+<dt><strong><code>__pydantic_core_schema__</code></strong></dt>
+<dd>The pydantic-core schema used to build the SchemaValidator and SchemaSerializer.</dd>
+<dt><strong><code>__pydantic_custom_init__</code></strong></dt>
+<dd>Whether the model has a custom <code>__init__</code> function.</dd>
+<dt><strong><code>__pydantic_decorators__</code></strong></dt>
+<dd>Metadata containing the decorators defined on the model.
+This replaces <code>Model.__validators__</code> and <code>Model.__root_validators__</code> from Pydantic V1.</dd>
+<dt><strong><code>__pydantic_generic_metadata__</code></strong></dt>
+<dd>Metadata for generic models; contains data used for a similar purpose to
+<strong>args</strong>, <strong>origin</strong>, <strong>parameters</strong> in typing-module generics. May eventually be replaced by these.</dd>
+<dt><strong><code>__pydantic_parent_namespace__</code></strong></dt>
+<dd>Parent namespace of the model, used for automatic rebuilding of models.</dd>
+<dt><strong><code>__pydantic_post_init__</code></strong></dt>
+<dd>The name of the post-init method for the model, if defined.</dd>
+<dt><strong><code>__pydantic_root_model__</code></strong></dt>
+<dd>Whether the model is a <code>RootModel</code>.</dd>
+<dt><strong><code>__pydantic_serializer__</code></strong></dt>
+<dd>The pydantic-core SchemaSerializer used to dump instances of the model.</dd>
+<dt><strong><code>__pydantic_validator__</code></strong></dt>
+<dd>The pydantic-core SchemaValidator used to validate instances of the model.</dd>
+<dt><strong><code>__pydantic_extra__</code></strong></dt>
+<dd>An instance attribute with the values of extra fields from validation when
+<code>model_config['extra'] == 'allow'</code>.</dd>
+<dt><strong><code>__pydantic_fields_set__</code></strong></dt>
+<dd>An instance attribute with the names of fields explicitly specified during validation.</dd>
+<dt><strong><code>__pydantic_private__</code></strong></dt>
+<dd>Instance attribute with the values of private attributes set on the model instance.</dd>
+</dl>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class Transporte:
+<pre><code class="python">class Transporte(BaseModel):
     # TODO: Até o dia 10/05/2023 essa classe não está sendo usada
     ...</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="pysisnoapi.Transporte.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Transporte.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 <dt id="pysisnoapi.Uf"><code class="flex name class">
 <span>class <span class="ident">Uf</span></span>
-<span>(</span><span>codigo_ibge: Optional[str] = None, sigla: Optional[str] = None, descricao: Optional[str] = None)</span>
+<span>(</span><span>**data: Any)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Classe <code>UF</code>(Unidade Federativa)</p>
@@ -2507,13 +2791,17 @@ class Transporte:
 <dl>
 <dt><code>_type_</code></dt>
 <dd><em>description</em></dd>
-</dl></div>
+</dl>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<code>ValidationError</code>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><code>__init__</code> uses <code>__pydantic_self__</code> instead of the more common <code>self</code> for the first arg to
+allow <code>self</code> as a field name.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@dataclass
-class Uf:
+<pre><code class="python">class Uf(BaseModel):
     &#39;&#39;&#39;Classe `UF`(Unidade Federativa)
 
     Returns:
@@ -2521,14 +2809,18 @@ class Uf:
     &#39;&#39;&#39;
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
     # TODO: Até o dia 01/06/2023 essa classe só está sendo usada em classes de NFSe, entretanto, já deixarei ela por aqui mesmo, acredito que em breve as classes de NFe também usarão
-    codigo_ibge: Optional[str]  = None
-    sigla      : Optional[str]  = None
-    descricao  : Optional[str]  = None
+    codigo_ibge: Optional[Annotated[str, Field()]] = None
+    sigla      : Optional[Annotated[str, Field()]] = None
+    descricao  : Optional[Annotated[str, Field()]] = None
 
     @classmethod
     def from_json(cls, **kwargs):
         return cls(**kwargs)</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+</ul>
 <h3>Class variables</h3>
 <dl>
 <dt id="pysisnoapi.Uf.codigo_ibge"><code class="name">var <span class="ident">codigo_ibge</span> : Optional[str]</code></dt>
@@ -2536,6 +2828,14 @@ class Uf:
 <div class="desc"></div>
 </dd>
 <dt id="pysisnoapi.Uf.descricao"><code class="name">var <span class="ident">descricao</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Uf.model_config"><code class="name">var <span class="ident">model_config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pysisnoapi.Uf.model_fields"><code class="name">var <span class="ident">model_fields</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2586,22 +2886,21 @@ def from_json(cls, **kwargs):
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="pysisnoapi.BaseClass" href="#pysisnoapi.BaseClass">BaseClass</a></code></h4>
-<ul class="">
-<li><code><a title="pysisnoapi.BaseClass.as_filtered_dict" href="#pysisnoapi.BaseClass.as_filtered_dict">as_filtered_dict</a></code></li>
-</ul>
-</li>
-<li>
 <h4><code><a title="pysisnoapi.Cfop" href="#pysisnoapi.Cfop">Cfop</a></code></h4>
 <ul class="">
 <li><code><a title="pysisnoapi.Cfop.aplicacao" href="#pysisnoapi.Cfop.aplicacao">aplicacao</a></code></li>
 <li><code><a title="pysisnoapi.Cfop.codigo" href="#pysisnoapi.Cfop.codigo">codigo</a></code></li>
 <li><code><a title="pysisnoapi.Cfop.descricao" href="#pysisnoapi.Cfop.descricao">descricao</a></code></li>
+<li><code><a title="pysisnoapi.Cfop.model_config" href="#pysisnoapi.Cfop.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.Cfop.model_fields" href="#pysisnoapi.Cfop.model_fields">model_fields</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Cliente" href="#pysisnoapi.Cliente">Cliente</a></code></h4>
 <ul class="">
+<li><code><a title="pysisnoapi.Cliente.check_tipo_consumidor" href="#pysisnoapi.Cliente.check_tipo_consumidor">check_tipo_consumidor</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.check_tipo_contribuinte" href="#pysisnoapi.Cliente.check_tipo_contribuinte">check_tipo_contribuinte</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.check_tipo_pessoa" href="#pysisnoapi.Cliente.check_tipo_pessoa">check_tipo_pessoa</a></code></li>
 <li><code><a title="pysisnoapi.Cliente.consumidor_final" href="#pysisnoapi.Cliente.consumidor_final">consumidor_final</a></code></li>
 <li><code><a title="pysisnoapi.Cliente.contribuinte" href="#pysisnoapi.Cliente.contribuinte">contribuinte</a></code></li>
 <li><code><a title="pysisnoapi.Cliente.email" href="#pysisnoapi.Cliente.email">email</a></code></li>
@@ -2609,12 +2908,11 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.Cliente.faz_retencao" href="#pysisnoapi.Cliente.faz_retencao">faz_retencao</a></code></li>
 <li><code><a title="pysisnoapi.Cliente.id" href="#pysisnoapi.Cliente.id">id</a></code></li>
 <li><code><a title="pysisnoapi.Cliente.ie" href="#pysisnoapi.Cliente.ie">ie</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.model_config" href="#pysisnoapi.Cliente.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.Cliente.model_fields" href="#pysisnoapi.Cliente.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.Cliente.pessoa_fisica" href="#pysisnoapi.Cliente.pessoa_fisica">pessoa_fisica</a></code></li>
 <li><code><a title="pysisnoapi.Cliente.pessoa_juridica" href="#pysisnoapi.Cliente.pessoa_juridica">pessoa_juridica</a></code></li>
 <li><code><a title="pysisnoapi.Cliente.telefone" href="#pysisnoapi.Cliente.telefone">telefone</a></code></li>
-<li><code><a title="pysisnoapi.Cliente.validate_consumidor_final" href="#pysisnoapi.Cliente.validate_consumidor_final">validate_consumidor_final</a></code></li>
-<li><code><a title="pysisnoapi.Cliente.validate_contribuinte" href="#pysisnoapi.Cliente.validate_contribuinte">validate_contribuinte</a></code></li>
-<li><code><a title="pysisnoapi.Cliente.validate_pessoa" href="#pysisnoapi.Cliente.validate_pessoa">validate_pessoa</a></code></li>
 </ul>
 </li>
 <li>
@@ -2623,16 +2921,20 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.Cofins.aliquota" href="#pysisnoapi.Cofins.aliquota">aliquota</a></code></li>
 <li><code><a title="pysisnoapi.Cofins.aliquota_retencao" href="#pysisnoapi.Cofins.aliquota_retencao">aliquota_retencao</a></code></li>
 <li><code><a title="pysisnoapi.Cofins.aliquota_st" href="#pysisnoapi.Cofins.aliquota_st">aliquota_st</a></code></li>
+<li><code><a title="pysisnoapi.Cofins.model_config" href="#pysisnoapi.Cofins.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.Cofins.model_fields" href="#pysisnoapi.Cofins.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.Cofins.situacao_tributaria" href="#pysisnoapi.Cofins.situacao_tributaria">situacao_tributaria</a></code></li>
 <li><code><a title="pysisnoapi.Cofins.validate_situacao_tributaria" href="#pysisnoapi.Cofins.validate_situacao_tributaria">validate_situacao_tributaria</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao" href="#pysisnoapi.DeclaracaoImportacaoAdicao">DeclaracaoImportacaoAdicao</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao.cod_fabricante" href="#pysisnoapi.DeclaracaoImportacaoAdicao.cod_fabricante">cod_fabricante</a></code></li>
 <li><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao.desconto" href="#pysisnoapi.DeclaracaoImportacaoAdicao.desconto">desconto</a></code></li>
 <li><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao.drawback" href="#pysisnoapi.DeclaracaoImportacaoAdicao.drawback">drawback</a></code></li>
+<li><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao.model_config" href="#pysisnoapi.DeclaracaoImportacaoAdicao.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao.model_fields" href="#pysisnoapi.DeclaracaoImportacaoAdicao.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao.numero" href="#pysisnoapi.DeclaracaoImportacaoAdicao.numero">numero</a></code></li>
 <li><code><a title="pysisnoapi.DeclaracaoImportacaoAdicao.numero_sequencial" href="#pysisnoapi.DeclaracaoImportacaoAdicao.numero_sequencial">numero_sequencial</a></code></li>
 </ul>
@@ -2647,13 +2949,14 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.Empresa.csc" href="#pysisnoapi.Empresa.csc">csc</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.email" href="#pysisnoapi.Empresa.email">email</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.endereco" href="#pysisnoapi.Empresa.endereco">endereco</a></code></li>
-<li><code><a title="pysisnoapi.Empresa.from_json" href="#pysisnoapi.Empresa.from_json">from_json</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.id" href="#pysisnoapi.Empresa.id">id</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.id_csc" href="#pysisnoapi.Empresa.id_csc">id_csc</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.informacoes_complementares" href="#pysisnoapi.Empresa.informacoes_complementares">informacoes_complementares</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.inscricao_estadual" href="#pysisnoapi.Empresa.inscricao_estadual">inscricao_estadual</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.inscricao_estadual_substituicao_tributaria" href="#pysisnoapi.Empresa.inscricao_estadual_substituicao_tributaria">inscricao_estadual_substituicao_tributaria</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.inscricao_municipal" href="#pysisnoapi.Empresa.inscricao_municipal">inscricao_municipal</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.model_config" href="#pysisnoapi.Empresa.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.Empresa.model_fields" href="#pysisnoapi.Empresa.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.nome_fantasia" href="#pysisnoapi.Empresa.nome_fantasia">nome_fantasia</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.numero_lote_rps" href="#pysisnoapi.Empresa.numero_lote_rps">numero_lote_rps</a></code></li>
 <li><code><a title="pysisnoapi.Empresa.porcentagem_icms_aproveitado" href="#pysisnoapi.Empresa.porcentagem_icms_aproveitado">porcentagem_icms_aproveitado</a></code></li>
@@ -2680,9 +2983,10 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.Endereco.complemento" href="#pysisnoapi.Endereco.complemento">complemento</a></code></li>
 <li><code><a title="pysisnoapi.Endereco.descricao_municipio" href="#pysisnoapi.Endereco.descricao_municipio">descricao_municipio</a></code></li>
 <li><code><a title="pysisnoapi.Endereco.descricao_pais" href="#pysisnoapi.Endereco.descricao_pais">descricao_pais</a></code></li>
-<li><code><a title="pysisnoapi.Endereco.from_json" href="#pysisnoapi.Endereco.from_json">from_json</a></code></li>
 <li><code><a title="pysisnoapi.Endereco.id" href="#pysisnoapi.Endereco.id">id</a></code></li>
 <li><code><a title="pysisnoapi.Endereco.logradouro" href="#pysisnoapi.Endereco.logradouro">logradouro</a></code></li>
+<li><code><a title="pysisnoapi.Endereco.model_config" href="#pysisnoapi.Endereco.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.Endereco.model_fields" href="#pysisnoapi.Endereco.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.Endereco.numero" href="#pysisnoapi.Endereco.numero">numero</a></code></li>
 <li><code><a title="pysisnoapi.Endereco.uf" href="#pysisnoapi.Endereco.uf">uf</a></code></li>
 </ul>
@@ -2698,6 +3002,8 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.Ibpt.fonte" href="#pysisnoapi.Ibpt.fonte">fonte</a></code></li>
 <li><code><a title="pysisnoapi.Ibpt.from_json" href="#pysisnoapi.Ibpt.from_json">from_json</a></code></li>
 <li><code><a title="pysisnoapi.Ibpt.importados_federal" href="#pysisnoapi.Ibpt.importados_federal">importados_federal</a></code></li>
+<li><code><a title="pysisnoapi.Ibpt.model_config" href="#pysisnoapi.Ibpt.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.Ibpt.model_fields" href="#pysisnoapi.Ibpt.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.Ibpt.municipal" href="#pysisnoapi.Ibpt.municipal">municipal</a></code></li>
 <li><code><a title="pysisnoapi.Ibpt.nacional_federal" href="#pysisnoapi.Ibpt.nacional_federal">nacional_federal</a></code></li>
 <li><code><a title="pysisnoapi.Ibpt.tipo" href="#pysisnoapi.Ibpt.tipo">tipo</a></code></li>
@@ -2716,6 +3022,8 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.Icms.aliquota_icms" href="#pysisnoapi.Icms.aliquota_icms">aliquota_icms</a></code></li>
 <li><code><a title="pysisnoapi.Icms.aliquota_icms_st" href="#pysisnoapi.Icms.aliquota_icms_st">aliquota_icms_st</a></code></li>
 <li><code><a title="pysisnoapi.Icms.codigo_cfop" href="#pysisnoapi.Icms.codigo_cfop">codigo_cfop</a></code></li>
+<li><code><a title="pysisnoapi.Icms.model_config" href="#pysisnoapi.Icms.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.Icms.model_fields" href="#pysisnoapi.Icms.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.Icms.motivo_desoneracao" href="#pysisnoapi.Icms.motivo_desoneracao">motivo_desoneracao</a></code></li>
 <li><code><a title="pysisnoapi.Icms.percentual_desonerado" href="#pysisnoapi.Icms.percentual_desonerado">percentual_desonerado</a></code></li>
 <li><code><a title="pysisnoapi.Icms.percentual_diferimento" href="#pysisnoapi.Icms.percentual_diferimento">percentual_diferimento</a></code></li>
@@ -2734,6 +3042,8 @@ def from_json(cls, **kwargs):
 <h4><code><a title="pysisnoapi.Impostos" href="#pysisnoapi.Impostos">Impostos</a></code></h4>
 <ul class="">
 <li><code><a title="pysisnoapi.Impostos.cofins" href="#pysisnoapi.Impostos.cofins">cofins</a></code></li>
+<li><code><a title="pysisnoapi.Impostos.model_config" href="#pysisnoapi.Impostos.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.Impostos.model_fields" href="#pysisnoapi.Impostos.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.Impostos.pis" href="#pysisnoapi.Impostos.pis">pis</a></code></li>
 </ul>
 </li>
@@ -2743,6 +3053,8 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.Ipi.aliquota" href="#pysisnoapi.Ipi.aliquota">aliquota</a></code></li>
 <li><code><a title="pysisnoapi.Ipi.codigo_enquadramento" href="#pysisnoapi.Ipi.codigo_enquadramento">codigo_enquadramento</a></code></li>
 <li><code><a title="pysisnoapi.Ipi.codigo_selo" href="#pysisnoapi.Ipi.codigo_selo">codigo_selo</a></code></li>
+<li><code><a title="pysisnoapi.Ipi.model_config" href="#pysisnoapi.Ipi.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.Ipi.model_fields" href="#pysisnoapi.Ipi.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.Ipi.qtd_selo" href="#pysisnoapi.Ipi.qtd_selo">qtd_selo</a></code></li>
 <li><code><a title="pysisnoapi.Ipi.situacao_tributaria" href="#pysisnoapi.Ipi.situacao_tributaria">situacao_tributaria</a></code></li>
 <li><code><a title="pysisnoapi.Ipi.validate_situacao_tributaria" href="#pysisnoapi.Ipi.validate_situacao_tributaria">validate_situacao_tributaria</a></code></li>
@@ -2754,6 +3066,8 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.Municipio.codigo_ibge" href="#pysisnoapi.Municipio.codigo_ibge">codigo_ibge</a></code></li>
 <li><code><a title="pysisnoapi.Municipio.descricao" href="#pysisnoapi.Municipio.descricao">descricao</a></code></li>
 <li><code><a title="pysisnoapi.Municipio.from_json" href="#pysisnoapi.Municipio.from_json">from_json</a></code></li>
+<li><code><a title="pysisnoapi.Municipio.model_config" href="#pysisnoapi.Municipio.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.Municipio.model_fields" href="#pysisnoapi.Municipio.model_fields">model_fields</a></code></li>
 </ul>
 </li>
 <li>
@@ -2768,6 +3082,8 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.NotaFiscal.from_json" href="#pysisnoapi.NotaFiscal.from_json">from_json</a></code></li>
 <li><code><a title="pysisnoapi.NotaFiscal.id" href="#pysisnoapi.NotaFiscal.id">id</a></code></li>
 <li><code><a title="pysisnoapi.NotaFiscal.json_objeto_nfe" href="#pysisnoapi.NotaFiscal.json_objeto_nfe">json_objeto_nfe</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.model_config" href="#pysisnoapi.NotaFiscal.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.NotaFiscal.model_fields" href="#pysisnoapi.NotaFiscal.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.NotaFiscal.modelo" href="#pysisnoapi.NotaFiscal.modelo">modelo</a></code></li>
 <li><code><a title="pysisnoapi.NotaFiscal.motivo" href="#pysisnoapi.NotaFiscal.motivo">motivo</a></code></li>
 <li><code><a title="pysisnoapi.NotaFiscal.nome_destinatario" href="#pysisnoapi.NotaFiscal.nome_destinatario">nome_destinatario</a></code></li>
@@ -2787,22 +3103,29 @@ def from_json(cls, **kwargs):
 <h4><code><a title="pysisnoapi.Observacao" href="#pysisnoapi.Observacao">Observacao</a></code></h4>
 <ul class="">
 <li><code><a title="pysisnoapi.Observacao.campo" href="#pysisnoapi.Observacao.campo">campo</a></code></li>
+<li><code><a title="pysisnoapi.Observacao.model_config" href="#pysisnoapi.Observacao.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.Observacao.model_fields" href="#pysisnoapi.Observacao.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.Observacao.texto" href="#pysisnoapi.Observacao.texto">texto</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.PessoaFisica" href="#pysisnoapi.PessoaFisica">PessoaFisica</a></code></h4>
-<ul class="">
+<ul class="two-column">
+<li><code><a title="pysisnoapi.PessoaFisica.check_documentos" href="#pysisnoapi.PessoaFisica.check_documentos">check_documentos</a></code></li>
 <li><code><a title="pysisnoapi.PessoaFisica.cpf" href="#pysisnoapi.PessoaFisica.cpf">cpf</a></code></li>
 <li><code><a title="pysisnoapi.PessoaFisica.id_estrangeiro" href="#pysisnoapi.PessoaFisica.id_estrangeiro">id_estrangeiro</a></code></li>
+<li><code><a title="pysisnoapi.PessoaFisica.model_config" href="#pysisnoapi.PessoaFisica.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.PessoaFisica.model_fields" href="#pysisnoapi.PessoaFisica.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.PessoaFisica.nome_completo" href="#pysisnoapi.PessoaFisica.nome_completo">nome_completo</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.PessoaJuridica" href="#pysisnoapi.PessoaJuridica">PessoaJuridica</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="pysisnoapi.PessoaJuridica.cnpj" href="#pysisnoapi.PessoaJuridica.cnpj">cnpj</a></code></li>
 <li><code><a title="pysisnoapi.PessoaJuridica.im" href="#pysisnoapi.PessoaJuridica.im">im</a></code></li>
+<li><code><a title="pysisnoapi.PessoaJuridica.model_config" href="#pysisnoapi.PessoaJuridica.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.PessoaJuridica.model_fields" href="#pysisnoapi.PessoaJuridica.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.PessoaJuridica.razao_social" href="#pysisnoapi.PessoaJuridica.razao_social">razao_social</a></code></li>
 <li><code><a title="pysisnoapi.PessoaJuridica.suframa" href="#pysisnoapi.PessoaJuridica.suframa">suframa</a></code></li>
 </ul>
@@ -2813,6 +3136,8 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.Pis.aliquota" href="#pysisnoapi.Pis.aliquota">aliquota</a></code></li>
 <li><code><a title="pysisnoapi.Pis.aliquota_retencao" href="#pysisnoapi.Pis.aliquota_retencao">aliquota_retencao</a></code></li>
 <li><code><a title="pysisnoapi.Pis.aliquota_st" href="#pysisnoapi.Pis.aliquota_st">aliquota_st</a></code></li>
+<li><code><a title="pysisnoapi.Pis.model_config" href="#pysisnoapi.Pis.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.Pis.model_fields" href="#pysisnoapi.Pis.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.Pis.situacao_tributaria" href="#pysisnoapi.Pis.situacao_tributaria">situacao_tributaria</a></code></li>
 <li><code><a title="pysisnoapi.Pis.validate_situacao_tributaria" href="#pysisnoapi.Pis.validate_situacao_tributaria">validate_situacao_tributaria</a></code></li>
 </ul>
@@ -2824,19 +3149,27 @@ def from_json(cls, **kwargs):
 <li><code><a title="pysisnoapi.RetencaoIcmsTransporte.base_calculo_retencao_icms" href="#pysisnoapi.RetencaoIcmsTransporte.base_calculo_retencao_icms">base_calculo_retencao_icms</a></code></li>
 <li><code><a title="pysisnoapi.RetencaoIcmsTransporte.cfop" href="#pysisnoapi.RetencaoIcmsTransporte.cfop">cfop</a></code></li>
 <li><code><a title="pysisnoapi.RetencaoIcmsTransporte.codigo_municipio_ocorrencia_fato_gerador_icms_transporte" href="#pysisnoapi.RetencaoIcmsTransporte.codigo_municipio_ocorrencia_fato_gerador_icms_transporte">codigo_municipio_ocorrencia_fato_gerador_icms_transporte</a></code></li>
+<li><code><a title="pysisnoapi.RetencaoIcmsTransporte.model_config" href="#pysisnoapi.RetencaoIcmsTransporte.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.RetencaoIcmsTransporte.model_fields" href="#pysisnoapi.RetencaoIcmsTransporte.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.RetencaoIcmsTransporte.valor_icms_retido" href="#pysisnoapi.RetencaoIcmsTransporte.valor_icms_retido">valor_icms_retido</a></code></li>
 <li><code><a title="pysisnoapi.RetencaoIcmsTransporte.valor_servico" href="#pysisnoapi.RetencaoIcmsTransporte.valor_servico">valor_servico</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Transporte" href="#pysisnoapi.Transporte">Transporte</a></code></h4>
+<ul class="">
+<li><code><a title="pysisnoapi.Transporte.model_config" href="#pysisnoapi.Transporte.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.Transporte.model_fields" href="#pysisnoapi.Transporte.model_fields">model_fields</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="pysisnoapi.Uf" href="#pysisnoapi.Uf">Uf</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="pysisnoapi.Uf.codigo_ibge" href="#pysisnoapi.Uf.codigo_ibge">codigo_ibge</a></code></li>
 <li><code><a title="pysisnoapi.Uf.descricao" href="#pysisnoapi.Uf.descricao">descricao</a></code></li>
 <li><code><a title="pysisnoapi.Uf.from_json" href="#pysisnoapi.Uf.from_json">from_json</a></code></li>
+<li><code><a title="pysisnoapi.Uf.model_config" href="#pysisnoapi.Uf.model_config">model_config</a></code></li>
+<li><code><a title="pysisnoapi.Uf.model_fields" href="#pysisnoapi.Uf.model_fields">model_fields</a></code></li>
 <li><code><a title="pysisnoapi.Uf.sigla" href="#pysisnoapi.Uf.sigla">sigla</a></code></li>
 </ul>
 </li>
