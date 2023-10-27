@@ -182,9 +182,10 @@ class Issqn:
     indicador_incentivo_fiscal : str
     item_lista_servicos        : str
     aliquota                   : str
+    codigo_servico             : str
+    codigo_nbs                 : str
     
     numero_processo            : Optional[str] = None
-    codigo_servico             : Optional[str] = None
     aliquota_retencao          : Optional[str] = None
     aliquota_irrf              : Optional[str] = None
     aliquota_csll              : Optional[str] = None
