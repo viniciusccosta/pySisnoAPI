@@ -241,11 +241,11 @@ class Cliente(BaseModel):
     pessoa_fisica   : Optional[Annotated['PessoaFisica'  , Field()]] = None
     pessoa_juridica : Optional[Annotated['PessoaJuridica', Field()]] = None
 
-    id              : Optional[Annotated[int, Field()]] = None
-    ie              : Optional[Annotated[str, Field()]] = None
-    telefone        : Optional[Annotated[str, Field()]] = None
-    email           : Optional[Annotated[str, Field()]] = None
-    faz_retencao    : Optional[Annotated[str, Field()]] = None
+    id              : Optional[Annotated[int, Field()]]  = None
+    ie              : Optional[Annotated[str, Field()]]  = None
+    telefone        : Optional[Annotated[str, Field()]]  = None
+    email           : Optional[Annotated[str, Field()]]  = None
+    faz_retencao    : Optional[Annotated[bool, Field()]] = None  # TODO: bool ?
 
     @model_validator(mode='after')
     def check_tipo_contribuinte(self):
@@ -376,7 +376,7 @@ class Endereco(BaseModel):
     logradouro         : str = Field()
     numero             : str = Field()
 
-    id                 : Optional[Annotated[int, Field()]] = None
+    id                 : Optional[Annotated[int, Field()]] = None   # TODO: Obrigatório ?
     uf                 : Optional[Annotated[str, Field()]] = None
     codigo_municipio   : Optional[Annotated[str, Field()]] = None
     descricao_municipio: Optional[Annotated[str, Field()]] = None
@@ -445,8 +445,9 @@ class Icms(BaseModel):
 class Impostos(BaseModel):
     '''Classe Base para as Classes de Impostos de Produtos e Serviços.
     '''
-    pis   : 'Pis'    = Field()
-    cofins: 'Cofins' = Field()
+    pis                    : 'Pis'    = Field()
+    cofins                 : 'Cofins' = Field()
+    descricao_grupo_imposto: str      = Field()     # TODO: Obritório ?
 
 class Ipi(BaseModel):
     '''Classe `IPI` (Imposto Sobre Produtos Industrializados)

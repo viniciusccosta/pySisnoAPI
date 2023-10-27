@@ -51,8 +51,8 @@ INDICADORES_INCENTIVO_FISCAL = {
 }
 
 INDICADORES_ISS_RETIDO = {
-    '1': 'Sim',
-    '2': 'Não',
+    1: 'Sim',
+    2: 'Não',
 } # TODO: Sugerir a utilização de Boolean.
 
 RESPONSAVEIS_RETENCAO_ISS = {
@@ -75,11 +75,12 @@ class Servico(BaseModel):
     Returns:
         _type_: _description_
     '''
+    id                        : int               = Field()             # TODO: Obrigatório ?
     valor_servicos            : str               = Field()
     discriminacao             : str               = Field()
     impostos                  : 'ImpostosServico' = Field()
 
-    iss_retido                : Optional[Annotated[str, Field()]]         = None
+    iss_retido                : Optional[Annotated[int, Field()]]         = None    # TODO: int ?
     responsavel_retencao_iss  : Optional[Annotated[str, Field()]]         = None
 
     intermediario             : Optional[Annotated['Cliente', Field()]]   = None
@@ -161,6 +162,9 @@ class Issqn(BaseModel):
     aliquota                   : str = Field()
     codigo_servico             : str = Field()
     codigo_nbs                 : str = Field()
+    cnae                       : str = Field()  # TODO: Obrigatório ?
+    codigo_tributacao_municipio: str = Field()  # TODO: Obrigatório ?
+    natureza_operacao          : str = Field()  # TODO: Obrigatório ?
 
     numero_processo            : Optional[Annotated[str, Field()]] = None
     aliquota_retencao          : Optional[Annotated[str, Field()]] = None
@@ -208,11 +212,11 @@ async def emitir(token_emissor: str,
     headers['token-secret-empresa'] = token_secret_empresa
 
     # -----------------------------------------
-    json_str = objetoNfse.json()
+    obj_json = objetoNfse.model_dump_json(exclude_none=True)
 
     url = f'{BASE_URL}/nfse'
     async with httpx.AsyncClient() as client:
-        response = await client.post(url, headers=headers, json=json.loads(json_str))
+        response = await client.post(url, headers=headers, json=obj_json)
 
     # Resultado:
     # TODO: Retornar algo mais útil do que simplesmente o response...
