@@ -3,6 +3,7 @@ import unittest
 import requests
 
 from unittest.mock import MagicMock
+from pydantic import ValidationError
 
 from pysisnoapi import *
 from pysisnoapi import nfse
@@ -22,14 +23,14 @@ class NfseTestCase(unittest.TestCase):
             numero              = '484',
             complemento         = 'Gerado por 4devs',
         )
-        
+
         cliente  = Cliente(
             consumidor_final = '1',
             contribuinte     = '9',
             pessoa_fisica    = PessoaFisica(nome_completo="Vicente Marcos Samuel Nunes", cpf='44301337199'),
             endereco         = endereco,
         )
-        
+
         impostos = nfse.ImpostosServico(
             pis = Pis(
                 situacao_tributaria = '99',
@@ -48,30 +49,30 @@ class NfseTestCase(unittest.TestCase):
                 codigo_nbs                  = '1.2606.00.00',
             ),
         )
-        
+
         servico = nfse.Servico(
             valor_servicos  = '1.0',
             discriminacao   = 'TESTE',
             impostos        = impostos,
         )
-        
+
         self.objeto = nfse.ObjetoEmissaoNFSe(
             cliente = cliente,
             servico = servico,
         )
-    
+
     async def test_buscar_notas(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
-        
+
         mock_response.json.return_value = {
-            'status': 'Sucesso', 
+            'status': 'Sucesso',
             'descricao': 'Página de notas de serviço do emissor',
             "dados": {
-                'total': 1, 
-                'itens_por_pagina': 10, 
-                'pagina_atual': 0, 
+                'total': 1,
+                'itens_por_pagina': 10,
+                'pagina_atual': 0,
                 'itens': [
                     {
                         "id": 5,
@@ -117,23 +118,23 @@ class NfseTestCase(unittest.TestCase):
                         "ambiente": "2",
                         "json_objeto_nfse": "",
                     }
-                ], 
+                ],
                 'informacoesAdicionais': {
-                    'totalAutorizadas': 0.0, 
+                    'totalAutorizadas': 0.0,
                     'totalCanceladas': 0.0
                 },
             }
         }
-        
+
         requests.get = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         response, nfses = await nfse.buscar_notas(token_emissor='token', token_secret_emissor='token-secret',)
-        
+
         # Checando resultado:
         self.assertEquals(response.status_code, 200)
         self.assertGreaterEqual(len(nfses), 1)
-        
+
     async def test_buscar_notas_servidor_fora_dor_ar(self):
         # Mocking:
         mock_response = MagicMock()
@@ -151,12 +152,12 @@ class NfseTestCase(unittest.TestCase):
         mock_response.encoding          = 'ISO-8859-1'
         mock_response.history           = []
         mock_response.reason            = 'Bad Gateway'
-        
+
         requests.get = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         response, nfses = await nfse.buscar_notas(token_emissor='token', token_secret_emissor='token-secret',)
-        
+
         # Checando resultado:
         self.assertEquals(response.status_code, 502)
         self.assertEquals(response._content, b'<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body bgcolor="white">\r\n<center><h1>502 Bad Gateway</h1></center>\r\n<hr><center>nginx/1.10.3 (Ubuntu)</center>\r\n</body>\r\n</html>\r\n')
@@ -166,12 +167,12 @@ class NfseTestCase(unittest.TestCase):
         self.assertEquals(len(response.history), 0)
         self.assertEquals(response.reason, 'Bad Gateway')
         self.assertEquals(nfses, None)
-        
+
     async def test_emitir_status_processando(self):
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
-        
+
         mock_response.json.return_value = {
             "id": 22,
             "empresa": {    # https://www.4devs.com.br/gerador_de_empresas
@@ -216,12 +217,12 @@ class NfseTestCase(unittest.TestCase):
             "ambiente": "2",
             "json_objeto_nfse": ""
         }
-        
+
         requests.post = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         resultado = await nfse.emitir(token_emissor='token', token_secret_emissor='token-secret', objetoNfse=self.objeto, token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
-        
+
         self.assertIn('id', resultado)
         self.assertIn('empresa', resultado)
         self.assertIn('uuid', resultado)
@@ -235,14 +236,14 @@ class NfseTestCase(unittest.TestCase):
         self.assertIn('data_emissao', resultado)
         self.assertIn('ambiente', resultado)
         self.assertIn('json_objeto_nfse', resultado)
-        
+
         self.assertEqual(resultado['status'], 'processando')
 
 # =================================================================
 class ServicoTestCase(unittest.TestCase):
-    def setUp(self) -> None:       
+    def setUp(self) -> None:
         self.impostos = nfse.ImpostosServico(
-            pis = Pis(
+            pis    = Pis(
                 situacao_tributaria = '99',
                 aliquota            = '3.5',
             ),
@@ -250,43 +251,44 @@ class ServicoTestCase(unittest.TestCase):
                 situacao_tributaria = '99',
                 aliquota            = '3.5',
             ),
-            issqn = nfse.Issqn(
+            issqn  = nfse.Issqn(
                 aliquota                    = "3.5",
                 item_lista_servicos         = "08.02",
                 indicador_incentivo_fiscal  = "1",
                 indicador_exigibilidade_iss = "1",
+                codigo_servico              = '802',
+                codigo_nbs                  = '1.2606.00.00',
             ),
         )
-    
+
     def test_todos_campos_obrigatorios(self):
         servico = nfse.Servico(
             valor_servicos = "1.00",
             discriminacao  = "TESTE",
             impostos       = self.impostos
         )
-        
+
         self.assertEqual(servico.valor_servicos, "1.00")
         self.assertEqual(servico.discriminacao, "TESTE")
         self.assertEqual(servico.impostos, self.impostos)
-        
+
     def test_campo_obrigatorio_valor_servicos(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfse.Servico(
-                
                 discriminacao  = "TESTE",
                 impostos       = self.impostos
             )
-            
+
     def test_campo_obrigatorio_discriminacao(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfse.Servico(
                 valor_servicos = "1.00",
-                
+
                 impostos       = self.impostos
             )
-            
+
     def test_campo_obrigatorio_impostos(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfse.Servico(
                 valor_servicos = "1.00",
                 discriminacao  = "TESTE",
@@ -295,7 +297,7 @@ class ServicoTestCase(unittest.TestCase):
 
 class ImpostosServicoTestCase(unittest.TestCase):
     ...
-    
+
 class ObjetoEmissaoNFSeTestCase(unittest.TestCase):
     ...
 

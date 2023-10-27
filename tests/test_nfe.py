@@ -4,6 +4,7 @@ import unittest
 
 from unittest.mock  import MagicMock
 from datetime       import datetime
+from pydantic       import ValidationError
 
 from pysisnoapi import *
 from pysisnoapi import nfe
@@ -23,14 +24,14 @@ class NfeTestCase(unittest.TestCase):
             numero              = '484',
             complemento         = 'Gerado por 4devs',
         )
-        
+
         cliente  = Cliente(
             consumidor_final = '1',
             contribuinte     = '9',
             pessoa_fisica    = PessoaFisica(nome_completo="Vicente Marcos Samuel Nunes", cpf='44301337199'),
             endereco         = endereco,
         )
-        
+
         impostos = nfe.ImpostosProduto(
             pis = Pis (
                 situacao_tributaria='99',
@@ -50,7 +51,7 @@ class NfeTestCase(unittest.TestCase):
                 aliquota='0.0000',
             ),
         )
-        
+
         produtos = [
             nfe.Produto(
                 cfop                   = '5102',
@@ -66,7 +67,7 @@ class NfeTestCase(unittest.TestCase):
                 informacoes_adicionais = "Emitido pelo pySisnoAPI",
             ),
         ]
-        
+
         pagamento = nfe.Pagamento(
             formas_pagamento = [
                 nfe.FormaPagamento(
@@ -76,15 +77,15 @@ class NfeTestCase(unittest.TestCase):
                 )
             ]
         )
-        
+
         pedido   = nfe.Pedido(
             presenca='0',
             pagamento=pagamento,
             # informacoes_complementares='Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200nEMPRESA ENQUADRADA NO SIMPLES NACIONAL LC 123/2006n',
         )
-        
-        data = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        
+
+        data = datetime.now()
+
         self.objeto = nfe.ObjetoEmissaoNFe(
             numero_nota_sequencial= '123456',
             serie                 = '1',
@@ -99,23 +100,23 @@ class NfeTestCase(unittest.TestCase):
             data_entrada_saida    = data,
             data_emissao          = data,
         )
-    
+
     async def test_listar(self):
-        """Função responsável por testar a função nfe.listar() utilizando dados falsos. 
+        """Função responsável por testar a função nfe.listar() utilizando dados falsos.
         Essa função realiza uma solicitação ao endpoint correspondente e retorna uma lista de objetos NotaFiscal.
         """
-        
+
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
-        
+
         mock_response.json.return_value = {
-            'status': 'Sucesso', 
+            'status': 'Sucesso',
             'descricao': 'Página de notas de serviço do emissor',
             "dados": {
-                'total': 1, 
+                'total': 1,
                 'itens_por_pagina': 10,
-                'pagina_atual': 0, 
+                'pagina_atual': 0,
                 'itens': [
                     {
                         "id": 31833,
@@ -168,49 +169,49 @@ class NfeTestCase(unittest.TestCase):
                         "json_objeto_nfe": "OBJETO JSON",
                         "tipo_emissao": "1"
                     }
-                ], 
+                ],
                 # 'informacoesAdicionais': {
-                #     'totalAutorizadas': 0.0, 
+                #     'totalAutorizadas': 0.0,
                 #     'totalCanceladas': 0.0
                 # },
             }
         }
 
         requests.get = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         nfes = await nfe.listar(token_emissor='token', token_secret_emissor='token-secret',)
-        
+
         # Checando resultado:
         self.assertGreaterEqual(len(nfes), 1)
-        
+
     async def test_validar(self):
-        """Função responsável por testar a função nfe.validar() utilizando dados falsos. 
+        """Função responsável por testar a função nfe.validar() utilizando dados falsos.
         Essa função realiza uma solicitação ao endpoint correspondente para validar uma nota fiscal antes de emiti-la.
         """
-        
+
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
-            'status': 'Sucesso', 
+            'status': 'Sucesso',
             'message': 'Nota validada pela API',
         }
-        
+
         requests.post = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         result = await nfe.validar(token_emissor='token', token_secret_emissor='token-secret', objetoNfe=self.objeto, tipo_emissao='1', token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
-        
+
         # Checando resultado:
         self.assertEqual('Sucesso', result['status'])
         self.assertEqual('Nota validada pela API', result['message'])
 
     async def test_emitir(self):
-        """Função responsável por testar a função nfe.emitir() utilizando dados falsos. 
+        """Função responsável por testar a função nfe.emitir() utilizando dados falsos.
         Essa função realiza uma solicitação ao endpoint correspondente para emitir uma nota fiscal.
         """
-        
+
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -323,7 +324,7 @@ class NfeTestCase(unittest.TestCase):
                                     "programaEmissor": "CONTRIBUINTE",
                                     "versaoEmissor": "1.0"
                                 },
-                                "emitente": {                   # Alterado manualmente  
+                                "emitente": {                   # Alterado manualmente
                                     "cnpj": "27578708000180",   # https://www.4devs.com.br/gerador_de_empresas
                                     "razaoSocial": "Oliver e Ana Pizzaria ME",
                                     "nomeFantasia": "Oliver e Ana Pizzaria ME",
@@ -506,32 +507,32 @@ class NfeTestCase(unittest.TestCase):
             },
             "dados": "53230500665143000112550017777740441235246385" # Alterado manualmente
         }
-                
+
         requests.post = MagicMock(return_value=mock_response)
-        
+
         # Chamando a Função:
         result = await nfe.emitir(token_emissor='token', token_secret_emissor='token-secret', objetoNfe=self.objeto, tipo_emissao='1', token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
-        
+
         # Checando resultado:
         self.assertIn('status', result)
         self.assertIn('descricao', result)
         self.assertIn('retorno_sefaz', result)
         self.assertIn('dados', result)
-        
+
         self.assertEqual(result['status'], 'Sucesso', )
         self.assertEqual(result['descricao'], 'Lote enviado com sucesso.')
-        
+
     async def test_emitir_nota_ja_autorizada(self):
         """Função que simula a tentativa de emissão de uma nota fiscal já autorizada, utilizando dados falsos.
 
             O endpoint requer o número da nota fiscal como um dos parâmetro e
-            se um número correspondente a uma nota fiscal autorizada for fornecido, a API retornará um erro. 
-            
+            se um número correspondente a uma nota fiscal autorizada for fornecido, a API retornará um erro.
+
             É importante observar que se trata de uma nota fiscal já **autorizada**,
-            pois, é possível reenviar a mesma nota fiscal após ser rejeitada pela SEFAZ, 
+            pois, é possível reenviar a mesma nota fiscal após ser rejeitada pela SEFAZ,
             permitindo ao usuário realizar alterações nos campos pertinentes e tentar emiti-la novamente.
         """
-        
+
         # Mocking:
         mock_response = MagicMock()
         mock_response.status_code = 412
@@ -539,19 +540,19 @@ class NfeTestCase(unittest.TestCase):
             "status": "Erro",
             "descricao": "Tentativa de retransmitir uma nota que não foi rejeitada.",
         }
-        
+
         requests.post = MagicMock(return_value=mock_response)
-        
+
          # Chamando a Função:
         result = await nfe.emitir(token_emissor='token', token_secret_emissor='token-secret', objetoNfe=self.objeto, tipo_emissao='1', token_empresa="token_empresa", token_secret_empresa="token_secret_empresa")
-        
+
         # Checando resultado:
         self.assertIn('status', result)
         self.assertIn('descricao', result)
-        
+
         self.assertEqual(result['status'], 'Erro')
         self.assertEqual(result['descricao'], 'Tentativa de retransmitir uma nota que não foi rejeitada.')
-    
+
 # =================================================================
 # Models:
 class ObjetoEmissaoNFeTestCase(unittest.TestCase):
@@ -568,34 +569,34 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
             numero              = '484',
             complemento         = 'Gerado por 4devs',
         )
-        
+
         self.cliente  = Cliente(
             consumidor_final = '1',
             contribuinte     = '9',
             pessoa_fisica    = PessoaFisica(nome_completo="Vicente Marcos Samuel Nunes", cpf='44301337199'),
             endereco         = self.endereco,
         )
-        
+
         self.impostos = nfe.ImpostosProduto(
-            Pis (
+            pis    = Pis (
                 situacao_tributaria='99',
                 aliquota='0.0000',
             ),
-            Cofins(
+            cofins = Cofins(
                 situacao_tributaria='99',
                 aliquota='0.0000',
             ),
-            Icms (
+            icms   = Icms (
                 situacao_tributaria='102',
                 aliquota_icms='0.0000',
                 aliquota_icms_st='0.0000',
             ),
-            Ipi(
+            ipi    = Ipi(
                 situacao_tributaria='99',
                 aliquota='0.0000',
             ),
         )
-        
+
         self.produtos = [
             nfe.Produto(
                 cfop                   = '5102',
@@ -611,7 +612,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 informacoes_adicionais = "Emitido pelo pySisnoAPI",
             ),
         ]
-        
+
         self.pagamento = nfe.Pagamento(
             formas_pagamento = [
                 nfe.FormaPagamento(
@@ -621,15 +622,15 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 )
             ]
         )
-        
+
         self.pedido   = nfe.Pedido(
             presenca='0',
             pagamento=self.pagamento,
             informacoes_complementares='Procon - 151 Endereço do Procon - Shopping Venâncio, Setor Comercial Sul Q. 6 - Brasilia, DF, CEP 70308-200nEMPRESA ENQUADRADA NO SIMPLES NACIONAL LC 123/2006n',
         )
-        
+
         self.data = datetime(2023, 5, 19, 17, 25, 57)
-    
+
     def test_todos_campos_obrigatorios(self):
         objeto = nfe.ObjetoEmissaoNFe (
             numero_nota_sequencial = '123456',
@@ -645,7 +646,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
             data_entrada_saida     = self.data,
             data_emissao           = self.data,
         )
-        
+
         assert objeto.numero_nota_sequencial == "123456"
         assert objeto.serie                  == "1"
         assert objeto.operacao               == "1"
@@ -658,7 +659,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
         assert objeto.pedido                 == self.pedido
         assert objeto.data_entrada_saida     == self.data
         assert objeto.data_emissao           == self.data
-        
+
         assert objeto.numero_pedido            is None
         assert objeto.transporte               is None
         assert objeto.fatura                   is None
@@ -672,7 +673,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
         assert objeto.informacao_intermediador is None
 
     def test_campo_obrigatorio_numero_sequencial(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 serie                  = '1',
                 operacao               = '1',
@@ -686,9 +687,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-    
+
     def test_campo_obrigatorio_serie(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = '123456',
                 operacao               = '1',
@@ -702,9 +703,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-    
+
     def test_campo_obrigatorio_operacao(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = '123456',
                 serie                  = '1',
@@ -718,9 +719,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_natureza_operacao(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = '123456',
                 serie                  = '1',
@@ -734,9 +735,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_modelo(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = '123456',
                 serie                  = '1',
@@ -750,9 +751,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_finalidade(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = '123456',
                 serie                  = '1',
@@ -766,9 +767,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_ambiente(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = '123456',
                 serie                  = '1',
@@ -782,9 +783,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_cliente(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = '123456',
                 serie                  = '1',
@@ -798,9 +799,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_produtos(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = '123456',
                 serie                  = '1',
@@ -814,9 +815,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_pedido(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = '123456',
                 serie                  = '1',
@@ -830,9 +831,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida     = self.data,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_data_entrada_saida(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = '123456',
                 serie                  = '1',
@@ -846,9 +847,9 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 pedido                 = self.pedido,
                 data_emissao           = self.data,
             )
-        
+
     def test_campo_obrigatorio_emissao(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.ObjetoEmissaoNFe (
                 numero_nota_sequencial = '123456',
                 serie                  = '1',
@@ -879,7 +880,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida    = self.data,
                 data_emissao          = self.data,
             )
-    
+
     def test_numero_nota_sequencial_maior_que_9_caracteres(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (
@@ -896,7 +897,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida    = self.data,
                 data_emissao          = self.data,
             )
-    
+
     def test_operacao_invalida(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (
@@ -913,7 +914,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida    = self.data,
                 data_emissao          = self.data,
             )
-    
+
     def test_modelo_invalido(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (
@@ -930,7 +931,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida    = self.data,
                 data_emissao          = self.data,
             )
-    
+
     def test_finalidade_invalida(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (
@@ -947,7 +948,7 @@ class ObjetoEmissaoNFeTestCase(unittest.TestCase):
                 data_entrada_saida    = self.data,
                 data_emissao          = self.data,
             )
-    
+
     def test_ambiente_invalido(self):
         with self.assertRaises(ValueError):
             nfe.ObjetoEmissaoNFe (
@@ -972,7 +973,7 @@ class PagamentoUnitTest(unittest.TestCase):
             meio_pagamento  = '01',
             valor_pagamento = '1.00',
         )
-        
+
     def test_todos_campos_obrigatorios(self):
         pagamento = nfe.Pagamento (
             formas_pagamento = [
@@ -980,7 +981,7 @@ class PagamentoUnitTest(unittest.TestCase):
                 self.forma_pgto,
             ]
         )
-        
+
         self.assertEqual(len(pagamento.formas_pagamento), 2)
 
 class FormaPagamentoUnitTest(unittest.TestCase):
@@ -990,32 +991,32 @@ class FormaPagamentoUnitTest(unittest.TestCase):
             meio_pagamento  = '01',
             valor_pagamento = '1.00',
         )
-        
+
         self.assertEqual(forma_pgto.forma_pagamento, '0')
         self.assertEqual(forma_pgto.meio_pagamento , '01')
         self.assertEqual(forma_pgto.valor_pagamento, '1.00')
-    
+
     def test_campo_obrigatorio_forma_pagamento(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.FormaPagamento(
                 meio_pagamento  = '01',
                 valor_pagamento = '1.00',
             )
-        
+
     def test_campo_obrigatorio_meio_pagamento(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.FormaPagamento(
                 forma_pagamento = '0',
                 valor_pagamento = '1.00',
             )
-    
+
     def test_campo_obrigatorio_valor_pagamento(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.FormaPagamento(
                 forma_pagamento = '0',
                 meio_pagamento  = '01',
             )
-    
+
     def test_forma_pagamento_invalido(self):
         with self.assertRaises(ValueError):
             nfe.FormaPagamento (
@@ -1023,7 +1024,7 @@ class FormaPagamentoUnitTest(unittest.TestCase):
                 meio_pagamento  = '01',
                 valor_pagamento = '1.00',
             )
-            
+
     def test_meio_pagamento_invalido(self):
         with self.assertRaises(ValueError):
             nfe.FormaPagamento (
@@ -1031,7 +1032,7 @@ class FormaPagamentoUnitTest(unittest.TestCase):
                 meio_pagamento  = '',
                 valor_pagamento = '1.00',
             )
-            
+
     def test_descricao_obrigatorio(self):
         with self.assertRaises(ValueError):
             nfe.FormaPagamento (
@@ -1039,7 +1040,7 @@ class FormaPagamentoUnitTest(unittest.TestCase):
                 meio_pagamento  = '99',
                 valor_pagamento = '1.00'
             )
-            
+
     def test_tamanho_descricao_menor_que_dois(self):
         with self.assertRaises(ValueError):
             nfe.FormaPagamento (
@@ -1048,7 +1049,7 @@ class FormaPagamentoUnitTest(unittest.TestCase):
                 valor_pagamento          = '1.00',
                 descricao_meio_pagamento = 'a',
             )
-    
+
     def test_tamanho_descricao_maior_que_sessenta(self):
         with self.assertRaises(ValueError):
             nfe.FormaPagamento (
@@ -1060,28 +1061,28 @@ class FormaPagamentoUnitTest(unittest.TestCase):
 
 class ProdutoUnitTest(unittest.TestCase):
     """Testes da classe produtos"""
-    
+
     def setUp(self) -> None:
         self.impostos = nfe.ImpostosProduto(
-            Pis (
+            pis    = Pis (
                 situacao_tributaria='99',
                 aliquota='0.0000',
             ),
-            Cofins(
+            cofins = Cofins(
                 situacao_tributaria='99',
                 aliquota='0.0000',
             ),
-            Icms (
+            icms   = Icms (
                 situacao_tributaria='102',
                 aliquota_icms='0.0000',
                 aliquota_icms_st='0.0000',
             ),
-            Ipi(
+            ipi    = Ipi(
                 situacao_tributaria='99',
                 aliquota='0.0000',
             ),
         )
-    
+
     def test_todos_campos_obrigatorios(self):
         produto = nfe.Produto(
             item       = "1",
@@ -1095,7 +1096,7 @@ class ProdutoUnitTest(unittest.TestCase):
             total      = "10.0",
             impostos   = self.impostos,
         )
-    
+
         self.assertEqual(produto.cfop      , '5102')
         self.assertEqual(produto.item      , '1')
         self.assertEqual(produto.nome      , 'UNIFORMES')
@@ -1106,11 +1107,11 @@ class ProdutoUnitTest(unittest.TestCase):
         self.assertEqual(produto.subtotal  , '5.0')
         self.assertEqual(produto.total     , '10.0')
         self.assertEqual(produto.impostos  , self.impostos)
-        
+
     def test_campo_obrigatorio_item(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
-                
+
                 cfop       = '5102',
                 nome       = "UNIFORMES",
                 codigo     = "123456",
@@ -1121,12 +1122,12 @@ class ProdutoUnitTest(unittest.TestCase):
                 total      = "10.0",
                 impostos   = self.impostos,
             )
-        
+
     def test_campo_obrigatorio_cfop(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = "1",
-                
+
                 nome       = "UNIFORMES",
                 codigo     = "123456",
                 ncm        = "62069000",
@@ -1136,13 +1137,13 @@ class ProdutoUnitTest(unittest.TestCase):
                 total      = "10.0",
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_nome(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = "1",
                 cfop       = '5102',
-                
+
                 codigo     = "123456",
                 ncm        = "62069000",
                 quantidade = "2.0",
@@ -1151,14 +1152,14 @@ class ProdutoUnitTest(unittest.TestCase):
                 total      = "10.0",
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_codigo(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = "1",
                 cfop       = '5102',
                 nome       = "UNIFORMES",
-                
+
                 ncm        = "62069000",
                 quantidade = "2.0",
                 unidade    = "UNID",
@@ -1166,39 +1167,39 @@ class ProdutoUnitTest(unittest.TestCase):
                 total      = "10.0",
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_ncm(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = "1",
                 cfop       = '5102',
                 nome       = "UNIFORMES",
                 codigo     = "123456",
-                
+
                 quantidade = "2.0",
                 unidade    = "UNID",
                 subtotal   = "5.0",
                 total      = "10.0",
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_quantidade(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = "1",
                 cfop       = '5102',
                 nome       = "UNIFORMES",
                 codigo     = "123456",
                 ncm        = "62069000",
-                
+
                 unidade    = "UNID",
                 subtotal   = "5.0",
                 total      = "10.0",
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_unidade(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = "1",
                 cfop       = '5102',
@@ -1206,14 +1207,14 @@ class ProdutoUnitTest(unittest.TestCase):
                 codigo     = "123456",
                 ncm        = "62069000",
                 quantidade = "2.0",
-                
+
                 subtotal   = "5.0",
                 total      = "10.0",
                 impostos   = self.impostos,
             )
-            
+
     def test_campo_obrigatorio_subtotal(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = "1",
                 cfop       = '5102',
@@ -1222,13 +1223,13 @@ class ProdutoUnitTest(unittest.TestCase):
                 ncm        = "62069000",
                 quantidade = "2.0",
                 unidade    = "UNID",
-                
+
                 total      = "10.0",
                 impostos   = self.impostos,
             )
 
     def test_campo_obrigatorio_total(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = "1",
                 cfop       = '5102',
@@ -1238,12 +1239,12 @@ class ProdutoUnitTest(unittest.TestCase):
                 quantidade = "2.0",
                 unidade    = "UNID",
                 subtotal   = "5.0",
-                
+
                 impostos   = self.impostos,
             )
-    
+
     def test_campo_obrigatorio_impostos(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValidationError):
             nfe.Produto (
                 item       = "1",
                 cfop       = '5102',
@@ -1254,7 +1255,7 @@ class ProdutoUnitTest(unittest.TestCase):
                 unidade    = "UNID",
                 subtotal   = "5.0",
                 total      = "10.0",
-                
+
             )
 
 # =================================================================
