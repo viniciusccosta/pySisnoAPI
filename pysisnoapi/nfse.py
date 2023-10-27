@@ -51,8 +51,8 @@ INDICADORES_INCENTIVO_FISCAL = {
 }
 
 INDICADORES_ISS_RETIDO = {
-    1: 'Sim',
-    2: 'Não',
+    '1': 'Sim',
+    '2': 'Não',
 } # TODO: Sugerir a utilização de Boolean.
 
 RESPONSAVEIS_RETENCAO_ISS = {
@@ -75,12 +75,12 @@ class Servico(BaseModel):
     Returns:
         _type_: _description_
     '''
-    id                        : int               = Field()             # TODO: Obrigatório ?
     valor_servicos            : str               = Field()
     discriminacao             : str               = Field()
     impostos                  : 'ImpostosServico' = Field()
 
-    iss_retido                : Optional[Annotated[int, Field()]]         = None    # TODO: int ?
+    id                        : Optional[Annotated[str, Field()]]         = None    # TODO: Obrigatório ?
+    iss_retido                : Optional[Annotated[str, Field()]]         = None    # TODO: int ?
     responsavel_retencao_iss  : Optional[Annotated[str, Field()]]         = None
 
     intermediario             : Optional[Annotated['Cliente', Field()]]   = None
@@ -212,15 +212,15 @@ async def emitir(token_emissor: str,
     headers['token-secret-empresa'] = token_secret_empresa
 
     # -----------------------------------------
-    obj_json = objetoNfse.model_dump_json(exclude_none=True)
+    obj_dict = objetoNfse.model_dump(exclude_none=True)
 
     url = f'{BASE_URL}/nfse'
     async with httpx.AsyncClient() as client:
-        response = await client.post(url, headers=headers, json=obj_json)
+        response_dict = await client.post(url, headers=headers, json=obj_dict)
 
     # Resultado:
     # TODO: Retornar algo mais útil do que simplesmente o response...
-    return response
+    return response_dict
 
 async def buscar_notas(token_emissor: str,
                  token_secret_emissor: str,
