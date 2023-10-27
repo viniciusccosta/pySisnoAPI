@@ -603,11 +603,11 @@ async def emitir(token_emissor: str,
     headers['tipo-emissao'] = tipo_emissao
 
     # -----------------------------------------
-    obj_json = objetoNfe.model_dump_json(exclude_none=True)
+    obj_dict = objetoNfe.model_dump(exclude_none=True)
 
     url = f'{BASE_URL}/nfe'
     async with httpx.AsyncClient() as client:
-        response = await client.post(url, headers=headers, json=obj_json)
+        response = await client.post(url, headers=headers, json=obj_dict)
 
     match response.status_code:
         case 200:
@@ -665,7 +665,7 @@ async def validar(token_emissor: str,
         raise ValueError(f'Tipo de Emissão {tipo_emissao} inválido')
 
     headers['tipo-emissao'] = tipo_emissao
-    obj_dict = objetoNfe.model_dump(exclude_none=True)  # TODO: mode: 'json'
+    obj_dict = objetoNfe.model_dump(exclude_none=True)
 
     url = f'{BASE_URL}/nfe/validacao-nota'
     async with httpx.AsyncClient() as client:
