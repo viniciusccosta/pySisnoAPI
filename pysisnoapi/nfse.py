@@ -60,13 +60,13 @@ RESPONSAVEIS_RETENCAO_ISS = {
     '2': 'Intermediário',
 }
 
-STATUS = [
-    'aprovado',
-    'reprovado',
-    'contingencia',
-    'cancelado',
-    'Em digitação',
-]
+STATUS = {
+    'aprovado'    : 'aprovado',
+    'reprovado'   : 'reprovado',
+    'contingencia': 'contingencia',
+    'cancelado'   : 'cancelado',
+    'digitação'   : 'Em digitação',
+}
 
 # =====================================================================
 class Servico(BaseModel):
