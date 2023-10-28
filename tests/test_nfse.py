@@ -8,8 +8,8 @@ from pydantic import ValidationError
 from pysisnoapi import (
     nfse,
 
-    Endereco,
     Cliente,
+    Endereco,
     PessoaFisica,
     Pis,
     Cofins,
@@ -309,10 +309,130 @@ class ServicoTestCase(unittest.TestCase):
             )
 
 class ImpostosServicoTestCase(unittest.TestCase):
-    ...
+    def test_valid_impostos_servico(self):
+        # Test a valid instance of ImpostosServico
+        issqn = nfse.Issqn(
+            indicador_exigibilidade_iss="1",
+            indicador_incentivo_fiscal="1",
+            item_lista_servicos="08.02",
+            aliquota="3.5",
+            codigo_servico="802",
+            codigo_nbs="1.2606.00.00",
+            cnae="8512100",
+            codigo_tributacao_municipio="801",
+            natureza_operacao="1.2606.00.00"
+        )
+        pis = Pis(
+            situacao_tributaria = '99',             # 99 - Outras Operações
+            aliquota            = '0.0000',
+            aliquota_retencao   = '0.0000',
+        )
+        cofins = Cofins(
+            situacao_tributaria = '99',             # 99 - Outras Operações
+            aliquota            = '0.0000',
+            aliquota_retencao   = '0.0000',
+        )
+        impostos_servico = nfse.ImpostosServico(pis=pis, cofins=cofins, issqn=issqn)
+        self.assertEqual(impostos_servico.issqn, issqn)
+
+    def test_missing_required_field(self):
+        # Test when a required field is missing in Issqn (should raise a ValidationError)
+        with self.assertRaises(ValidationError):
+            nfse.Issqn(
+                indicador_exigibilidade_iss="1",
+                indicador_incentivo_fiscal="1",
+                item_lista_servicos="08.02",
+                aliquota="3.5",
+                codigo_servico="802",
+                # Missing required fields: codigo_nbs, cnae, codigo_tributacao_municipio, natureza_operacao
+            )
 
 class ObjetoEmissaoNFSeTestCase(unittest.TestCase):
     ...
+
+class ConstrucaoCivilTestCase(unittest.TestCase):
+    def test_valid_construcao_civil(self):
+        # Test a valid instance of ConstrucaoCivil
+        construcao_civil = nfse.ConstrucaoCivil(
+            codigo_obra="12345",
+            art="56789"
+        )
+        self.assertEqual(construcao_civil.codigo_obra, "12345")
+        self.assertEqual(construcao_civil.art, "56789")
+
+    def test_optional_fields(self):
+        # Test when both fields are None (optional)
+        construcao_civil = nfse.ConstrucaoCivil()
+        self.assertIsNone(construcao_civil.codigo_obra)
+        self.assertIsNone(construcao_civil.art)
+
+    def test_invalid_field_type(self):
+        # Test when a field has an invalid type (should raise a ValidationError)
+        with self.assertRaises(ValidationError):
+            nfse.ConstrucaoCivil(codigo_obra=12345, art="56789")
+
+class IssqnTestCase(unittest.TestCase):
+    def test_valid_issqn(self):
+        # Test a valid instance of Issqn
+        issqn = nfse.Issqn(
+            indicador_exigibilidade_iss="1",
+            indicador_incentivo_fiscal="1",
+            item_lista_servicos="08.02",
+            aliquota="3.5",
+            codigo_servico="802",
+            codigo_nbs="1.2606.00.00",
+            cnae="8512100",
+            codigo_tributacao_municipio="801",
+            natureza_operacao="1.2606.00.00"
+        )
+        self.assertEqual(issqn.indicador_exigibilidade_iss, "1")
+        self.assertEqual(issqn.indicador_incentivo_fiscal, "1")
+        self.assertEqual(issqn.item_lista_servicos, "08.02")
+        self.assertEqual(issqn.aliquota, "3.5")
+        self.assertEqual(issqn.codigo_servico, "802")
+        self.assertEqual(issqn.codigo_nbs, "1.2606.00.00")
+        self.assertEqual(issqn.cnae, "8512100")
+        self.assertEqual(issqn.codigo_tributacao_municipio, "801")
+        self.assertEqual(issqn.natureza_operacao, "1.2606.00.00")
+
+    def test_optional_fields(self):
+        # Test an instance with optional fields set to None
+        issqn = nfse.Issqn(
+            indicador_exigibilidade_iss="1",
+            indicador_incentivo_fiscal="1",
+            item_lista_servicos="08.02",
+            aliquota="3.5",
+            codigo_servico="802",
+            codigo_nbs="1.2606.00.00",
+            cnae="8512100",
+            codigo_tributacao_municipio="801",
+            natureza_operacao="1.2606.00.00",
+            numero_processo=None,
+            aliquota_retencao=None,
+            aliquota_irrf=None,
+            aliquota_csll=None,
+            aliquota_previdencia_social=None
+        )
+        self.assertIsNone(issqn.numero_processo)
+        self.assertIsNone(issqn.aliquota_retencao)
+        self.assertIsNone(issqn.aliquota_irrf)
+        self.assertIsNone(issqn.aliquota_csll)
+        self.assertIsNone(issqn.aliquota_previdencia_social)
+
+    def test_missing_required_field(self):
+        # Test when a required field is missing (should raise a ValidationError)
+        with self.assertRaises(ValidationError):
+            nfse.Issqn(
+                indicador_exigibilidade_iss="1",
+                indicador_incentivo_fiscal="1",
+                item_lista_servicos="08.02",
+                aliquota="3.5",
+                codigo_servico="802",
+                codigo_nbs="1.2606.00.00",
+                cnae="8512100",
+                # Missing required field: codigo_tributacao_municipio
+                natureza_operacao="1.2606.00.00"
+            )
 
 # =================================================================
 if __name__ == "__main__":
