@@ -12,10 +12,12 @@
 import httpx
 
 from typing import List
+from pydantic import validate_call
 
 from . import *
 
 # ======================================================================================================================
+@validate_call
 async def get_municipios(token_emissor: str,
                    token_secret_emissor: str,
                    uf: str,
@@ -54,6 +56,7 @@ async def get_municipios(token_emissor: str,
 
     # TODO: return response ?
 
+@validate_call
 async def get_cfops(token_emissor: str,
               token_secret_emissor: str,
               *args, **kwargs) -> List[Cfop]:
@@ -87,6 +90,7 @@ async def get_cfops(token_emissor: str,
 
     # TODO: return response ?
 
+@validate_call
 async def get_ibpts(token_emissor: str,
               token_secret_emissor: str,
               cod_desc: str,
