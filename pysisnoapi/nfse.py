@@ -185,6 +185,7 @@ class Issqn(BaseModel):
         return self
 
 # =====================================================================
+@validate_call
 async def emitir(token_emissor: str,
            token_secret_emissor: str,
            token_empresa: str,
@@ -235,7 +236,7 @@ async def buscar_notas(token_emissor: str,
                  qtd_por_pagina:int=None,
                  ordencao:str=None,
                  tipo_ordenacao:str=None,
-                 *args, **kwargs) -> (httpx.Response, List[NotaFiscalServico]):
+                 *args, **kwargs) -> (httpx.Response, List[NotaFiscalServico],):
     '''Recupera as notas fiscais de serviço.
 
     Args:
