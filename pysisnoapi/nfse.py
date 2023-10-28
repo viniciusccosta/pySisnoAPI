@@ -70,10 +70,10 @@ STATUS = {
 
 # =====================================================================
 IndicadoresExigibilidadeIssEnum = StrEnum('Indicadores de Exigibilidade do ISS', list(INDICADORES_EXIGIBILIDADE_ISS.keys()), )
-IndicadoresIncentivoFiscalEnum  = StrEnum('Indicadores de Incentivo Fiscal'    , list(INDICADORES_INCENTIVO_FISCAL.keys()), )
-IndicadoresIssRetidoEnum        = StrEnum('Indicadores de ISS Retido'          , list(INDICADORES_ISS_RETIDO.keys()), )
-ResponsaveisRetencaoIssEnum     = StrEnum('Responsável pela Retenção do ISS'   , list(RESPONSAVEIS_RETENCAO_ISS.keys()), )
-StatusEnum                      = StrEnum('Status'                             , list(STATUS.keys()), )
+IndicadoresIncentivoFiscalEnum  = StrEnum('Indicadores de Incentivo Fiscal', list(INDICADORES_INCENTIVO_FISCAL.keys()), )
+IndicadoresIssRetidoEnum        = StrEnum('Indicadores de ISS Retido', list(INDICADORES_ISS_RETIDO.keys()), )
+ResponsaveisRetencaoIssEnum     = StrEnum('Responsável pela Retenção do ISS', list(RESPONSAVEIS_RETENCAO_ISS.keys()), )
+StatusEnum                      = StrEnum('Status', list(STATUS.keys()), )
 
 # =====================================================================
 class Servico(BaseModel):

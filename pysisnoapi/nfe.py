@@ -205,6 +205,25 @@ TIPOS_VEICULO = {
 }
 
 # =====================================================================
+BandeirasEnum         = StrEnum('Bandeiras', list(BANDEIRAS.keys()), )
+CondicoesChassiEnum   = StrEnum('Condições do Chassi', list(CONDICOES_CHASSI.keys()), )
+CondicoesVeiculoEnum  = StrEnum('Condições do Veículo', list(CONDICOES_VEICULO.keys()), )
+CoresEnum             = StrEnum('Cores', list(CORES.keys()), )
+EspeciesVeiculoEnum   = StrEnum('Espécies de Veículo', list(ESPECIES_VEICULO.keys()), )
+FinalidadeEnum        = StrEnum('Finalidades', list(FINALIDADES.keys()), )
+IndicativosEscalaEnum = StrEnum('Indicativos de Escala', list(INDICATIVOS_ESCALA.keys()), )
+ModalidadesFreteEnum  = StrEnum('Modalidade do Frete', list(MODALIDADES_FRETE.keys()), )
+ModelosEnum           = StrEnum('Modelos', list(MODELOS.keys()), )
+OperacoesEnum         = StrEnum('Operações', list(OPERACOES.keys()), )
+OrigensEnum           = StrEnum('Origens', list(ORIGENS.keys()), )
+PresencasEnum         = StrEnum('Presenças', list(PRESENCAS.keys()), )
+RestricoesEnum        = StrEnum('Restrições', list(RESTRICOES.keys()), )
+TiposCombustivelEnum  = StrEnum('Tipos de Combustiveis', list(TIPOS_COMBUSTIVEL.keys()), )
+TiposEmissaoEnum      = StrEnum('Tipos de Emissões', list(TIPOS_EMISSAO.keys()), )
+TiposOperacaoEnum     = StrEnum('Tipos de Operações', list(TIPOS_OPERACAO.keys()), )
+TiposVeiculoEnum      = StrEnum('Tipos de Veículos', list(TIPOS_VEICULO.keys()), )
+
+# =====================================================================
 class ObjetoEmissaoNFe(BaseModel):
     numero_nota_sequencial  : str             = Field()
     serie                   : str             = Field()

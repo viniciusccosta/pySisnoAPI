@@ -222,16 +222,16 @@ UNIDADES = {
 }
 
 # ======================================================================================================================
-AmbientesEnum                       = StrEnum('Ambientes'                        , list(AMBIENTES.keys()), )
-FormasPagamentoEnum                 = StrEnum('Formas de Pagamento'              , list(FORMAS_PAGAMENTO.keys()), )
-MeiosPagamentoEnum                  = StrEnum('Meios de Pagamento'               , list(MEIOS_PAGAMENTO.keys()), )
-MotivoDesoneracaoEnum               = StrEnum('Motivos de Desoneração'           , list(MOTIVOS_DESONERACAO.keys()), )
-SituacoesTributariasICMSEnum        = StrEnum('Situações Tributárias ICMS'       , list(SITUACOES_TRIBUTARIAS_ICMS.keys()), )
-SituacoesTributariasIPIEnum         = StrEnum('Situações Tributárias IPI'        , list(SITUACOES_TRIBUTARIAS_IPI.keys()), )
+AmbientesEnum                       = StrEnum('Ambientes', list(AMBIENTES.keys()), )
+FormasPagamentoEnum                 = StrEnum('Formas de Pagamento', list(FORMAS_PAGAMENTO.keys()), )
+MeiosPagamentoEnum                  = StrEnum('Meios de Pagamento', list(MEIOS_PAGAMENTO.keys()), )
+MotivoDesoneracaoEnum               = StrEnum('Motivos de Desoneração', list(MOTIVOS_DESONERACAO.keys()), )
+SituacoesTributariasICMSEnum        = StrEnum('Situações Tributárias ICMS', list(SITUACOES_TRIBUTARIAS_ICMS.keys()), )
+SituacoesTributariasIPIEnum         = StrEnum('Situações Tributárias IPI', list(SITUACOES_TRIBUTARIAS_IPI.keys()), )
 SituacoesTributariasPISCONFINSEnum  = StrEnum('Situações Tributárias PIS CONFINS', list(SITUACOES_TRIBUTARIAS_PIS_COFINS.keys()), )
-ConsumidorFinalEnum                 = StrEnum('Tipo de Consumidor Final'         , list(TIPOS_CONSUMIDOR_FINAL.keys()), )
-ContribuintesEnum                   = StrEnum('Tipos de Contribuintes'           , list(TIPOS_CONTRIBUINTES.keys()), )
-UnidadesEnum                        = StrEnum('Unidades'                         , UNIDADES)
+ConsumidorFinalEnum                 = StrEnum('Tipo de Consumidor Final', list(TIPOS_CONSUMIDOR_FINAL.keys()), )
+ContribuintesEnum                   = StrEnum('Tipos de Contribuintes', list(TIPOS_CONTRIBUINTES.keys()), )
+UnidadesEnum                        = StrEnum('Unidades', UNIDADES)
 
 # ======================================================================================================================
 # Classes:
