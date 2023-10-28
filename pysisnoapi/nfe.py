@@ -246,6 +246,86 @@ TiposOperacaoEnum     = StrEnum('Tipos de Operações', list(TIPOS_OPERACAO.keys
 TiposVeiculoEnum      = StrEnum('Tipos de Veículos', list(TIPOS_VEICULO.keys()), )
 
 # =====================================================================
+class Compra(BaseModel):
+    contrato    : Optional[Annotated[str, Field()]] = None
+    nota_empenho: Optional[Annotated[str, Field()]] = None
+    pedido      : Optional[Annotated[str, Field()]] = None
+
+class Exportacao(BaseModel):
+    uf_embarque   : str = Field()
+    local_embarque: str = Field()
+
+    local_despacho: Optional[Annotated[str, Field()]] = None
+
+class ExportacaoIndividual(BaseModel):
+    drawback      : Optional[Annotated[str, Field()]] = None
+    reg_exportacao: Optional[Annotated[str, Field()]] = None
+    nfe_exportacao: Optional[Annotated[str, Field()]] = None
+    qtd_exportacao: Optional[Annotated[str, Field()]] = None
+
+class Fatura(BaseModel):
+    numero       : str = Field()
+    valor        : str = Field()
+    desconto     : str = Field()
+    valor_liquido: str = Field()
+
+class FormaPagamento(BaseModel):
+    forma_pagamento         : FormasPagamentoEnum = Field()
+    meio_pagamento          : MeiosPagamentoEnum = Field()
+    valor_pagamento         : str = Field()
+
+    cnpj_credenciadora      : Optional[Annotated[str, Field()]] = None
+    bandeira                : Optional[Annotated[BandeirasEnum, Field()]] = None
+    autorizacao             : Optional[Annotated[str, Field()]] = None
+    data_vencimento         : Optional[Annotated[str, Field()]] = None
+    descricao_meio_pagamento: Optional[Annotated[str, Field()]] = None
+    # tipo_integracao       : Optional[Annotated[str, Field()]] = None    # TODO: Não está na documentação mas é obrigatório caso meio de pagamento seja 'crédito' ou 'débito'. O valor deve ser '1' ou '2'.
+
+    @model_validator(mode='after')
+    def validate_descricao_meio_pagamento(self, *args, **kwargs):
+        if self.meio_pagamento == '99':
+            if self.descricao_meio_pagamento is None:
+                raise ValueError(f'Necessário preencher "descricao_meio_pagamento" quando a forma de pagamento é "(99) Outros".')
+            if len(self.descricao_meio_pagamento) < 2 or len(self.descricao_meio_pagamento) > 60:
+                raise ValueError(f'O campo "descricao_meio_pagamento" deve conter entre 2 a 60 caracteres')
+        return self
+
+class ImportacaoIndividual(BaseModel):
+    numero_registro                   : Optional[Annotated[str, Field()]]            = None
+    data_registro                     : Optional[Annotated[str, Field()]]            = None
+    cod_exportador                    : Optional[Annotated[str, Field()]]            = None
+    cod_via_transporte_internacional  : Optional[Annotated[str, Field()]]            = None
+    valor_afrmm                       : Optional[Annotated[str, Field()]]            = None
+    cod_forma_importacao_intermediacao: Optional[Annotated[str, Field()]]            = None
+    uf_desembaraco                    : Optional[Annotated[str, Field()]]            = None
+    local_desembaraco                 : Optional[Annotated[str, Field()]]            = None
+    data_desembaraco                  : Optional[Annotated[str, Field()]]            = None
+    cnpj_terceiro                     : Optional[Annotated[str, Field()]]            = None
+    uf_terceiro                       : Optional[Annotated[str, Field()]]            = None
+    iof                               : Optional[Annotated[str, Field()]]            = None
+    valor_despesas_aduaneiras         : Optional[Annotated[str, Field()]]            = None
+    adicoes                           : Optional[List['DeclaracaoImportacaoAdicao']] = None
+
+class ImpostosProduto(Impostos):
+    icms: 'Icms'= Field()
+    ipi : 'Ipi' = Field()
+
+class InformacaoIntermediador(BaseModel):
+    cnpj                                : Optional[Annotated[str, Field()]] = None
+    identificador_cadastro_intermediador: Optional[Annotated[str, Field()]] = None
+
+class Local(BaseModel):
+    uf                  : str = Field()
+    codigo_municipio    : str = Field()
+    descricao_municipio : str = Field()
+    bairro              : str = Field()
+    logradouro          : str = Field()
+    numero              : str = Field()
+    complemento         : str = Field()
+
+    cpf : Optional[Annotated[str, Field()]] = None
+    cnpj: Optional[Annotated[str, Field()]] = None
+
 class ObjetoEmissaoNFe(BaseModel):
     numero_nota_sequencial  : str             = Field(min_length=1, max_length=9)
     serie                   : str             = Field()
@@ -275,26 +355,30 @@ class ObjetoEmissaoNFe(BaseModel):
 class Pagamento(BaseModel):
     formas_pagamento: List['FormaPagamento'] = Field()
 
-class FormaPagamento(BaseModel):
-    forma_pagamento         : FormasPagamentoEnum = Field()
-    meio_pagamento          : MeiosPagamentoEnum = Field()
-    valor_pagamento         : str = Field()
+class PaginaNotas(BaseModel):
+    total           : Optional[Annotated[str, Field()]] = None
+    itens_por_pagina: Optional[Annotated[str, Field()]] = None
+    pagina_atual    : Optional[Annotated[str, Field()]] = None
+    itens           : Optional[List['NotaFiscal']]      = None
 
-    cnpj_credenciadora      : Optional[Annotated[str, Field()]] = None
-    bandeira                : Optional[Annotated[BandeirasEnum, Field()]] = None
-    autorizacao             : Optional[Annotated[str, Field()]] = None
-    data_vencimento         : Optional[Annotated[str, Field()]] = None
-    descricao_meio_pagamento: Optional[Annotated[str, Field()]] = None
-    # tipo_integracao       : Optional[Annotated[str, Field()]] = None    # TODO: Não está na documentação mas é obrigatório caso meio de pagamento seja 'crédito' ou 'débito'. O valor deve ser '1' ou '2'.
+class Parcela(BaseModel):
+    vencimento: str = Field()
+    valor     : str = Field()
 
-    @model_validator(mode='after')
-    def validate_descricao_meio_pagamento(self, *args, **kwargs):
-        if self.meio_pagamento == '99':
-            if self.descricao_meio_pagamento is None:
-                raise ValueError(f'Necessário preencher "descricao_meio_pagamento" quando a forma de pagamento é "(99) Outros".')
-            if len(self.descricao_meio_pagamento) < 2 or len(self.descricao_meio_pagamento) > 60:
-                raise ValueError(f'O campo "descricao_meio_pagamento" deve conter entre 2 a 60 caracteres')
-        return self
+class Pedido(BaseModel):
+    presenca                  : PresencasEnum = Field()
+    pagamento                 : 'Pagamento'   = Field()
+
+    modalidade_frete          : Optional[Annotated[ModalidadesFreteEnum, Field()]] = None
+    frete                     : Optional[Annotated[str, Field()]] = None
+    desconto                  : Optional[Annotated[str, Field()]] = None
+    total                     : Optional[Annotated[str, Field()]] = None
+    despesas_acessorias       : Optional[Annotated[str, Field()]] = None
+    despesas_aduaneiras       : Optional[Annotated[str, Field()]] = None
+    informacoes_complementares: Optional[Annotated[str, Field()]] = None
+    informacoes_fisco         : Optional[Annotated[str, Field()]] = None
+    observacoes_fisco         : Optional[Annotated[str, Field()]] = None
+    observacoes_contribuinte  : Optional[Annotated[str, Field()]] = None
 
 class Produto(BaseModel):
     '''Classe Produto
@@ -354,24 +438,13 @@ class Produto(BaseModel):
             raise ValueError(f'Total {total:.2f} é diferente de quantidade {quantidade:.2f} * subtotal {subtotal:.2f} = {quantidade*subtotal:.2f}')
         return self
 
-class ImpostosProduto(Impostos):
-    icms: 'Icms'= Field()
-    ipi : 'Ipi' = Field()
+class Rastreamento(BaseModel):
+    lote           : str = Field()
+    quantidade     : str = Field()
+    data_fabricacao: str = Field()
+    data_validade  : str = Field()
 
-class Pedido(BaseModel):
-    presenca                  : PresencasEnum = Field()
-    pagamento                 : 'Pagamento'   = Field()
-
-    modalidade_frete          : Optional[Annotated[ModalidadesFreteEnum, Field()]] = None
-    frete                     : Optional[Annotated[str, Field()]] = None
-    desconto                  : Optional[Annotated[str, Field()]] = None
-    total                     : Optional[Annotated[str, Field()]] = None
-    despesas_acessorias       : Optional[Annotated[str, Field()]] = None
-    despesas_aduaneiras       : Optional[Annotated[str, Field()]] = None
-    informacoes_complementares: Optional[Annotated[str, Field()]] = None
-    informacoes_fisco         : Optional[Annotated[str, Field()]] = None
-    observacoes_fisco         : Optional[Annotated[str, Field()]] = None
-    observacoes_contribuinte  : Optional[Annotated[str, Field()]] = None
+    codigo_agregacao: Optional[Annotated[str, Field()]] = None
 
 class VeiculoNovo(BaseModel):
     tipo_operacao   : TiposOperacaoEnum = Field()
@@ -400,80 +473,29 @@ class VeiculoNovo(BaseModel):
     condicao_chassi         : Optional[Annotated[CondicoesChassiEnum, Field()]] = None
     potencia                : Optional[Annotated[str, Field()]] = None
 
-class ExportacaoIndividual(BaseModel):
-    drawback      : Optional[Annotated[str, Field()]] = None
-    reg_exportacao: Optional[Annotated[str, Field()]] = None
-    nfe_exportacao: Optional[Annotated[str, Field()]] = None
-    qtd_exportacao: Optional[Annotated[str, Field()]] = None
-
-class ImportacaoIndividual(BaseModel):
-    numero_registro                   : Optional[Annotated[str, Field()]]            = None
-    data_registro                     : Optional[Annotated[str, Field()]]            = None
-    cod_exportador                    : Optional[Annotated[str, Field()]]            = None
-    cod_via_transporte_internacional  : Optional[Annotated[str, Field()]]            = None
-    valor_afrmm                       : Optional[Annotated[str, Field()]]            = None
-    cod_forma_importacao_intermediacao: Optional[Annotated[str, Field()]]            = None
-    uf_desembaraco                    : Optional[Annotated[str, Field()]]            = None
-    local_desembaraco                 : Optional[Annotated[str, Field()]]            = None
-    data_desembaraco                  : Optional[Annotated[str, Field()]]            = None
-    cnpj_terceiro                     : Optional[Annotated[str, Field()]]            = None
-    uf_terceiro                       : Optional[Annotated[str, Field()]]            = None
-    iof                               : Optional[Annotated[str, Field()]]            = None
-    valor_despesas_aduaneiras         : Optional[Annotated[str, Field()]]            = None
-    adicoes                           : Optional[List['DeclaracaoImportacaoAdicao']] = None
-
-class Rastreamento(BaseModel):
-    lote           : str = Field()
-    quantidade     : str = Field()
-    data_fabricacao: str = Field()
-    data_validade  : str = Field()
-
-    codigo_agregacao: Optional[Annotated[str, Field()]] = None
-
-class Fatura(BaseModel):
-    numero       : str = Field()
-    valor        : str = Field()
-    desconto     : str = Field()
-    valor_liquido: str = Field()
-
-class Parcela(BaseModel):
-    vencimento: str = Field()
-    valor     : str = Field()
-
-class Exportacao(BaseModel):
-    uf_embarque   : str = Field()
-    local_embarque: str = Field()
-
-    local_despacho: Optional[Annotated[str, Field()]] = None
-
-class Local(BaseModel):
-    uf                  : str = Field()
-    codigo_municipio    : str = Field()
-    descricao_municipio : str = Field()
-    bairro              : str = Field()
-    logradouro          : str = Field()
-    numero              : str = Field()
-    complemento         : str = Field()
-
-    cpf : Optional[Annotated[str, Field()]] = None
-    cnpj: Optional[Annotated[str, Field()]] = None
-
-class Compra(BaseModel):
-    contrato    : Optional[Annotated[str, Field()]] = None
-    nota_empenho: Optional[Annotated[str, Field()]] = None
-    pedido      : Optional[Annotated[str, Field()]] = None
-
-class InformacaoIntermediador(BaseModel):
-    cnpj                                : Optional[Annotated[str, Field()]] = None
-    identificador_cadastro_intermediador: Optional[Annotated[str, Field()]] = None
-
-class PaginaNotas(BaseModel):
-    total           : Optional[Annotated[str, Field()]] = None
-    itens_por_pagina: Optional[Annotated[str, Field()]] = None
-    pagina_atual    : Optional[Annotated[str, Field()]] = None
-    itens           : Optional[List['NotaFiscal']]      = None
-
 # =====================================================================
+@validate_call
+async def buscar(token_emissor: str,
+           token_secret_emissor: str,
+           *args, **kwargs):
+    raise NotImplementedError
+
+@validate_call
+async def cancelar(token_emissor: str,
+             token_secret_emissor: str,
+             token_empresa:str,
+             token_secret_empresa:str,
+             *args, **kwargs):
+    raise NotImplementedError
+
+@validate_call
+async def corrigir(token_emissor: str,
+             token_secret_emissor: str,
+             token_empresa:str,
+             token_secret_empresa:str,
+             *args, **kwargs):
+    raise NotImplementedError
+
 @validate_call
 async def emitir(token_emissor: str,
            token_secret_emissor: str,
@@ -522,20 +544,76 @@ async def emitir(token_emissor: str,
             return response.text
 
 @validate_call
-async def corrigir(token_emissor: str,
+async def get_danfe(token_emissor: str,
+              token_secret_emissor: str,
+              token_empresa:str,
+              token_secret_empresa:str,
+              *args, **kwargs):
+    raise NotImplementedError
+
+@validate_call
+async def get_nota(token_emissor: str,
              token_secret_emissor: str,
-             token_empresa:str,
-             token_secret_empresa:str,
              *args, **kwargs):
     raise NotImplementedError
 
 @validate_call
-async def cancelar(token_emissor: str,
-             token_secret_emissor: str,
-             token_empresa:str,
-             token_secret_empresa:str,
-             *args, **kwargs):
+async def get_pre_visualizacao(token_emissor: str,
+                         token_secret_emissor: str,
+                         token_empresa:str,
+                         token_secret_empresa:str,
+                         *args, **kwargs):
     raise NotImplementedError
+
+@validate_call
+async def inutilizar_numeracao(token_emissor: str,
+                         token_secret_emissor: str,
+                         token_empresa:str,
+                         token_secret_empresa:str,
+                         *args, **kwargs):
+    raise NotImplementedError
+
+@validate_call
+async def listar(token_emissor: str,
+           token_secret_emissor: str,
+           qtd:str = None,
+           pagina:str = None,
+           *args, **kwargs) -> List[NotaFiscal]:
+    '''Recupera as notas fiscais.
+
+    No Distrito Federal (DF), antes de 01/2023, as notas fiscais de serviço eram emitidas como NFe.
+
+    Args:
+        qtd (str, optional): Quantidade de notas por página.
+        pagina (str, optional): Página a ser retornada.
+
+    Returns:
+        List[NotaFiscal]: Lista contendo as notas fiscais.
+    '''
+    headers = HEADERS.copy()
+
+    validate_tokens(token_emissor, token_secret_emissor)
+    headers['token-emissor']        = token_emissor
+    headers['token-secret-emissor'] = token_secret_emissor
+
+    params   = {}
+
+    if qtd:
+        params['qtd'] = qtd
+    if pagina:
+        params['pagina'] = pagina
+
+    url = f'{BASE_URL}/nfe/lista-notas'
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, params=params, headers=headers)
+
+    match (response.status_code):
+        case 200:
+            itens = response.json()['dados']['itens']
+            nfes  = [NotaFiscal(**d) for d in itens]
+            return response, nfes
+
+    return response, None
 
 @validate_call
 async def validar(token_emissor: str,
@@ -581,83 +659,3 @@ async def validar(token_emissor: str,
             return response.json()
         case _:
             return response.text
-
-@validate_call
-async def listar(token_emissor: str,
-           token_secret_emissor: str,
-           qtd:str = None,
-           pagina:str = None,
-           *args, **kwargs) -> List[NotaFiscal]:
-    '''Recupera as notas fiscais.
-
-    No Distrito Federal (DF), antes de 01/2023, as notas fiscais de serviço eram emitidas como NFe.
-
-    Args:
-        qtd (str, optional): Quantidade de notas por página.
-        pagina (str, optional): Página a ser retornada.
-
-    Returns:
-        List[NotaFiscal]: Lista contendo as notas fiscais.
-    '''
-    headers = HEADERS.copy()
-
-    validate_tokens(token_emissor, token_secret_emissor)
-    headers['token-emissor']        = token_emissor
-    headers['token-secret-emissor'] = token_secret_emissor
-
-    params   = {}
-
-    if qtd:
-        params['qtd'] = qtd
-    if pagina:
-        params['pagina'] = pagina
-
-    url = f'{BASE_URL}/nfe/lista-notas'
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url, params=params, headers=headers)
-
-    match (response.status_code):
-        case 200:
-            itens = response.json()['dados']['itens']
-            nfes  = [NotaFiscal(**d) for d in itens]
-            return response, nfes
-
-    return response, None
-
-@validate_call
-async def buscar(token_emissor: str,
-           token_secret_emissor: str,
-           *args, **kwargs):
-    raise NotImplementedError
-
-@validate_call
-async def get_nota(token_emissor: str,
-             token_secret_emissor: str,
-             *args, **kwargs):
-    raise NotImplementedError
-
-@validate_call
-async def inutilizar_numeracao(token_emissor: str,
-                         token_secret_emissor: str,
-                         token_empresa:str,
-                         token_secret_empresa:str,
-                         *args, **kwargs):
-    raise NotImplementedError
-
-@validate_call
-async def get_pre_visualizacao(token_emissor: str,
-                         token_secret_emissor: str,
-                         token_empresa:str,
-                         token_secret_empresa:str,
-                         *args, **kwargs):
-    raise NotImplementedError
-
-@validate_call
-async def get_danfe(token_emissor: str,
-              token_secret_emissor: str,
-              token_empresa:str,
-              token_secret_empresa:str,
-              *args, **kwargs):
-    raise NotImplementedError
-
-# =====================================================================
