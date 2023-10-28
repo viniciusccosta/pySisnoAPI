@@ -15,6 +15,7 @@ from typing_extensions import Annotated
 from datetime          import datetime
 from dateutil          import parser
 from pydantic          import BaseModel, Field, model_validator
+from enum              import StrEnum
 
 # ======================================================================================================================
 # Globals:
@@ -221,6 +222,18 @@ UNIDADES = {
 }
 
 # ======================================================================================================================
+AmbientesEnum                       = StrEnum('Ambientes'                        , list(AMBIENTES.keys()), )
+FormasPagamentoEnum                 = StrEnum('Formas de Pagamento'              , list(FORMAS_PAGAMENTO.keys()), )
+MeiosPagamentoEnum                  = StrEnum('Meios de Pagamento'               , list(MEIOS_PAGAMENTO.keys()), )
+MotivoDesoneracaoEnum               = StrEnum('Motivos de Desoneração'           , list(MOTIVOS_DESONERACAO.keys()), )
+SituacoesTributariasICMSEnum        = StrEnum('Situações Tributárias ICMS'       , list(SITUACOES_TRIBUTARIAS_ICMS.keys()), )
+SituacoesTributariasIPIEnum         = StrEnum('Situações Tributárias IPI'        , list(SITUACOES_TRIBUTARIAS_IPI.keys()), )
+SituacoesTributariasPISCONFINSEnum  = StrEnum('Situações Tributárias PIS CONFINS', list(SITUACOES_TRIBUTARIAS_PIS_COFINS.keys()), )
+ConsumidorFinalEnum                 = StrEnum('Tipo de Consumidor Final'         , list(TIPOS_CONSUMIDOR_FINAL.keys()), )
+ContribuintesEnum                   = StrEnum('Tipos de Contribuintes'           , list(TIPOS_CONTRIBUINTES.keys()), )
+UnidadesEnum                        = StrEnum('Unidades'                         , UNIDADES)
+
+# ======================================================================================================================
 # Classes:
 class Cfop(BaseModel):
     '''Classe `CFOP` (Código Fiscal de Operações e Prestações)
@@ -234,9 +247,9 @@ class Cliente(BaseModel):
     '''Classe `Cliente`
     Geralmente é o destinatário da NFe.
     '''
-    consumidor_final: str        = Field()
-    contribuinte    : str        = Field()
-    endereco        : 'Endereco' = Field()
+    consumidor_final: ConsumidorFinalEnum = Field()
+    contribuinte    : ContribuintesEnum   = Field()
+    endereco        : 'Endereco'          = Field()
 
     pessoa_fisica   : Optional[Annotated['PessoaFisica'  , Field()]] = None
     pessoa_juridica : Optional[Annotated['PessoaJuridica', Field()]] = None
@@ -246,18 +259,6 @@ class Cliente(BaseModel):
     telefone        : Optional[Annotated[str, Field()]]  = None
     email           : Optional[Annotated[str, Field()]]  = None
     faz_retencao    : Optional[Annotated[bool, Field()]] = None  # TODO: bool ?
-
-    @model_validator(mode='after')
-    def check_tipo_contribuinte(self):
-        if self.contribuinte not in TIPOS_CONTRIBUINTES:
-            raise ValueError(f'Contribuinte {self.contribuinte} inválido')
-        return self
-
-    @model_validator(mode='after')
-    def check_tipo_consumidor(self):
-        if self.consumidor_final not in TIPOS_CONSUMIDOR_FINAL:
-            raise ValueError(f'Consumidor Final {self.consumidor_final} inválido')
-        return self
 
     @model_validator(mode='after')
     def check_tipo_pessoa(self):
@@ -312,17 +313,11 @@ class Cofins(BaseModel):
 
     aliquota_retencao (str): $0.0000
     '''
-    situacao_tributaria : str = Field()
+    situacao_tributaria : SituacoesTributariasPISCONFINSEnum = Field()
 
     aliquota            : Optional[Annotated[str, Field()]] = None
     aliquota_st         : Optional[Annotated[str, Field()]] = None
     aliquota_retencao   : Optional[Annotated[str, Field()]] = None
-
-    @model_validator(mode='after')
-    def validate_situacao_tributaria(self):
-        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
-            raise ValueError(f'Situação tributária {self.situacao_tributaria} inválida.')
-        return self
 
 class DeclaracaoImportacaoAdicao(BaseModel):
     numero_sequencial: Optional[Annotated[str, Field()]] = None
@@ -411,7 +406,7 @@ class Ibpt(BaseModel):
 class Icms(BaseModel):
     '''Classe `ICMS` (Imposto sobre Circulação de Mercadorias e Serviços)
     '''
-    situacao_tributaria                       : str = Field()
+    situacao_tributaria                       : SituacoesTributariasICMSEnum = Field()
 
     codigo_cfop                               : Optional[Annotated[str, Field()]]  = None
     aliquota_icms                             : Optional[Annotated[str, Field()]]  = None
@@ -424,30 +419,18 @@ class Icms(BaseModel):
     percentual_margem_valor_agregado_icms_st  : Optional[Annotated[str, Field()]]  = None
     percentual_diferimento                    : Optional[Annotated[str, Field()]]  = None
     percentual_desonerado                     : Optional[Annotated[str, Field()]]  = None
-    motivo_desoneracao                        : Optional[Annotated[str, Field()]]  = None
+    motivo_desoneracao                        : Optional[Annotated[MotivoDesoneracaoEnum, Field()]]  = None
     percentual_icms_st_retido                 : Optional[Annotated[str, Field()]]  = None
     utilizar_tabela_aliquotas_interestaduais  : Optional[Annotated[bool, Field()]] = None
     utilizar_aliquota_interestadual_importacao: Optional[Annotated[bool, Field()]] = None
-
-    @model_validator(mode='after')
-    def validate_situacao_tributaria(self):
-        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_ICMS:
-            raise ValueError(f'Situação tributária {self.situacao_tributaria} inválida.')
-        return self
-
-    @model_validator(mode='after')
-    def validate_motivo_desoneracao(self):
-        if self.motivo_desoneracao:
-            if self.motivo_desoneracao not in MOTIVOS_DESONERACAO:
-                raise ValueError(f'Motivo de Desoneração {self.motivo_desoneracao} inválido.')
-        return self
 
 class Impostos(BaseModel):
     '''Classe Base para as Classes de Impostos de Produtos e Serviços.
     '''
     pis                    : 'Pis'    = Field()
     cofins                 : 'Cofins' = Field()
-    descricao_grupo_imposto: str      = Field()     # TODO: Obritório ?
+    
+    descricao_grupo_imposto: Optional[Annotated[int, Field()]] = None   # TODO: Obrigatório ?
 
 class Ipi(BaseModel):
     '''Classe `IPI` (Imposto Sobre Produtos Industrializados)
@@ -468,18 +451,12 @@ class Ipi(BaseModel):
         55: Saída com Suspensão
         99: Outras Saídas
     '''
-    situacao_tributaria : str = Field()
+    situacao_tributaria : SituacoesTributariasIPIEnum = Field()
 
     aliquota            : Optional[Annotated[str, Field()]] = None
     codigo_enquadramento: Optional[Annotated[str, Field()]] = None
     codigo_selo         : Optional[Annotated[str, Field()]] = None
     qtd_selo            : Optional[Annotated[str, Field()]] = None
-
-    @model_validator(mode='after')
-    def validate_situacao_tributaria(self, *args, **kwargs):
-        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_IPI:
-            raise ValueError(f'Situação tributária {self.situacao_tributaria} inválida.')
-        return self
 
 class Municipio(BaseModel):
     '''Classe `Município`
@@ -621,17 +598,11 @@ class Pis(BaseModel):
     aliquota_retencao (str): $0.0000
 
     '''
-    situacao_tributaria: str = Field()
+    situacao_tributaria: SituacoesTributariasPISCONFINSEnum = Field()
 
     aliquota           : Optional[Annotated[str, Field()]] = None
     aliquota_st        : Optional[Annotated[str, Field()]] = None
     aliquota_retencao  : Optional[Annotated[str, Field()]] = None
-
-    @model_validator(mode='after')
-    def validate_situacao_tributaria(self, *args, **kwargs):
-        if self.situacao_tributaria not in SITUACOES_TRIBUTARIAS_PIS_COFINS:
-            raise ValueError(f'Situação tributária {self.situacao_tributaria} inválida.')
-        return self
 
 class RetencaoIcmsTransporte(BaseModel):
     valor_servico                                           : Optional[Annotated[str, Field()]] = None

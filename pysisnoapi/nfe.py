@@ -212,7 +212,7 @@ class ObjetoEmissaoNFe(BaseModel):
     natureza_operacao       : str             = Field()
     modelo                  : str             = Field()
     finalidade              : str             = Field()
-    ambiente                : str             = Field()
+    ambiente                : AmbientesEnum   = Field()
     cliente                 : Cliente         = Field()
     produtos                : List['Produto'] = Field()
     pedido                  : 'Pedido'        = Field()
@@ -257,18 +257,12 @@ class ObjetoEmissaoNFe(BaseModel):
             raise ValueError(f'Finalidade {self.finalidade} inválida')
         return self
 
-    @model_validator(mode='after')
-    def validate_ambiente(self):
-        if self.ambiente not in AMBIENTES:
-            raise ValueError(f'Ambiente {self.ambiente} inválido')
-        return self
-
 class Pagamento(BaseModel):
     formas_pagamento: List['FormaPagamento'] = Field()
 
 class FormaPagamento(BaseModel):
-    forma_pagamento         : str = Field()
-    meio_pagamento          : str = Field()
+    forma_pagamento         : FormasPagamentoEnum = Field()
+    meio_pagamento          : MeiosPagamentoEnum = Field()
     valor_pagamento         : str = Field()
 
     cnpj_credenciadora      : Optional[Annotated[str, Field()]] = None
@@ -277,18 +271,6 @@ class FormaPagamento(BaseModel):
     data_vencimento         : Optional[Annotated[str, Field()]] = None
     descricao_meio_pagamento: Optional[Annotated[str, Field()]] = None
     # tipo_integracao       : Optional[Annotated[str, Field()]] = None    # TODO: Não está na documentação mas é obrigatório caso meio de pagamento seja 'crédito' ou 'débito'. O valor deve ser '1' ou '2'.
-
-    @model_validator(mode='after')
-    def validate_forma_pagamento(self, *args, **kwargs):
-        if self.forma_pagamento not in FORMAS_PAGAMENTO:
-            raise ValueError(f'Forma de pagamento {self.forma_pagamento} inválido')
-        return self
-
-    @model_validator(mode='after')
-    def validate_meios_pagamento(self, *args, **kwargs):
-        if self.meio_pagamento not in MEIOS_PAGAMENTO:
-            raise ValueError(f'Meio de pagamento {self.meio_pagamento} inválido')
-        return self
 
     @model_validator(mode='after')
     def validate_bandeira(self, *args, **kwargs):
@@ -313,16 +295,16 @@ class Produto(BaseModel):
         ValueError: Caso o valor de algum atributo seja inválido.
         TypeError: Caso algum campo obrigatório não for informado.
     '''
-    item                            : str      = Field()   # Número incremental na lista de produtos
-    cfop                            : str      = Field()
-    nome                            : str      = Field()
-    codigo                          : str      = Field()
-    ncm                             : str      = Field()
-    quantidade                      : str      = Field()
-    unidade                         : str      = Field()
-    subtotal                        : str      = Field()
-    total                           : str      = Field()
-    impostos                        : Impostos = Field()
+    item                            : str          = Field()   # Número incremental na lista de produtos
+    cfop                            : str          = Field()
+    nome                            : str          = Field()
+    codigo                          : str          = Field()
+    ncm                             : str          = Field()
+    quantidade                      : str          = Field()
+    unidade                         : UnidadesEnum = Field()
+    subtotal                        : str          = Field()
+    total                           : str          = Field()
+    impostos                        : Impostos     = Field()
 
     numero_pedido                   : Optional[Annotated[str, Field()]]                    = None
     excessao_ibpt                   : Optional[Annotated[str, Field()]]                    = None
@@ -347,12 +329,6 @@ class Produto(BaseModel):
     valor_seguro                    : Optional[Annotated[str, Field()]]                    = None
     valor_desconto                  : Optional[Annotated[str, Field()]]                    = None
     valor_outras_despesas_acessorias: Optional[Annotated[str, Field()]]                    = None
-
-    @model_validator(mode='after')
-    def validate_unidade(self, *args, **kwargs):
-        if self.unidade not in UNIDADES:
-            raise ValueError(f'Unidade {self.unidade} inválida.')
-        return self
 
     @model_validator(mode='after')
     def validate_impostos(self, *args, **kwargs):
