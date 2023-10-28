@@ -430,7 +430,7 @@ class Impostos(BaseModel):
     pis                    : 'Pis'    = Field()
     cofins                 : 'Cofins' = Field()
     
-    descricao_grupo_imposto: Optional[Annotated[int, Field()]] = None   # TODO: Obrigatório ?
+    descricao_grupo_imposto: Optional[Annotated[str, Field()]] = None   # TODO: Obrigatório ?
 
 class Ipi(BaseModel):
     '''Classe `IPI` (Imposto Sobre Produtos Industrializados)
