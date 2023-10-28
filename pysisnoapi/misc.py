@@ -14,7 +14,16 @@ import httpx
 from typing import List
 from pydantic import validate_call
 
-from . import *
+from . import (
+    BASE_URL,
+    HEADERS,
+    
+    Cfop,
+    Ibpt,
+    Municipio,
+    
+    validate_tokens,
+)
 
 # ======================================================================================================================
 @validate_call
