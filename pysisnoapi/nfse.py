@@ -19,15 +19,15 @@ from enum              import StrEnum
 from . import (
     BASE_URL,
     HEADERS,
-    
+
     AmbientesEnum,
-    
+
     Cliente,
     Empresa,
     Impostos,
     Municipio,
     Uf,
-    
+
     validate_tokens,
 )
 
@@ -92,39 +92,29 @@ ResponsaveisRetencaoIssEnum     = StrEnum('Responsável pela Retenção do ISS',
 StatusEnum                      = StrEnum('Status', STATUS)
 
 # =====================================================================
-class Servico(BaseModel):
-    '''_summary_
-
-    Returns:
-        _type_: _description_
-    '''
-    valor_servicos            : str               = Field()
-    discriminacao             : str               = Field()
-    impostos                  : 'ImpostosServico' = Field()
-
-    id                        : Optional[Annotated[int, Field()]]                         = None    # TODO: Obrigatório ?   # TODO: int ?
-    iss_retido                : Optional[Annotated[IndicadoresIssRetidoEnum, Field()]]    = None    # TODO: int ?
-    responsavel_retencao_iss  : Optional[Annotated[ResponsaveisRetencaoIssEnum, Field()]] = None    # 
-
-    intermediario             : Optional[Annotated['Cliente', Field()]]   = None
-    deducoes                  : Optional[Annotated[str, Field()]]         = None
-    desconto_incondicionado   : Optional[Annotated[str, Field()]]         = None
-    desconto_condicionado     : Optional[Annotated[str, Field()]]         = None
-    outras_retencoes          : Optional[Annotated[str, Field()]]         = None
-    informacoes_complementares: Optional[Annotated[str, Field()]]         = None
-    data_competencia          : Optional[Annotated[str, Field()]]         = None
-    uf_local_prestacao        : Optional[Annotated['Uf', Field()]]        = None
-    municipio_local_prestacao : Optional[Annotated['Municipio', Field()]] = None
-
 class ConstrucaoCivil(BaseModel):
     codigo_obra: Optional[Annotated[str, Field()]] = None
     art        : Optional[Annotated[str, Field()]] = None
 
-class ObjetoEmissaoNFSe(BaseModel):
-    cliente: 'Cliente' = Field()
-    servico: 'Servico' = Field()
+class ImpostosServico(Impostos):
+    issqn: 'Issqn' = Field()
 
-    construcao_civil: Optional[Annotated['ConstrucaoCivil', Field()]] = None
+class Issqn(BaseModel):
+    indicador_exigibilidade_iss: IndicadoresExigibilidadeIssEnum = Field()
+    indicador_incentivo_fiscal : IndicadoresIncentivoFiscalEnum  = Field()
+    item_lista_servicos        : str = Field()
+    aliquota                   : str = Field()
+    codigo_servico             : str = Field()
+    codigo_nbs                 : str = Field()
+    cnae                       : str = Field()  # TODO: Obrigatório ?
+    codigo_tributacao_municipio: str = Field()  # TODO: Obrigatório ?
+    natureza_operacao          : str = Field()  # TODO: Obrigatório ?
+
+    numero_processo            : Optional[Annotated[str, Field()]] = None
+    aliquota_retencao          : Optional[Annotated[str, Field()]] = None
+    aliquota_irrf              : Optional[Annotated[str, Field()]] = None
+    aliquota_csll              : Optional[Annotated[str, Field()]] = None
+    aliquota_previdencia_social: Optional[Annotated[str, Field()]] = None
 
 class NotaFiscalServico(BaseModel):
     # TODO: Até o dia 01/06/2023, não consta na Documentação quais são os campos obrigatórios
@@ -157,71 +147,43 @@ class NotaFiscalServico(BaseModel):
     def __repr__(self):
         return f'NFSe {self.uuid}'
 
+class ObjetoEmissaoNFSe(BaseModel):
+    cliente: 'Cliente' = Field()
+    servico: 'Servico' = Field()
+
+    construcao_civil: Optional[Annotated['ConstrucaoCivil', Field()]] = None
+
 class PaginaNotasServico(BaseModel):
     total           : Optional[Annotated[str, Field()]]                       = None
     itens_por_pagina: Optional[Annotated[str, Field()]]                       = None
     pagina_atual    : Optional[Annotated[str, Field()]]                       = None
     itens           : Optional[Annotated[List['NotaFiscalServico'], Field()]] = None
 
-class ImpostosServico(Impostos):
-    issqn: 'Issqn' = Field()
-
-class Issqn(BaseModel):
-    indicador_exigibilidade_iss: IndicadoresExigibilidadeIssEnum = Field()
-    indicador_incentivo_fiscal : IndicadoresIncentivoFiscalEnum  = Field()
-    item_lista_servicos        : str = Field()
-    aliquota                   : str = Field()
-    codigo_servico             : str = Field()
-    codigo_nbs                 : str = Field()
-    cnae                       : str = Field()  # TODO: Obrigatório ?
-    codigo_tributacao_municipio: str = Field()  # TODO: Obrigatório ?
-    natureza_operacao          : str = Field()  # TODO: Obrigatório ?
-
-    numero_processo            : Optional[Annotated[str, Field()]] = None
-    aliquota_retencao          : Optional[Annotated[str, Field()]] = None
-    aliquota_irrf              : Optional[Annotated[str, Field()]] = None
-    aliquota_csll              : Optional[Annotated[str, Field()]] = None
-    aliquota_previdencia_social: Optional[Annotated[str, Field()]] = None
-
-# =====================================================================
-@validate_call
-async def emitir(token_emissor: str,
-           token_secret_emissor: str,
-           token_empresa: str,
-           token_secret_empresa: str,
-           objetoNfse: ObjetoEmissaoNFSe,
-           *args, **kwargs) -> httpx.Response:
-    '''Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
-
-    Args:
-        obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe "ObjetoEmissaoNFSe" que contém todos os dados necessários
+class Servico(BaseModel):
+    '''_summary_
 
     Returns:
-        httpx.Response: Resposta do servidor
+        _type_: _description_
     '''
+    valor_servicos            : str               = Field()
+    discriminacao             : str               = Field()
+    impostos                  : 'ImpostosServico' = Field()
 
-    headers = HEADERS.copy()
+    id                        : Optional[Annotated[int, Field()]]                         = None    # TODO: Obrigatório ?   # TODO: int ?
+    iss_retido                : Optional[Annotated[IndicadoresIssRetidoEnum, Field()]]    = None    # TODO: int ?
+    responsavel_retencao_iss  : Optional[Annotated[ResponsaveisRetencaoIssEnum, Field()]] = None    #
 
-    # -----------------------------------------
-    validate_tokens(token_emissor, token_secret_emissor)
-    validate_tokens(token_empresa, token_secret_empresa)
-    
-    headers['token-emissor']        = token_emissor
-    headers['token-secret-emissor'] = token_secret_emissor
-    headers['token-empresa']        = token_empresa
-    headers['token-secret-empresa'] = token_secret_empresa
+    intermediario             : Optional[Annotated['Cliente', Field()]]   = None
+    deducoes                  : Optional[Annotated[str, Field()]]         = None
+    desconto_incondicionado   : Optional[Annotated[str, Field()]]         = None
+    desconto_condicionado     : Optional[Annotated[str, Field()]]         = None
+    outras_retencoes          : Optional[Annotated[str, Field()]]         = None
+    informacoes_complementares: Optional[Annotated[str, Field()]]         = None
+    data_competencia          : Optional[Annotated[str, Field()]]         = None
+    uf_local_prestacao        : Optional[Annotated['Uf', Field()]]        = None
+    municipio_local_prestacao : Optional[Annotated['Municipio', Field()]] = None
 
-    # -----------------------------------------
-    obj_dict = objetoNfse.model_dump(exclude_none=True)
-
-    url = f'{BASE_URL}/nfse'
-    async with httpx.AsyncClient() as client:
-        response = await client.post(url, headers=headers, json=obj_dict)
-
-    # Resultado:
-    # TODO: Retornar algo mais útil do que simplesmente o response...
-    return response
-
+# =====================================================================
 @validate_call
 async def buscar_notas(token_emissor: str,
                  token_secret_emissor: str,
@@ -287,7 +249,7 @@ async def buscar_notas(token_emissor: str,
     # TODO: dataFim não precisa de dataInicio
 
     headers = HEADERS.copy()
-    
+
     validate_tokens(token_emissor, token_secret_emissor)
     headers['token-emissor']        = token_emissor
     headers['token-secret-emissor'] = token_secret_emissor
@@ -319,12 +281,50 @@ async def buscar_notas(token_emissor: str,
     return (response, None)
 
 @validate_call
-async def retransmitir(token_emissor: str,
-                 token_secret_emissor: str,
-                 token_empresa:str,
-                 token_secret_empresa:str,
-                 *args, **kwargs):
+async def cancelar(token_emissor: str,
+             token_secret_emissor: str,
+             token_empresa:str,
+             token_secret_empresa:str,
+             *args, **kwargs):
     raise NotImplementedError
+
+@validate_call
+async def emitir(token_emissor: str,
+           token_secret_emissor: str,
+           token_empresa: str,
+           token_secret_empresa: str,
+           objetoNfse: ObjetoEmissaoNFSe,
+           *args, **kwargs) -> httpx.Response:
+    '''Método responsável por enviar uma requisição para a plataforma SISNO solicitando a emissão de uma nova fiscal de SERVIÇO.
+
+    Args:
+        obj_emissao_nfse (ObjetoEmissaoNFSe): Objeto da classe "ObjetoEmissaoNFSe" que contém todos os dados necessários
+
+    Returns:
+        httpx.Response: Resposta do servidor
+    '''
+
+    headers = HEADERS.copy()
+
+    # -----------------------------------------
+    validate_tokens(token_emissor, token_secret_emissor)
+    validate_tokens(token_empresa, token_secret_empresa)
+
+    headers['token-emissor']        = token_emissor
+    headers['token-secret-emissor'] = token_secret_emissor
+    headers['token-empresa']        = token_empresa
+    headers['token-secret-empresa'] = token_secret_empresa
+
+    # -----------------------------------------
+    obj_dict = objetoNfse.model_dump(exclude_none=True)
+
+    url = f'{BASE_URL}/nfse'
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=obj_dict)
+
+    # Resultado:
+    # TODO: Retornar algo mais útil do que simplesmente o response...
+    return response
 
 @validate_call
 async def recuperar_dados(token_emissor: str,
@@ -357,11 +357,12 @@ async def recuperar_dados(token_emissor: str,
     return response
 
 @validate_call
-async def cancelar(token_emissor: str,
-             token_secret_emissor: str,
-             token_empresa:str,
-             token_secret_empresa:str,
-             *args, **kwargs):
+async def retransmitir(token_emissor: str,
+                 token_secret_emissor: str,
+                 token_empresa:str,
+                 token_secret_empresa:str,
+                 *args, **kwargs):
     raise NotImplementedError
+
 
 # =====================================================================
