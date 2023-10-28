@@ -19,12 +19,12 @@ from datetime          import datetime
 from . import (
     BASE_URL,
     HEADERS,
-    
+
     AmbientesEnum,
     FormasPagamentoEnum,
     MeiosPagamentoEnum,
     UnidadesEnum,
-    
+
     Cliente,
     DeclaracaoImportacaoAdicao,
     Icms,
@@ -32,7 +32,12 @@ from . import (
     Ipi,
     NotaFiscal,
     Transporte,
-    
+
+    Endereco,
+    PessoaFisica,
+    PessoaJuridica,
+    Pis,
+
     validate_tokens,
 )
 
@@ -279,7 +284,7 @@ class FormaPagamento(BaseModel):
     autorizacao             : Optional[Annotated[str, Field()]] = None
     data_vencimento         : Optional[Annotated[str, Field()]] = None
     descricao_meio_pagamento: Optional[Annotated[str, Field()]] = None
-    # tipo_integracao       : Optional[Annotated[str, Field()]] = None    # TODO: Não está na documentação mas é obrigatório caso meio de pagamento seja 'crédito' ou 'débito'. O valor deve ser '1' ou '2'.
+    tipo_integracao         : Optional[Annotated[str, Field()]] = None    # TODO: Não está na documentação mas é obrigatório caso meio de pagamento seja 'crédito' ou 'débito'. O valor deve ser '1' ou '2'.
 
     @model_validator(mode='after')
     def validate_descricao_meio_pagamento(self, *args, **kwargs):
@@ -334,7 +339,7 @@ class ObjetoEmissaoNFe(BaseModel):
     modelo                  : ModelosEnum     = Field()
     finalidade              : FinalidadeEnum  = Field()
     ambiente                : AmbientesEnum   = Field()
-    cliente                 : Cliente         = Field()
+    cliente                 : 'Cliente'       = Field()
     produtos                : List['Produto'] = Field()
     pedido                  : 'Pedido'        = Field()
     data_entrada_saida      : datetime        = Field()
@@ -646,7 +651,7 @@ async def validar(token_emissor: str,
     headers['token-secret-empresa'] = token_secret_empresa
 
     headers['tipo-emissao'] = tipo_emissao
-    
+
     # -----------------------------------------
     obj_dict = objetoNfe.model_dump(exclude_none=True)
 

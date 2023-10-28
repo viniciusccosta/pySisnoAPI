@@ -13,7 +13,6 @@
 from typing            import Optional
 from typing_extensions import Annotated
 from datetime          import datetime
-from dateutil          import parser
 from pydantic          import BaseModel, Field, model_validator
 from enum              import StrEnum
 
@@ -222,16 +221,16 @@ UNIDADES = {
 }
 
 # ======================================================================================================================
-AmbientesEnum                       = StrEnum('Ambientes', list(AMBIENTES.keys()), )
-FormasPagamentoEnum                 = StrEnum('Formas de Pagamento', list(FORMAS_PAGAMENTO.keys()), )
-MeiosPagamentoEnum                  = StrEnum('Meios de Pagamento', list(MEIOS_PAGAMENTO.keys()), )
-MotivoDesoneracaoEnum               = StrEnum('Motivos de Desoneração', list(MOTIVOS_DESONERACAO.keys()), )
-SituacoesTributariasICMSEnum        = StrEnum('Situações Tributárias ICMS', list(SITUACOES_TRIBUTARIAS_ICMS.keys()), )
-SituacoesTributariasIPIEnum         = StrEnum('Situações Tributárias IPI', list(SITUACOES_TRIBUTARIAS_IPI.keys()), )
-SituacoesTributariasPISCONFINSEnum  = StrEnum('Situações Tributárias PIS CONFINS', list(SITUACOES_TRIBUTARIAS_PIS_COFINS.keys()), )
-ConsumidorFinalEnum                 = StrEnum('Tipo de Consumidor Final', list(TIPOS_CONSUMIDOR_FINAL.keys()), )
-ContribuintesEnum                   = StrEnum('Tipos de Contribuintes', list(TIPOS_CONTRIBUINTES.keys()), )
-UnidadesEnum                        = StrEnum('Unidades', UNIDADES)
+AmbientesEnum                      = StrEnum('Ambientes', list(AMBIENTES.keys()), )
+FormasPagamentoEnum                = StrEnum('Formas de Pagamento', list(FORMAS_PAGAMENTO.keys()), )
+MeiosPagamentoEnum                 = StrEnum('Meios de Pagamento', list(MEIOS_PAGAMENTO.keys()), )
+MotivoDesoneracaoEnum              = StrEnum('Motivos de Desoneração', list(MOTIVOS_DESONERACAO.keys()), )
+SituacoesTributariasICMSEnum       = StrEnum('Situações Tributárias ICMS', list(SITUACOES_TRIBUTARIAS_ICMS.keys()), )
+SituacoesTributariasIPIEnum        = StrEnum('Situações Tributárias IPI', list(SITUACOES_TRIBUTARIAS_IPI.keys()), )
+SituacoesTributariasPISCONFINSEnum = StrEnum('Situações Tributárias PIS CONFINS', list(SITUACOES_TRIBUTARIAS_PIS_COFINS.keys()), )
+ConsumidorFinalEnum                = StrEnum('Tipo de Consumidor Final', list(TIPOS_CONSUMIDOR_FINAL.keys()), )
+ContribuintesEnum                  = StrEnum('Tipos de Contribuintes', list(TIPOS_CONTRIBUINTES.keys()), )
+UnidadesEnum                       = StrEnum('Unidades', UNIDADES)
 
 # ======================================================================================================================
 # Classes:
@@ -397,12 +396,6 @@ class Ibpt(BaseModel):
     unidade_federativa: Optional[Annotated['Uf', Field()]] = None
     ativo             : Optional[Annotated[str, Field()]]  = None     # TODO: Até o dia 01/06/2023, não consta na Documentação
 
-    @classmethod
-    def from_json(cls, **kwargs):
-        uf_dict = kwargs.pop('unidade_federativa', {})
-        uf = Uf.from_json(**uf_dict)
-        return cls(unidade_federativa=uf, **kwargs)
-
 class Icms(BaseModel):
     '''Classe `ICMS` (Imposto sobre Circulação de Mercadorias e Serviços)
     '''
@@ -429,7 +422,7 @@ class Impostos(BaseModel):
     '''
     pis                    : 'Pis'    = Field()
     cofins                 : 'Cofins' = Field()
-    
+
     descricao_grupo_imposto: Optional[Annotated[str, Field()]] = None   # TODO: Obrigatório ?
 
 class Ipi(BaseModel):
@@ -465,10 +458,6 @@ class Municipio(BaseModel):
     codigo_ibge : Optional[Annotated[int, Field()]] = None
     descricao   : Optional[Annotated[str, Field()]] = None
 
-    @classmethod
-    def from_json(cls, **kwargs):
-        return cls(**kwargs)
-
 class NotaFiscal(BaseModel):
     '''Classe `Nota Fiscal`.
 
@@ -496,24 +485,6 @@ class NotaFiscal(BaseModel):
     json_objeto_nfe         : Optional[Annotated[str, Field()]]       = None
     tipo_emissao            : Optional[Annotated[str, Field()]]       = None
     numero_lote             : Optional[Annotated[str, Field()]]       = None
-
-    @classmethod
-    def from_json(cls, **kwargs):
-        empresa_dict = kwargs.pop('empresa', {})
-        empresa = Empresa.from_json(**empresa_dict)
-
-        if data_emissao := kwargs.pop('data_emissao', None):
-            data_emissao = parser.parse(data_emissao, dayfirst=True)
-
-        if data_autorizacao := kwargs.pop('data_autorizacao', None):
-            data_autorizacao = parser.parse(data_autorizacao, dayfirst=True)
-
-        return cls(
-            empresa=empresa,
-            data_emissao=data_emissao,
-            data_autorizacao=data_autorizacao,
-            **kwargs
-        )
 
     def __str__(self):
         return f'NFe {self.id}'
@@ -627,10 +598,6 @@ class Uf(BaseModel):
     codigo_ibge: Optional[Annotated[str, Field()]] = None
     sigla      : Optional[Annotated[str, Field()]] = None
     descricao  : Optional[Annotated[str, Field()]] = None
-
-    @classmethod
-    def from_json(cls, **kwargs):
-        return cls(**kwargs)
 
 # ======================================================================================================================
 def validate_tokens(token:str, token_secret:str):

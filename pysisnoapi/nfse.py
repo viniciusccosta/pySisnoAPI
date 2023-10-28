@@ -6,7 +6,6 @@
 '''
 
 # =====================================================================
-import json
 import httpx
 
 from datetime          import datetime
@@ -27,6 +26,11 @@ from . import (
     Impostos,
     Municipio,
     Uf,
+
+    Endereco,
+    PessoaFisica,
+    PessoaJuridica,
+    Pis,
 
     validate_tokens,
 )

@@ -17,11 +17,11 @@ from pydantic import validate_call
 from . import (
     BASE_URL,
     HEADERS,
-    
+
     Cfop,
     Ibpt,
     Municipio,
-    
+
     validate_tokens,
 )
 

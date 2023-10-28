@@ -5,8 +5,15 @@ import requests
 from unittest.mock import MagicMock
 from pydantic import ValidationError
 
-from pysisnoapi import *
-from pysisnoapi import nfse
+from pysisnoapi import (
+    nfse,
+
+    Endereco,
+    Cliente,
+    PessoaFisica,
+    Pis,
+    Cofins,
+)
 
 # =================================================================
 class NfseTestCase(unittest.TestCase):

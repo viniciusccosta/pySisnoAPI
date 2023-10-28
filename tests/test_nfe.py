@@ -6,8 +6,17 @@ from unittest.mock  import MagicMock
 from datetime       import datetime
 from pydantic       import ValidationError
 
-from pysisnoapi import *
-from pysisnoapi import nfe
+from pysisnoapi import (
+    nfe,
+
+    Endereco,
+    Cliente,
+    PessoaFisica,
+    Pis,
+    Cofins,
+    Icms,
+    Ipi,
+)
 
 # =================================================================
 class NfeTestCase(unittest.TestCase):
