@@ -9,11 +9,12 @@
 import httpx
 import json
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validate_call
 from typing   import List
 from datetime import datetime
 
 from . import *
+
 # =====================================================================
 CSV_HEADERS = [
     'CNPJ EMITENTE',
@@ -452,6 +453,7 @@ class PaginaNotas(BaseModel):
     itens           : Optional[List['NotaFiscal']]      = None
 
 # =====================================================================
+@validate_call
 async def emitir(token_emissor: str,
            token_secret_emissor: str,
            token_empresa: str,
@@ -498,6 +500,7 @@ async def emitir(token_emissor: str,
         case _:
             return response.text
 
+@validate_call
 async def corrigir(token_emissor: str,
              token_secret_emissor: str,
              token_empresa:str,
@@ -505,6 +508,7 @@ async def corrigir(token_emissor: str,
              *args, **kwargs):
     raise NotImplementedError
 
+@validate_call
 async def cancelar(token_emissor: str,
              token_secret_emissor: str,
              token_empresa:str,
@@ -512,6 +516,7 @@ async def cancelar(token_emissor: str,
              *args, **kwargs):
     raise NotImplementedError
 
+@validate_call
 async def validar(token_emissor: str,
             token_secret_emissor: str,
             token_empresa:str,
@@ -556,6 +561,7 @@ async def validar(token_emissor: str,
         case _:
             return response.text
 
+@validate_call
 async def listar(token_emissor: str,
            token_secret_emissor: str,
            qtd:str = None,
@@ -597,16 +603,19 @@ async def listar(token_emissor: str,
 
     return response, None
 
+@validate_call
 async def buscar(token_emissor: str,
            token_secret_emissor: str,
            *args, **kwargs):
     raise NotImplementedError
 
+@validate_call
 async def get_nota(token_emissor: str,
              token_secret_emissor: str,
              *args, **kwargs):
     raise NotImplementedError
 
+@validate_call
 async def inutilizar_numeracao(token_emissor: str,
                          token_secret_emissor: str,
                          token_empresa:str,
@@ -614,6 +623,7 @@ async def inutilizar_numeracao(token_emissor: str,
                          *args, **kwargs):
     raise NotImplementedError
 
+@validate_call
 async def get_pre_visualizacao(token_emissor: str,
                          token_secret_emissor: str,
                          token_empresa:str,
@@ -621,6 +631,7 @@ async def get_pre_visualizacao(token_emissor: str,
                          *args, **kwargs):
     raise NotImplementedError
 
+@validate_call
 async def get_danfe(token_emissor: str,
               token_secret_emissor: str,
               token_empresa:str,
