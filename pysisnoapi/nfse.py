@@ -10,7 +10,7 @@ import json
 import httpx
 
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, validate_call
 from typing   import List
 
 from . import *
@@ -204,10 +204,10 @@ async def emitir(token_emissor: str,
 
     # -----------------------------------------
     validate_tokens(token_emissor, token_secret_emissor)
+    validate_tokens(token_empresa, token_secret_empresa)
+    
     headers['token-emissor']        = token_emissor
     headers['token-secret-emissor'] = token_secret_emissor
-
-    validate_tokens(token_empresa, token_secret_empresa)
     headers['token-empresa']        = token_empresa
     headers['token-secret-empresa'] = token_secret_empresa
 
@@ -222,12 +222,13 @@ async def emitir(token_emissor: str,
     # TODO: Retornar algo mais útil do que simplesmente o response...
     return response
 
+@validate_call
 async def buscar_notas(token_emissor: str,
                  token_secret_emissor: str,
                  cnpjEmpresa:list=None,
                  data_inicio:datetime=None,
                  data_fim:datetime=None,
-                 ambiente:str=None,
+                 ambiente:AmbientesEnum=None,
                  status:str=None,
                  texto:str=None,
                  pagina:int=None,
@@ -244,7 +245,7 @@ async def buscar_notas(token_emissor: str,
 
         data_fim (datetime): Fim intervalo de datas (dd/MM/yyyy HH:mm:ss).
 
-        ambiente (str):
+        ambiente (AmbientesEnum):
             1: Produção
             2: Homologação
 
@@ -281,41 +282,29 @@ async def buscar_notas(token_emissor: str,
     '''
 
     # TODO: o parâmetro cnpjEmpresa está errado na documentação ('CNPJ Empresa')
-    # TODO: o endpoint ignora o parâmetro cnpjEmpresa em alguns casos, descrir quais os casos.
+    # TODO: o endpoint ignora o parâmetro cnpjEmpresa em alguns casos, descobrir quais os casos.
     # TODO: textoBusca é case sensitive e leva em consideração acentos.
     # TODO: dataFim não precisa de dataInicio
 
     headers = HEADERS.copy()
-
+    
     validate_tokens(token_emissor, token_secret_emissor)
     headers['token-emissor']        = token_emissor
     headers['token-secret-emissor'] = token_secret_emissor
 
-    params = {}
-    if cnpjEmpresa:
-        params['cnpjEmpresa'] = cnpjEmpresa
-    if data_inicio:
-        params['dataInicio'] = data_inicio.strftime('%d/%m/%Y %H:%M:%S')
-    if data_fim:
-        params['dataFim'] = data_fim.strftime('%d/%m/%Y %H:%M:%S')
-    if ambiente:
-        if ambiente not in AMBIENTES:
-            raise ValueError(f'Ambiente {ambiente} inválido.')
-        params['ambiente'] = ambiente
-    if status:
-        if status not in STATUS:
-            raise ValueError(f'Status {status} inválido.')
-        params['status'] = status
-    if texto:
-        params['textoBusca'] = texto
-    if pagina:
-        params['pagina'] = str(pagina)
-    if qtd_por_pagina:
-        params['qtdPorPagina'] = str(qtd_por_pagina)
-    if ordencao:
-        params['ordenacao'] = ordencao
-    if tipo_ordenacao:
-        params['tipoOrdenacao'] = tipo_ordenacao
+    params = {
+        'cnpjEmpresa'  : cnpjEmpresa,
+        'dataInicio'   : data_inicio.strftime('%d/%m/%Y %H:%M:%S') if data_inicio else None,
+        'dataFim'      : data_fim.strftime('%d/%m/%Y %H:%M:%S') if data_fim else None,
+        'ambiente'     : ambiente,
+        'status'       : status,
+        'textoBusca'   : texto,
+        'pagina'       : pagina,
+        'qtdPorPagina' : qtd_por_pagina,
+        'ordenacao'    : ordencao,
+        'tipoOrdenacao': tipo_ordenacao
+    }
+    params = {k: v for k,v in params.items() if v}
 
     url = f'{BASE_URL}/nfse'
     async with httpx.AsyncClient() as client:
