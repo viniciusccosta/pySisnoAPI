@@ -69,6 +69,13 @@ STATUS = {
 }
 
 # =====================================================================
+IndicadoresExigibilidadeIssEnum = StrEnum('Indicadores de Exigibilidade do ISS', list(INDICADORES_EXIGIBILIDADE_ISS.keys()), )
+IndicadoresIncentivoFiscalEnum  = StrEnum('Indicadores de Incentivo Fiscal'    , list(INDICADORES_INCENTIVO_FISCAL.keys()), )
+IndicadoresIssRetidoEnum        = StrEnum('Indicadores de ISS Retido'          , list(INDICADORES_ISS_RETIDO.keys()), )
+ResponsaveisRetencaoIssEnum     = StrEnum('Responsável pela Retenção do ISS'   , list(RESPONSAVEIS_RETENCAO_ISS.keys()), )
+StatusEnum                      = StrEnum('Status'                             , list(STATUS.keys()), )
+
+# =====================================================================
 class Servico(BaseModel):
     '''_summary_
 
@@ -79,9 +86,9 @@ class Servico(BaseModel):
     discriminacao             : str               = Field()
     impostos                  : 'ImpostosServico' = Field()
 
-    id                        : Optional[Annotated[int, Field()]]         = None    # TODO: Obrigatório ?   # TODO: int ?
-    iss_retido                : Optional[Annotated[str, Field()]]         = None    # TODO: int ?
-    responsavel_retencao_iss  : Optional[Annotated[str, Field()]]         = None
+    id                        : Optional[Annotated[int, Field()]]                         = None    # TODO: Obrigatório ?   # TODO: int ?
+    iss_retido                : Optional[Annotated[IndicadoresIssRetidoEnum, Field()]]    = None    # TODO: int ?
+    responsavel_retencao_iss  : Optional[Annotated[ResponsaveisRetencaoIssEnum, Field()]] = None    # 
 
     intermediario             : Optional[Annotated['Cliente', Field()]]   = None
     deducoes                  : Optional[Annotated[str, Field()]]         = None
@@ -92,18 +99,6 @@ class Servico(BaseModel):
     data_competencia          : Optional[Annotated[str, Field()]]         = None
     uf_local_prestacao        : Optional[Annotated['Uf', Field()]]        = None
     municipio_local_prestacao : Optional[Annotated['Municipio', Field()]] = None
-
-    @model_validator(mode='after')
-    def validate_iss_retido(self, *args, **kwargs):
-        if self.iss_retido and self.iss_retido not in INDICADORES_ISS_RETIDO:
-            raise ValueError(f'Indicador de ISS retido {self.iss_retido} inválido.')
-        return self
-
-    @model_validator(mode='after')
-    def validate_responsavel_retencao_iss(self, *args, **kwargs):
-        if self.responsavel_retencao_iss and self.responsavel_retencao_iss not in RESPONSAVEIS_RETENCAO_ISS:
-            raise ValueError(f'Responsável pela retenção do ISS {self.responsavel_retencao_iss} inválido.')
-        return self
 
 class ConstrucaoCivil(BaseModel):
     codigo_obra: Optional[Annotated[str, Field()]] = None
@@ -156,8 +151,8 @@ class ImpostosServico(Impostos):
     issqn: 'Issqn' = Field()
 
 class Issqn(BaseModel):
-    indicador_exigibilidade_iss: str = Field()
-    indicador_incentivo_fiscal : str = Field()
+    indicador_exigibilidade_iss: IndicadoresExigibilidadeIssEnum = Field()
+    indicador_incentivo_fiscal : IndicadoresIncentivoFiscalEnum  = Field()
     item_lista_servicos        : str = Field()
     aliquota                   : str = Field()
     codigo_servico             : str = Field()
@@ -171,18 +166,6 @@ class Issqn(BaseModel):
     aliquota_irrf              : Optional[Annotated[str, Field()]] = None
     aliquota_csll              : Optional[Annotated[str, Field()]] = None
     aliquota_previdencia_social: Optional[Annotated[str, Field()]] = None
-
-    @model_validator(mode='after')
-    def validate_indicador_exigibilidade_iss(self, *args, **kwargs):
-        if self.indicador_exigibilidade_iss not in INDICADORES_EXIGIBILIDADE_ISS:
-            raise ValueError(f'Indicador de Exigibilidade Fiscal {self.indicador_exigibilidade_iss} inválido.')
-        return self
-
-    @model_validator(mode='after')
-    def validate_indicador_incentivo_fiscal(self, *args, **kwargs):
-        if self.indicador_incentivo_fiscal not in INDICADORES_INCENTIVO_FISCAL:
-            raise ValueError(f'Indicador de Incentivo Fiscal {self.indicador_incentivo_fiscal} inválido.')
-        return self
 
 # =====================================================================
 @validate_call
@@ -319,6 +302,7 @@ async def buscar_notas(token_emissor: str,
 
     return (response, None)
 
+@validate_call
 async def retransmitir(token_emissor: str,
                  token_secret_emissor: str,
                  token_empresa:str,
@@ -326,6 +310,7 @@ async def retransmitir(token_emissor: str,
                  *args, **kwargs):
     raise NotImplementedError
 
+@validate_call
 async def recuperar_dados(token_emissor: str,
                     token_secret_emissor: str,
                     token_empresa:str,
@@ -355,6 +340,7 @@ async def recuperar_dados(token_emissor: str,
     # TODO: Retornar algo mais útil como uma instância de NotaFiscal por exemplo ?!
     return response
 
+@validate_call
 async def cancelar(token_emissor: str,
              token_secret_emissor: str,
              token_empresa:str,
