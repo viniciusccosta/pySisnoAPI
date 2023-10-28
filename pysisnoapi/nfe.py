@@ -225,12 +225,12 @@ TiposVeiculoEnum      = StrEnum('Tipos de Veículos', list(TIPOS_VEICULO.keys())
 
 # =====================================================================
 class ObjetoEmissaoNFe(BaseModel):
-    numero_nota_sequencial  : str             = Field()
+    numero_nota_sequencial  : str             = Field(min_length=1, max_length=9)
     serie                   : str             = Field()
-    operacao                : str             = Field()
+    operacao                : OperacoesEnum   = Field()
     natureza_operacao       : str             = Field()
-    modelo                  : str             = Field()
-    finalidade              : str             = Field()
+    modelo                  : ModelosEnum     = Field()
+    finalidade              : FinalidadeEnum  = Field()
     ambiente                : AmbientesEnum   = Field()
     cliente                 : Cliente         = Field()
     produtos                : List['Produto'] = Field()
@@ -250,32 +250,6 @@ class ObjetoEmissaoNFe(BaseModel):
     indicador_intermediador : Optional[Annotated[str                      , Field()]] = None
     informacao_intermediador: Optional[Annotated['InformacaoIntermediador', Field()]] = None
 
-    @model_validator(mode='after')
-    def validate_numero_nota_sequencial(self):
-        if not isinstance(self.numero_nota_sequencial, str):
-            raise TypeError(f'numero_nota_sequencialdeve ser string.')
-        if len(self.numero_nota_sequencial) < 1 or len(self.numero_nota_sequencial) > 9:
-            raise ValueError(f'numero_nota_sequencial deve conter entre 1 e 9 caracteres.')
-        return self
-
-    @model_validator(mode='after')
-    def validate_operacao(self):
-        if self.operacao not in OPERACOES:
-            raise ValueError(f'Operação {self.operacao} inválida')
-        return self
-
-    @model_validator(mode='after')
-    def validate_modelo(self):
-        if self.modelo not in MODELOS:
-            raise ValueError(f'Modelo {self.modelo} inválido')
-        return self
-
-    @model_validator(mode='after')
-    def validate_finalidade(self):
-        if self.finalidade not in FINALIDADES:
-            raise ValueError(f'Finalidade {self.finalidade} inválida')
-        return self
-
 class Pagamento(BaseModel):
     formas_pagamento: List['FormaPagamento'] = Field()
 
@@ -285,18 +259,11 @@ class FormaPagamento(BaseModel):
     valor_pagamento         : str = Field()
 
     cnpj_credenciadora      : Optional[Annotated[str, Field()]] = None
-    bandeira                : Optional[Annotated[str, Field()]] = None
+    bandeira                : Optional[Annotated[BandeirasEnum, Field()]] = None
     autorizacao             : Optional[Annotated[str, Field()]] = None
     data_vencimento         : Optional[Annotated[str, Field()]] = None
     descricao_meio_pagamento: Optional[Annotated[str, Field()]] = None
     # tipo_integracao       : Optional[Annotated[str, Field()]] = None    # TODO: Não está na documentação mas é obrigatório caso meio de pagamento seja 'crédito' ou 'débito'. O valor deve ser '1' ou '2'.
-
-    @model_validator(mode='after')
-    def validate_bandeira(self, *args, **kwargs):
-        if self.bandeira:
-            if self.bandeira not in BANDEIRAS:
-                raise ValueError(f'Bandeira {self.bandeira} inválida.')
-        return self
 
     @model_validator(mode='after')
     def validate_descricao_meio_pagamento(self, *args, **kwargs):
@@ -329,9 +296,9 @@ class Produto(BaseModel):
     excessao_ibpt                   : Optional[Annotated[str, Field()]]                    = None
     peso_liquido                    : Optional[Annotated[str, Field()]]                    = None
     peso_bruto                      : Optional[Annotated[str, Field()]]                    = None
-    origem                          : Optional[Annotated[str, Field()]]                    = None
+    origem                          : Optional[Annotated[OrigensEnum, Field()]]            = None
     veiculo_usado                   : Optional[Annotated[str, Field()]]                    = None
-    ind_escala                      : Optional[Annotated[str, Field()]]                    = None
+    ind_escala                      : Optional[Annotated[IndicativosEscalaEnum, Field()]]  = None
     cnpj_fabricante                 : Optional[Annotated[str, Field()]]                    = None
     beneficio_fiscal                : Optional[Annotated[str, Field()]]                    = None
     gtin                            : Optional[Annotated[str, Field()]]                    = None
@@ -356,13 +323,6 @@ class Produto(BaseModel):
         return self
 
     @model_validator(mode='after')
-    def validate_origem(self, *args, **kwargs):
-        if self.origem:
-            if self.origem not in ORIGENS:
-                raise ValueError(f'Origem {self.origem} inválida.')
-        return self
-
-    @model_validator(mode='after')
     def validate_total(self, *args, **kwargs):
         quantidade = float(self.quantidade)
         subtotal   = float(self.subtotal)
@@ -372,22 +332,15 @@ class Produto(BaseModel):
             raise ValueError(f'Total {total:.2f} é diferente de quantidade {quantidade:.2f} * subtotal {subtotal:.2f} = {quantidade*subtotal:.2f}')
         return self
 
-    @model_validator(mode='after')
-    def validate_ind_escala(self, *args, **kwargs):
-        if self.ind_escala:
-            if self.ind_escala not in INDICATIVOS_ESCALA:
-                raise ValueError(f'Indicativo de escala {self.ind_escala} inválido.')
-        return self
-
 class ImpostosProduto(Impostos):
     icms: 'Icms'= Field()
     ipi : 'Ipi' = Field()
 
 class Pedido(BaseModel):
-    presenca                  : str         = Field()
-    pagamento                 : 'Pagamento' = Field()
+    presenca                  : PresencasEnum = Field()
+    pagamento                 : 'Pagamento'   = Field()
 
-    modalidade_frete          : Optional[Annotated[str, Field()]] = None
+    modalidade_frete          : Optional[Annotated[ModalidadesFreteEnum, Field()]] = None
     frete                     : Optional[Annotated[str, Field()]] = None
     desconto                  : Optional[Annotated[str, Field()]] = None
     total                     : Optional[Annotated[str, Field()]] = None
@@ -398,95 +351,32 @@ class Pedido(BaseModel):
     observacoes_fisco         : Optional[Annotated[str, Field()]] = None
     observacoes_contribuinte  : Optional[Annotated[str, Field()]] = None
 
-    @model_validator(mode='after')
-    def validate_presenca(self, *args, **kwargs):
-        if self.presenca not in PRESENCAS:
-            raise ValueError(f'Presença {self.presenca} inválida.')
-        return self
-
-    @model_validator(mode='after')
-    def validate_modalidade_frete(self, *args, **kwargs):
-        if self.modalidade_frete:
-            if self.modalidade_frete not in MODALIDADES_FRETE:
-                raise ValueError(f'Modalidade de Frete {self.modalidade_frete} inválida.')
-        return self
-
 class VeiculoNovo(BaseModel):
-    tipo_operacao   : str = Field()
+    tipo_operacao   : TiposOperacaoEnum = Field()
     chassi          : str = Field()
-    cor             : str = Field()
+    cor             : CoresEnum = Field()
     cor_descricao   : str = Field()
     cilindrada      : str = Field()
     peso_liquido    : str = Field()
     peso_bruto      : str = Field()
     serie           : str = Field()
-    tipo_combustivel: str = Field()
+    tipo_combustivel: TiposCombustivelEnum = Field()
     numero_motor    : str = Field()
     dist            : str = Field()
     ano_modelo      : str = Field()
     ano_fabricacao  : str = Field()
     tipo_pintura    : str = Field()
-    tipo_veiculo    : str = Field()
-    especie_veiculo : str = Field()
-    condicao_veiculo: str = Field()
+    tipo_veiculo    : TiposVeiculoEnum = Field()
+    especie_veiculo : EspeciesVeiculoEnum = Field()
+    condicao_veiculo: CondicoesVeiculoEnum = Field()
     marca_modelo    : str = Field()
     cor_denatran    : str = Field()
     lotacao         : str = Field()
-    restricao       : str = Field()
+    restricao       : RestricoesEnum = Field()
 
     capacidade_maxima_tracao: Optional[Annotated[str, Field()]] = None
-    condicao_chassi         : Optional[Annotated[str, Field()]] = None
+    condicao_chassi         : Optional[Annotated[CondicoesChassiEnum, Field()]] = None
     potencia                : Optional[Annotated[str, Field()]] = None
-
-
-    @model_validator(mode='after')
-    def validate_tipo_operacao(self, *args, **kwargs):
-        if self.tipo_operacao not in TIPOS_OPERACAO:
-            raise ValueError(f'Tipo de operação {self.tipo_operacao} inválido.')
-        return self
-
-    @model_validator(mode='after')
-    def validate_cor(self, *args, **kwargs):
-        if self.cor not in CORES:
-            raise ValueError(f'Cor {self.cor} inválida.')
-        return self
-
-    @model_validator(mode='after')
-    def validate_tipo_combustivel(self, *args, **kwargs):
-        if self.tipo_combustivel not in TIPOS_COMBUSTIVEL:
-            raise ValueError(f'Tipo combustível {self.tipo_combustivel} inválido.')
-        return self
-
-    @model_validator(mode='after')
-    def validate_tipo_veiculo(self, *args, **kwargs):
-        if self.tipo_veiculo not in TIPOS_VEICULO:
-            raise ValueError(f'Tipo de Veículo {self.tipo_veiculo} inválido.')
-        return self
-
-    @model_validator(mode='after')
-    def validate_especie_veiculo(self, *args, **kwargs):
-        if self.especie_veiculo not in ESPECIES_VEICULO:
-            raise ValueError(f'Espécie de Veículo {self.especie_veiculo} inválida.')
-        return self
-
-    @model_validator(mode='after')
-    def validate_condicao_veiculo(self, *args, **kwargs):
-        if self.condicao_veiculo not in CONDICOES_VEICULO:
-            raise ValueError(f'Condição do véiculo {self.condicao_veiculo} inválida.')
-        return self
-
-    @model_validator(mode='after')
-    def validate_restricao(self, *args, **kwargs):
-        if self.restricao not in RESTRICOES:
-            raise ValueError(f'Restrição {self.restricao} inválida.')
-        return self
-
-    @model_validator(mode='after')
-    def validate_condicao_chassi(self, *args, **kwargs):
-        if self.condicao_chassi:
-            if self.condicao_chassi not in CONDICOES_CHASSI:
-                raise ValueError(f'Condição do Chassi {self.condicao_chassi} inválida.')
-        return self
 
 class ExportacaoIndividual(BaseModel):
     drawback      : Optional[Annotated[str, Field()]] = None
@@ -567,7 +457,7 @@ async def emitir(token_emissor: str,
            token_empresa: str,
            token_secret_empresa: str,
            objetoNfe: ObjetoEmissaoNFe,
-           tipo_emissao: str,
+           tipo_emissao: TiposEmissaoEnum,
            *args, **kwargs):
     '''Endpoint utilizado para efetivamente emitir uma nota fiscal eletrônica.
 
@@ -590,10 +480,6 @@ async def emitir(token_emissor: str,
     validate_tokens(token_empresa, token_secret_empresa)
     headers['token-empresa']        = token_empresa
     headers['token-secret-empresa'] = token_secret_empresa
-
-    # -----------------------------------------
-    if not tipo_emissao or tipo_emissao not in TIPOS_EMISSAO:
-        raise ValueError(f'Tipo de Emissão {tipo_emissao} inválido')
 
     headers['tipo-emissao'] = tipo_emissao
 
@@ -631,7 +517,7 @@ async def validar(token_emissor: str,
             token_empresa:str,
             token_secret_empresa:str,
             objetoNfe:ObjetoEmissaoNFe,
-            tipo_emissao:str,
+            tipo_emissao:TiposEmissaoEnum,
             *args, **kwargs) -> str:
     '''Endpoint utilizado para validar a nota fiscal eletrônica antes de emitir.
 
@@ -655,11 +541,9 @@ async def validar(token_emissor: str,
     headers['token-empresa']        = token_empresa
     headers['token-secret-empresa'] = token_secret_empresa
 
-    # -----------------------------------------
-    if not tipo_emissao or tipo_emissao not in TIPOS_EMISSAO:
-        raise ValueError(f'Tipo de Emissão {tipo_emissao} inválido')
-
     headers['tipo-emissao'] = tipo_emissao
+    
+    # -----------------------------------------
     obj_dict = objetoNfe.model_dump(exclude_none=True)
 
     url = f'{BASE_URL}/nfe/validacao-nota'
