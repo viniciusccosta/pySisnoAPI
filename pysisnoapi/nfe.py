@@ -9,11 +9,32 @@
 import httpx
 import json
 
-from pydantic import BaseModel, validate_call
-from typing   import List
-from datetime import datetime
+from typing            import Optional
+from typing_extensions import Annotated
+from pydantic          import BaseModel, Field, validate_call, model_validator
+from typing            import List
+from enum              import StrEnum
+from datetime          import datetime
 
-from . import *
+from . import (
+    BASE_URL,
+    HEADERS,
+    
+    AmbientesEnum,
+    FormasPagamentoEnum,
+    MeiosPagamentoEnum,
+    UnidadesEnum,
+    
+    Cliente,
+    DeclaracaoImportacaoAdicao,
+    Icms,
+    Impostos,
+    Ipi,
+    NotaFiscal,
+    Transporte,
+    
+    validate_tokens,
+)
 
 # =====================================================================
 CSV_HEADERS = [
