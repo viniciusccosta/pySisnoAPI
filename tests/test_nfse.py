@@ -9,10 +9,13 @@ from pysisnoapi import (
     nfse,
 
     Cliente,
+    Empresa,
     Endereco,
     PessoaFisica,
     Pis,
     Cofins,
+    Municipio,
+    Uf,
 )
 
 # =================================================================
@@ -250,63 +253,26 @@ class NfseTestCase(unittest.TestCase):
         self.assertEqual(resultado['status'], 'processando')
 
 # =================================================================
-class ServicoTestCase(unittest.TestCase):
-    def setUp(self) -> None:
-        self.impostos = nfse.ImpostosServico(
-            pis    = Pis(
-                situacao_tributaria = '99',
-                aliquota            = '3.5',
-            ),
-            cofins = Cofins(
-                situacao_tributaria = '99',
-                aliquota            = '3.5',
-            ),
-            issqn  = nfse.Issqn(
-                aliquota                    = "3.5",
-                item_lista_servicos         = "08.02",
-                indicador_incentivo_fiscal  = "1",
-                indicador_exigibilidade_iss = "1",
-                codigo_servico              = '802',
-                codigo_nbs                  = '1.2606.00.00',
-                cnae                        = '8512100',
-                codigo_tributacao_municipio = '801',
-                natureza_operacao           = '1.2606.00.00',
-            ),
+class ConstrucaoCivilTestCase(unittest.TestCase):
+    def test_valid_construcao_civil(self):
+        # Test a valid instance of ConstrucaoCivil
+        construcao_civil = nfse.ConstrucaoCivil(
+            codigo_obra="12345",
+            art="56789"
         )
+        self.assertEqual(construcao_civil.codigo_obra, "12345")
+        self.assertEqual(construcao_civil.art, "56789")
 
-    def test_todos_campos_obrigatorios(self):
-        servico = nfse.Servico(
-            valor_servicos = "1.00",
-            discriminacao  = "TESTE",
-            impostos       = self.impostos
-        )
+    def test_optional_fields(self):
+        # Test when both fields are None (optional)
+        construcao_civil = nfse.ConstrucaoCivil()
+        self.assertIsNone(construcao_civil.codigo_obra)
+        self.assertIsNone(construcao_civil.art)
 
-        self.assertEqual(servico.valor_servicos, "1.00")
-        self.assertEqual(servico.discriminacao, "TESTE")
-        self.assertEqual(servico.impostos, self.impostos)
-
-    def test_campo_obrigatorio_valor_servicos(self):
+    def test_invalid_field_type(self):
+        # Test when a field has an invalid type (should raise a ValidationError)
         with self.assertRaises(ValidationError):
-            nfse.Servico(
-                discriminacao  = "TESTE",
-                impostos       = self.impostos
-            )
-
-    def test_campo_obrigatorio_discriminacao(self):
-        with self.assertRaises(ValidationError):
-            nfse.Servico(
-                valor_servicos = "1.00",
-
-                impostos       = self.impostos
-            )
-
-    def test_campo_obrigatorio_impostos(self):
-        with self.assertRaises(ValidationError):
-            nfse.Servico(
-                valor_servicos = "1.00",
-                discriminacao  = "TESTE",
-
-            )
+            nfse.ConstrucaoCivil(codigo_obra=12345, art="56789")
 
 class ImpostosServicoTestCase(unittest.TestCase):
     def test_valid_impostos_servico(self):
@@ -346,30 +312,6 @@ class ImpostosServicoTestCase(unittest.TestCase):
                 codigo_servico="802",
                 # Missing required fields: codigo_nbs, cnae, codigo_tributacao_municipio, natureza_operacao
             )
-
-class ObjetoEmissaoNFSeTestCase(unittest.TestCase):
-    ...
-
-class ConstrucaoCivilTestCase(unittest.TestCase):
-    def test_valid_construcao_civil(self):
-        # Test a valid instance of ConstrucaoCivil
-        construcao_civil = nfse.ConstrucaoCivil(
-            codigo_obra="12345",
-            art="56789"
-        )
-        self.assertEqual(construcao_civil.codigo_obra, "12345")
-        self.assertEqual(construcao_civil.art, "56789")
-
-    def test_optional_fields(self):
-        # Test when both fields are None (optional)
-        construcao_civil = nfse.ConstrucaoCivil()
-        self.assertIsNone(construcao_civil.codigo_obra)
-        self.assertIsNone(construcao_civil.art)
-
-    def test_invalid_field_type(self):
-        # Test when a field has an invalid type (should raise a ValidationError)
-        with self.assertRaises(ValidationError):
-            nfse.ConstrucaoCivil(codigo_obra=12345, art="56789")
 
 class IssqnTestCase(unittest.TestCase):
     def test_valid_issqn(self):
@@ -432,6 +374,123 @@ class IssqnTestCase(unittest.TestCase):
                 cnae="8512100",
                 # Missing required field: codigo_tributacao_municipio
                 natureza_operacao="1.2606.00.00"
+            )
+
+class NotaFiscalServicoTestCase(unittest.TestCase):
+    def setUp(self) -> None:
+        self.empresa   = Empresa()      # TODO: Até 29/10/2023 todos os campos são opcionais...
+        self.municipio = Municipio()    # TODO: Até 29/10/2023 todos os campos são opcionais...
+        self.uf        = Uf()           # TODO: Até 29/10/2023 todos os campos são opcionais...
+
+    def test_optional_fields(self):
+        nota_fiscal = nfse.NotaFiscalServico(
+            id                    = 1,
+            empresa               = self.empresa,
+            uuid                  = '123456',
+            modelo                = 'Model A',
+            status                = 'Approved',
+            motivo                = 'No reason',
+            numero_nota           = '12345',
+            codigo_verificacao    = 'ABCDEF',
+            protocolo             = 'Protocol 123',
+            nome_destinatario     = 'John Doe',
+            uf_destinatario       = 'TX',
+            cpf_cnpj_destinatario = '1234567890',
+            valor_total           = '100.00',
+            data_emissao          = '2023-10-29',
+            data_competencia      = '2023-10-30',
+            uf_prestacao          = self.uf,
+            municipio_prestacao   = self.municipio,
+            ambiente              = 'Production',
+            json_objeto_nfse      = '{"key": "value"}',
+            xml                   = '<xml>...</xml>',
+            numer_nota            = '54321'
+        )
+
+        self.assertEqual(nota_fiscal.id, 1)
+        self.assertEqual(nota_fiscal.empresa, self.empresa)
+        self.assertEqual(nota_fiscal.uuid, '123456')
+        self.assertEqual(nota_fiscal.modelo, 'Model A')
+        self.assertEqual(nota_fiscal.status, 'Approved')
+        self.assertEqual(nota_fiscal.motivo, 'No reason')
+        self.assertEqual(nota_fiscal.numero_nota, '12345')
+        self.assertEqual(nota_fiscal.codigo_verificacao, 'ABCDEF')
+        self.assertEqual(nota_fiscal.protocolo, 'Protocol 123')
+        self.assertEqual(nota_fiscal.nome_destinatario, 'John Doe')
+        self.assertEqual(nota_fiscal.uf_destinatario, 'TX')
+        self.assertEqual(nota_fiscal.cpf_cnpj_destinatario, '1234567890')
+        self.assertEqual(nota_fiscal.valor_total, '100.00')
+        self.assertEqual(nota_fiscal.data_emissao, '2023-10-29')
+        self.assertEqual(nota_fiscal.data_competencia, '2023-10-30')
+        self.assertEqual(nota_fiscal.uf_prestacao, self.uf)
+        self.assertEqual(nota_fiscal.municipio_prestacao, self.municipio)
+        self.assertEqual(nota_fiscal.ambiente, 'Production')
+        self.assertEqual(nota_fiscal.json_objeto_nfse, '{"key": "value"}')
+        self.assertEqual(nota_fiscal.xml, '<xml>...</xml>')
+        self.assertEqual(nota_fiscal.numer_nota, '54321')
+    
+class ObjetoEmissaoNFSeTestCase(unittest.TestCase):
+    ...
+
+class PaginaNotasServicoTestCase():
+    ...
+
+class ServicoTestCase(unittest.TestCase):
+    def setUp(self) -> None:
+        self.impostos = nfse.ImpostosServico(
+            pis    = Pis(
+                situacao_tributaria = '99',
+                aliquota            = '3.5',
+            ),
+            cofins = Cofins(
+                situacao_tributaria = '99',
+                aliquota            = '3.5',
+            ),
+            issqn  = nfse.Issqn(
+                aliquota                    = "3.5",
+                item_lista_servicos         = "08.02",
+                indicador_incentivo_fiscal  = "1",
+                indicador_exigibilidade_iss = "1",
+                codigo_servico              = '802',
+                codigo_nbs                  = '1.2606.00.00',
+                cnae                        = '8512100',
+                codigo_tributacao_municipio = '801',
+                natureza_operacao           = '1.2606.00.00',
+            ),
+        )
+
+    def test_todos_campos_obrigatorios(self):
+        servico = nfse.Servico(
+            valor_servicos = "1.00",
+            discriminacao  = "TESTE",
+            impostos       = self.impostos
+        )
+
+        self.assertEqual(servico.valor_servicos, "1.00")
+        self.assertEqual(servico.discriminacao, "TESTE")
+        self.assertEqual(servico.impostos, self.impostos)
+
+    def test_campo_obrigatorio_valor_servicos(self):
+        with self.assertRaises(ValidationError):
+            nfse.Servico(
+                discriminacao  = "TESTE",
+                impostos       = self.impostos
+            )
+
+    def test_campo_obrigatorio_discriminacao(self):
+        with self.assertRaises(ValidationError):
+            nfse.Servico(
+                valor_servicos = "1.00",
+
+                impostos       = self.impostos
+            )
+
+    def test_campo_obrigatorio_impostos(self):
+        with self.assertRaises(ValidationError):
+            nfse.Servico(
+                valor_servicos = "1.00",
+                discriminacao  = "TESTE",
+
             )
 
 # =================================================================
