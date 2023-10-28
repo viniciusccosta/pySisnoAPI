@@ -42,11 +42,14 @@ class NfseTestCase(unittest.TestCase):
             ),
             issqn = nfse.Issqn(
                 aliquota                    = "3.5",
-                item_lista_servicos         = "08.02",
+                item_lista_servicos         = "08.01",
                 indicador_incentivo_fiscal  = "1",
                 indicador_exigibilidade_iss = "1",
-                codigo_servico              = '802',
+                codigo_servico              = '08.01',
                 codigo_nbs                  = '1.2606.00.00',
+                cnae                        = '8512100',
+                codigo_tributacao_municipio = '801',
+                natureza_operacao           = '1.2606.00.00',
             ),
         )
 
@@ -258,6 +261,9 @@ class ServicoTestCase(unittest.TestCase):
                 indicador_exigibilidade_iss = "1",
                 codigo_servico              = '802',
                 codigo_nbs                  = '1.2606.00.00',
+                cnae                        = '8512100',
+                codigo_tributacao_municipio = '801',
+                natureza_operacao           = '1.2606.00.00',
             ),
         )
 
