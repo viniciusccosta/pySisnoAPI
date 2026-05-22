@@ -1,24 +1,25 @@
 [tool.poetry]
 name = "pysisnoapi"
-version = "0.2.2"
+version = "0.3.0"
 description = "Wrapper para API da plataforma SISNO."
 authors = ["Vinícius Costa <viniciusccosta95@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
-requests = "^2.31.0"
-python-dateutil = "^2.8.2"
-jsonpickle = "^3.0.1"
-httpx = "^0.25.0"
-pydantic = "^2.4.2"
+python = "~3.13"
+requests = "^2.34.2"
+python-dateutil = "^2.9.0.post0"
+jsonpickle = "^4.1.1"
+httpx = "^0.28.1"
+pydantic = "^2.13.4"
 
 
 [tool.poetry.group.dev.dependencies]
-pdoc3 = "^0.10.0"
-aiometer = "^0.4.0"
+pdoc3 = "^0.11.6"
+aiometer = "^1.0.0"
 python-decouple = "^3.8"
+pre-commit = "^4.6.0"
 
 [build-system]
 requires = ["poetry-core"]
